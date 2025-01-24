@@ -1,0 +1,82 @@
+openapi: 3.0.0
+info:
+  title: Sistema administrador
+  version: 1.0.0
+paths:
+  /usuarios/obtenerTodosLosUsuarios:
+    get:
+      description: Regresa todos los usuarios del sistema
+      tags:
+        - Usuario
+      responses:
+        "200":
+          description: Regresa una lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EntidadClientes"
+        "400":
+          description: Error al intentar proporcionar todos los usuarios
+        "500":
+          description: Error interno del servidor
+
+  /usuarios/registrar:
+    post:
+      description: Da de alta a un usuario en la plataforma
+      summary: Dar de alta usuario
+      tags:
+        - Usuario
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntidadClientes"
+      responses:
+        "200":
+          description: Operacion exitosa
+        "400":
+          description: Formato de datos invalido
+        "500":
+          description: Error interno del servidor
+
+  /usuarios/acceder:
+    post:
+      description: Acceder a la plataforma
+      tags:
+        - Usuario
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntidadClientes"
+      responses:
+        "200":
+          description: Credenciales validas
+          content:
+            plain/text:
+              schema:
+                type: string
+                example: "Bienvenido"
+        "401":
+          description: Credenciales de acceso no validas
+          content:
+            plain/text:
+              schema:
+                type: string
+                example: Credenciales incorrectas
+        "500":
+          description: Problemas con el servidor
+
+components:
+  schemas:
+    EntidadClientes:
+      type: object
+      properties:
+        correo:
+          type: string
+        contrasena:
+          type: string
+          minLength: 8
+          maxLength: 15
