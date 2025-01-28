@@ -6,9 +6,13 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "clientes")
+@Getter
+@Setter
 public class EntidadClientes {
 
     @Id
@@ -20,21 +24,13 @@ public class EntidadClientes {
     @Size(min = 3, message = "La contraseña debe tener al menos 3 caracteres")
     private String contrasena;
 
-    public String getCorreo() {
-        return correo;
-    }
+    private int edad;
 
-    public void setCorreo(String correo) {
-        this.correo = correo;
-    }
+    private String nombre;
 
-    public String getContrasena() {
-        return contrasena;
-    }
+    private String apellido_paterno;
 
-    public void setContrasena(String contrasena) {
-        this.contrasena = contrasena;
-    }
+    private String apellido_materno;
 
     @Override
     public String toString() {

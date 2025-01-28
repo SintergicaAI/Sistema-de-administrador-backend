@@ -54,21 +54,15 @@ public class Clientes {
         token = token.replace("Bearer ", "");
 
         System.out.println(TokenUtilidades.getTokenClaims(token));
-        //System.out.println(TokenUtilidades.getTokenClaims().toString());
 
         return this.credenciales.findAll();
     }
 
-
     @GetMapping("/listarPorId")
-    public List<EntidadClientes> listarPorId(@RequestHeader("Authorization") String token) {
+    public EntidadClientes listarPorId(@RequestHeader("Authorization") String token) {
         token = token.replace("Bearer ", "");
-
         String x = TokenUtilidades.getTokenClaims(token).getSubject();
-        
-
-        System.out.println(x);
-        return null;
+        return this.credenciales.findByCorreo(x);
     }
 
 }

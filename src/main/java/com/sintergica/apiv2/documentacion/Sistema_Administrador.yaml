@@ -68,6 +68,42 @@ paths:
         "500":
           description: Problemas con el servidor
 
+  /cliente/listarPorId:
+    get:
+      description: Obtiene un cliente específico utilizando un JWT como encabezado de autorización.
+      tags:
+        - Cliente
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: Token JWT en formato "Bearer {token}".
+          schema:
+            type: string
+            example: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJudWV2b0BzaW50ZXJnaWNhLmNvbSIsImV4cCI6MTczODA4MDg4MX0.dQ7RgmgFoqq6wsp69N-I0161pnO9TjoJi9zT_190vP0"
+      responses:
+        "200":
+          description: Devuelve los datos del cliente especificado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntidadClientes"
+        "401":
+          description: Token JWT no válido o faltante.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RespuestaError"
+        "500":
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RespuestaError"
+
+
+
+
 components:
   schemas:
     EntidadClientes:
@@ -75,10 +111,22 @@ components:
       properties:
         correo:
           type: string
+          example: usuario@ejemplo.com
         contrasena:
           type: string
-          minLength: 8
-          maxLength: 15
+          example: 123456
+        edad:
+          type: integer
+          example: 18
+        nombre:
+          type: string
+          example: "Nombres"
+        apellido_paterno:
+          type: string
+          example: "ApellidoPaterno"
+        apellido_materno:
+          type: string
+          example: "ApellidoMaterno"
 
     RespuestaLogin:
       type: object
@@ -101,4 +149,4 @@ components:
           example: false
         mensaje:
           type: string
-          example: "Credenciales incorrectas"
+          example: "Token inválido o faltante"
