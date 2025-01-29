@@ -1,48 +1,70 @@
 package com.sintergica.apiv2.interceptors;
 
+import com.sintergica.apiv2.servicios.UserService;
 import com.sintergica.apiv2.utilidades.TokenUtilidades;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Component
 public class JWTFiltro extends OncePerRequestFilter{
+
+    private final UserService userService;
+    private static final Logger logger =LoggerFactory.getLogger(JWTFiltro.class);
+
+    public JWTFiltro(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String path = request.getRequestURI();
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
 
-        if (path.equals("/clientes/register") || path.equals("/clientes/login")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+            if (TokenUtilidades.getTokenClaims(token) != null) {
+                String correo = TokenUtilidades.getTokenClaims(token).getSubject();
 
-        String header = request.getHeader("Authorization");
+                if (correo != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails user = userService.loadUserByUsername(correo);
 
-        if (header == null || !header.startsWith("Bearer ")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Token no proporcionado o inválido, favor de iniciar sesion");
-            return;
-        }
+                    if (!TokenUtilidades.isExpired(token)) {
 
-        String token = header.substring(7);
+                        Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
+                        List<GrantedAuthority> mutableAuthorities = new ArrayList<>(authorities);
 
-        if(TokenUtilidades.isExpired(token)){
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Token invalido o expirado");
-            return;
+                        mutableAuthorities.add(new SimpleGrantedAuthority("ROLE_" + this.userService.findByCorreo(correo).getRol()));
+
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                user, null, /*user.getAuthorities()*/ mutableAuthorities);
+
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
+
+                }
+            }
         }
 
         filterChain.doFilter(request, response);
 
     }
-
-
 
 }

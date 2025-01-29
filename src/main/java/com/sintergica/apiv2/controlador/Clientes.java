@@ -6,6 +6,9 @@ import com.sintergica.apiv2.utilidades.TokenUtilidades;
 import io.jsonwebtoken.Jwts;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +24,7 @@ public class Clientes {
 
     @PostMapping("/register")
     public void registrar(@Valid @RequestBody EntidadClientes cliente){
+        cliente.setRol("USER");
         this.credenciales.save(cliente);
     }
 
@@ -34,7 +38,9 @@ public class Clientes {
         );
 
         if (clienteValido) {
-            String token = TokenUtilidades.createToken(Jwts.claims().subject(cliente.getCorreo())
+            String token = TokenUtilidades.createToken(
+                    Jwts.claims()
+                            .subject(cliente.getCorreo())
                             .build());
 
             respuesta.put("mensaje", "Bienvenidos");
@@ -48,21 +54,24 @@ public class Clientes {
         return respuesta;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/listar")
-    public List<EntidadClientes> listar(@RequestHeader("Authorization") String token) {
-
-        token = token.replace("Bearer ", "");
-
-        System.out.println(TokenUtilidades.getTokenClaims(token));
+    public List<EntidadClientes> listar() {
 
         return this.credenciales.findAll();
     }
 
-    @GetMapping("/listarPorId")
-    public EntidadClientes listarPorId(@RequestHeader("Authorization") String token) {
-        token = token.replace("Bearer ", "");
-        String x = TokenUtilidades.getTokenClaims(token).getSubject();
-        return this.credenciales.findByCorreo(x);
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/profile")
+    public EntidadClientes listarPorId() {
+
+        Authentication usuarioEnContexto = SecurityContextHolder.getContext().getAuthentication();
+
+        System.out.println(usuarioEnContexto.getAuthorities().toString());
+        String correo = usuarioEnContexto.getName().toString();
+
+        return this.credenciales.findByCorreo(correo);
     }
 
 }

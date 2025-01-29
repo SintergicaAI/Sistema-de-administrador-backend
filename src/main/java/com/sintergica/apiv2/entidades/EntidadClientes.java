@@ -32,6 +32,8 @@ public class EntidadClientes {
 
     private String apellido_materno;
 
+    private String rol;
+
     @Override
     public String toString() {
         return correo +" "+ contrasena;
