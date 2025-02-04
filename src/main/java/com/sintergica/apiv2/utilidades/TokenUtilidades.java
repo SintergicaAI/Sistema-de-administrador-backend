@@ -11,7 +11,7 @@ import java.util.HashMap;
 public class TokenUtilidades {
 
     private static final String ACCESS_TOKEN_SECRET = /*"EstaEsUnaClaveSecretaSeguraDe256Bits123!!"*/ System.getenv("DATASOURCE_SEED");
-    private final static Long TOKEN_LIFETIME_MILLS = /*30L * 24 * 60 * 60 * 1000*/ /*60L * 60 * 1000*/ 60L * 1000;
+    private final static Long TOKEN_LIFETIME_MILLS = /*30L * 24 * 60 * 60 * 1000*/ 60L * 60 * 1000 /*60L * 1000*/;
 
     public static String createToken(String username, String email, Long id) {
 

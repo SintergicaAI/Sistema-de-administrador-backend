@@ -1,7 +1,8 @@
 package com.sintergica.apiv2.servicios;
-import com.sintergica.apiv2.entidades.EntidadClientes;
-import com.sintergica.apiv2.repositorio.RepositorioClientes;
+import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.repositorio.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -13,24 +14,34 @@ import java.util.ArrayList;
 public class UserService implements UserDetailsService {
 
     @Autowired
-    private RepositorioClientes userRepository;
+    private UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
-        EntidadClientes cliente = userRepository.findByCorreo(correo);
+        User user = userRepository.findByEmail(correo);
 
-        if (cliente == null) {
+        if (user == null) {
             throw new UsernameNotFoundException("Usuario no encontrado");
         }
 
+        ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>();
+
+        user.getUserGroups().forEach(group -> {
+            group.getGrant().forEach(grant -> {
+                authorities.add(new SimpleGrantedAuthority(grant.getName()));
+            });
+        });
+
+        authorities.add(new SimpleGrantedAuthority("ROLE_"+user.getRol().getName()));
+
         return new org.springframework.security.core.userdetails.User(
-                cliente.getCorreo(),
-                cliente.getContrasena(),
-                new ArrayList<>()
+                user.getEmail(),
+                user.getPassword(),
+                authorities
         );
     }
 
-    public EntidadClientes findByCorreo(String correo) {
-        return userRepository.findByCorreo(correo);
+    public User findByEmail(String correo) {
+        return userRepository.findByEmail(correo);
     }
 }
