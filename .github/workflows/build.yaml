@@ -41,7 +41,13 @@ jobs:
       - name: Setup Maven Action
         uses: s4u/setup-maven-action@v1.18.0
 
-      - name: Build project
+      - name: Clean
+        run: mvn clean
+
+      - name: Compile
+        run: mvn compile
+
+      - name: Package
         run: mvn package
 
       - name: Start buildx
