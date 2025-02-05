@@ -1,17 +1,11 @@
 package com.sintergica.apiv2;
 
-import com.sintergica.apiv2.entidades.*;
-import com.sintergica.apiv2.entidades.Package;
 import com.sintergica.apiv2.repositorio.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Date;
-import java.util.HashSet;
-
 
 @SpringBootApplication
 public class Apiv2Application implements CommandLineRunner {

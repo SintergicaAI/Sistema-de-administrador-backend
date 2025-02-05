@@ -39,18 +39,26 @@ public class Clientes {
     //409
     //400 o  406
     @PostMapping("/register")
-    public ResponseEntity<HashMap<String,String>> registrar(@Valid @RequestBody User user) {
-        HashMap<String, String> map = new HashMap<>();
+    public ResponseEntity<HashMap<String,Object>> registrar(@Valid @RequestBody User user) {
+        HashMap<String, Object> map = new HashMap<>();
         user.setRol(rolRepository.findByName("GUEST"));
         user.setCompany(null);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        this.credenciales.save(user);
-        map.put("Exito","Registrado correctamente");
+        if(this.credenciales.findByEmail(user.getEmail()) == null){
+            this.credenciales.save(user);
+            String token = generateToken(user.getEmail());
+            map.put("Exito", true);
+            map.put("token",token);
+        }else{
+            map.put("Exito", false);
+            map.put("Exito","Registrado correctamente");
+        }
+
         return ResponseEntity
                 .ok(map);
-    }
 
+    }
 
     @PostMapping("/login")
     public Map<String, Object> acceder(@Valid @RequestBody User userRequest) {
@@ -61,10 +69,7 @@ public class Clientes {
 
         if (user != null && passwordEncoder.matches(userRequest.getPassword(), user.getPassword())) {
 
-            String token = TokenUtilidades.createToken(
-                    Jwts.claims()
-                            .subject(userRequest.getEmail())
-                            .build());
+            String token = this.generateToken(userRequest.getEmail());
 
             respuesta.put("mensaje", "Bienvenidos");
             respuesta.put("exitoso", true);
@@ -121,6 +126,13 @@ public class Clientes {
         String correo = usuarioEnContexto.getName().toString();
 
         return this.credenciales.findByEmail(correo);
+    }
+
+    private String generateToken(String email) {
+        return TokenUtilidades.createToken(
+                Jwts.claims()
+                        .subject(email)
+                        .build());
     }
 
 }
