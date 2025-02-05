@@ -8,6 +8,19 @@ on:
         description: Version o tag de la imagen
         required: true
         default: latest
+      deploy:
+        type: boolean
+        description: Desplegar en dev
+        required: true
+        default: false
+      iport:
+        type: number
+        description: Puerto interno del servicio
+        required: true
+      eport:
+        type: number
+        description: Puerto externo del servicio
+        required: true
 
 env:
   IMAGE_NAME: ghcr.io/sintergicaai/turing-admin
@@ -58,3 +71,13 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}:${{ inputs.tag }},${{ env.IMAGE_NAME }}:latest
           platforms: linux/amd64,linux/arm64
           push: true
+
+  deploy:
+    needs: build_image
+    if: ${{ inputs.deploy }}
+    uses: ./.github/workflows/deploy_dev.yaml
+    with:
+      eport: ${{ fromJSON(inputs.eport) }}
+      iport: ${{ fromJSON(inputs.iport) }}
+      tag: ${{ inputs.tag }}
+    secrets: inherit
