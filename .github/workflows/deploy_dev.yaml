@@ -21,11 +21,11 @@ env:
   FULL_IMAGE_TAG: ghcr.io/sintergicaai/turing-admin${{ inputs.tag }}
 
 jobs:
-  pull_image:
+  deploy:
     runs-on: [ self-hosted, awsdev ]
     steps:
       - name: Pull image
-        run: pull ${{ env.FULL_IMAGE_TAG }}
+        run: docker pull ${{ env.FULL_IMAGE_TAG }}
 
       - name: Run container
         run: docker run -d -p ${{ inputs.eport }}:${{ inputs.iport }} --env-file /home/admin/.env ${{ env.FULL_IMAGE_TAG }}
