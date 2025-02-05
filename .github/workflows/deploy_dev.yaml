@@ -18,7 +18,7 @@ on:
         required: true
 
 env:
-  FULL_IMAGE_TAG: ghcr.io/sintergicaai/turing-admin${{ inputs.tag }}
+  FULL_IMAGE_TAG: ghcr.io/sintergicaai/turing-admin:${{ inputs.tag }}
 
 jobs:
   deploy:
