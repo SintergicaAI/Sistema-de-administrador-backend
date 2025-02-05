@@ -16,6 +16,21 @@ on:
         type: number
         description: Puerto externo del servicio
         required: true
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        description: Version o tag de la imagen
+        required: true
+        default: latest
+      iport:
+        type: number
+        description: Puerto interno del servicio
+        required: true
+      eport:
+        type: number
+        description: Puerto externo del servicio
+        required: true
 
 env:
   FULL_IMAGE_TAG: ghcr.io/sintergicaai/turing-admin:${{ inputs.tag }}
