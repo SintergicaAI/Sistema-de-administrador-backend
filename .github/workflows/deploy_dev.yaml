@@ -1,0 +1,34 @@
+name: "Deploy on dev"
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        type: string
+        description: Version o tag de la imagen
+        required: true
+        default: latest
+      iport:
+        type: number
+        description: Puerto interno del servicio
+        required: true
+      eport:
+        type: number
+        description: Puerto externo del servicio
+        required: true
+
+env:
+  FULL_IMAGE_TAG: ghcr.io/sintergicaai/turing-admin:${{ inputs.tag }}
+
+jobs:
+  deploy:
+    runs-on: [ self-hosted, awsdev ]
+    steps:
+      - name: See user
+        run: echo $(whoami)
+
+      - name: Pull image
+        run: docker pull ${{ env.FULL_IMAGE_TAG }}
+
+      - name: Run container
+        run: docker run -d -p ${{ inputs.eport }}:${{ inputs.iport }} --env-file /home/admin/.env ${{ env.FULL_IMAGE_TAG }}
