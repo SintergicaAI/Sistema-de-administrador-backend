@@ -22,7 +22,7 @@ env:
 
 jobs:
   pull_image:
-    runs-on: [ self.hosted, awsdev ]
+    runs-on: [ self-hosted, awsdev ]
     steps:
       - name: Pull image
         run: pull ${{ env.FULL_IMAGE_TAG }}
