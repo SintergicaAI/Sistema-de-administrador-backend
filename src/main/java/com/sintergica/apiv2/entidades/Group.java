@@ -11,6 +11,7 @@ import java.util.UUID;
 @Setter
 @Table(name = "listGroup")
 public class Group {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)  //
     private UUID id;
@@ -32,18 +33,10 @@ public class Group {
 
     @ManyToMany
     @JoinTable(
-            name =  "group_user",
+            name =  "user_group",
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> user;
-
-    /*@ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "grupo_rol",
-            joinColumns = @JoinColumn(name = "grupo_id"),
-            inverseJoinColumns = @JoinColumn(name = "rol_id")
-    )
-    private Set<Rol> roles = new HashSet<>();*/
 
 }

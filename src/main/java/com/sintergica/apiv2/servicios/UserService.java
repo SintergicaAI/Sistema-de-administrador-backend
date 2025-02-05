@@ -26,11 +26,11 @@ public class UserService implements UserDetailsService {
 
         ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
-        user.getUserGroups().forEach(group -> {
+        /*user.getUserGroups().forEach(group -> {
             group.getGrant().forEach(grant -> {
                 authorities.add(new SimpleGrantedAuthority(grant.getName()));
             });
-        });
+        });*/
 
         authorities.add(new SimpleGrantedAuthority("ROLE_"+user.getRol().getName()));
 

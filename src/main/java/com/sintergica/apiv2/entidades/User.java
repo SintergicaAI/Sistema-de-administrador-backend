@@ -4,16 +4,12 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.Set;
+import lombok.Data;
 import java.util.UUID;
 
 @Entity
 @Table(name = "listUser")
-@Getter
-@Setter
+@Data
 public class User {
 
     @Id
@@ -28,34 +24,18 @@ public class User {
     @Size(min = 3, message = "La contraseña debe tener al menos 3 caracteres")
     private String password;
 
+    @Column(name = "name")
     private String name;
 
-    private String firstName;
-
+    @Column(name = "lastName")
     private String lastName;
 
     @ManyToOne
-    @JoinColumn(name = "rol")
+    @JoinColumn(name = "rolId")
     private Rol rol;
 
-    @ManyToMany(mappedBy = "user", fetch = FetchType.EAGER)
-    private Set<Group> userGroups;
-
     @ManyToOne
-    @JoinColumn(name = "company_id")
+    @JoinColumn(name = "companyId")
     private Company company;
-
-    /*@ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "grupo_clientes",
-            joinColumns = @JoinColumn(name = "cliente_id"),
-            inverseJoinColumns = @JoinColumn(name = "grupo_id")
-    )
-    private Set<Group> groups = new HashSet<>();*/
-
-    @Override
-    public String toString() {
-        return email +" "+ password;
-    }
 
 }

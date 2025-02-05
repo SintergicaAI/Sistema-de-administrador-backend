@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,11 +35,16 @@ public class Admin {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuario o grupo no encontrado");
         }
 
+        if(groupRepository.existsUserInGroup(group.getId(), user.getId())){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El usuario ya existe en este grupo");
+        }
+
         if (!groupRepository.existsUserInGroup(group.getId(), user.getId()) && group.getCompany().getId().equals(user.getCompany().getId())) {
             group.getUser().add(user);
             groupRepository.save(group);
             return ResponseEntity.ok("Usuario agregado al grupo");
         }
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("La empresa no tiene este grupo asociado");
     }
 
@@ -65,6 +69,7 @@ public class Admin {
             userRepository.save(user);
             return ResponseEntity.ok("Compañía agregada al usuario");
         }
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El usuario ya pertenece a una compañía");
     }
 
@@ -76,7 +81,7 @@ public class Admin {
             companyData.put("id", company.getId());
             companyData.put("name", company.getName());
             companyData.put("address", company.getAddress());
-            companyData.put("users", company.getUserList().stream().map(User::getEmail).collect(Collectors.toList()));
+            //companyData.put("users", company.getUserList().stream().map(User::getEmail).collect(Collectors.toList()));
             return companyData;
         }).collect(Collectors.toList());
         return ResponseEntity.ok(companies);
@@ -122,18 +127,27 @@ public class Admin {
         }
 
         List<HashMap<String, Object>> jsonGroupsUser = new ArrayList<>();
-        Set<Group> groupUser = user.getUserGroups();
+        Company companyUser = user.getCompany();
 
-        groupUser.stream().forEach(group -> {
-            HashMap<String, Object> groupDataJSON = new LinkedHashMap<>();
+        if(companyUser != null) {
+            //TOMO TODOS LOS GRUPOS A LOS QUE PERTENECE LA EMPRESA DONDE TRABAJA EL USUARIO
+            groupRepository.findAllByCompany(companyUser).forEach(group -> {
 
-            groupDataJSON.put("id", group.getId());
-            groupDataJSON.put("nameGroup", group.getName());
-            groupDataJSON.put("nameCompany",group.getCompany().getName());
+                boolean userInGroup = group.getUser().stream()
+                        .anyMatch(u -> u.getId().equals(user.getId()));
 
-            jsonGroupsUser.add(groupDataJSON);
-        });
-
+                if (userInGroup) {
+                    HashMap<String, Object> groupData = new HashMap<>();
+                    // Add group data to map
+                    groupData.put("id", group.getId());
+                    groupData.put("name", group.getName());
+                    groupData.put("companyUUID", group.getCompany().getId());
+                    groupData.put("companyName", group.getCompany().getName());
+                    groupData.put("Grants", group.getGrant());
+                    jsonGroupsUser.add(groupData);
+                }
+            });
+        }
 
         return ResponseEntity.ok(jsonGroupsUser);
     }
