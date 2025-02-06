@@ -1,0 +1,39 @@
+name: Generate API Specification
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'documentacion/**'
+  workflow_dispatch:
+
+jobs:
+  generate_specification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout spec
+        uses: actions/checkout@v2
+
+      - name: Validate spec
+        uses: mpetrunic/swagger-cli-action@v1.0.0
+        with:
+          command: "validate documentacion/Sistema_Administrador.yaml"
+
+      - name: Build spec
+        uses: mpetrunic/swagger-cli-action@v1.0.0
+        with:
+          command: "bundle -o spec.yaml -t yaml documentacion/Sistema_Administrador.yaml"
+
+      - name: Publish spec
+        uses: Legion2/swagger-ui-action@v1
+        with:
+          output: specs
+          spec-file: spec.yaml
+          GITHUB_TOKEN: ${{ secrets.ANTON_TOKEN }}
+
+      - name: Deploy on GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.ANTON_TOKEN }}
+          publish_dir: specs
