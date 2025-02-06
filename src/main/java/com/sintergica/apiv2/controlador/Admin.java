@@ -97,6 +97,8 @@ public class Admin {
         .body("El usuario ya pertenece a una compañía");
   }
 
+
+
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/listCompany")
   public ResponseEntity<List<Map<String, Object>>> listCompany() {
