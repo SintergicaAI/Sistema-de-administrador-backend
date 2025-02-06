@@ -1,0 +1,18 @@
+name: "Spotless check"
+
+on:
+  [ pull_request, workflow_dispatch, workflow_call ]
+
+jobs:
+  spotless_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.18.0
+        with:
+          java-distribution: corretto
+          java-version: 17
+
+      - name: Run spotless check
+        run: mvn spotless:check
+
