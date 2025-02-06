@@ -1,4 +1,4 @@
-name: "Deploy on dev"
+name: "🚀Deploy on dev"
 
 on:
   workflow_dispatch:
@@ -16,6 +16,12 @@ on:
         type: number
         description: Puerto externo del servicio
         required: true
+      anton_address:
+        type: string
+        description: Direccion del anton en el cual se va a desplegar el servicio
+        required: true
+        default: 3.144.151.147
+
   workflow_call:
     inputs:
       tag:
@@ -31,6 +37,11 @@ on:
         type: number
         description: Puerto externo del servicio
         required: true
+      anton_address:
+        type: string
+        description: Direccion del anton en el cual se va a desplegar el servicio
+        required: true
+        default: 3.144.151.147
 
 env:
   FULL_IMAGE_TAG: ghcr.io/sintergicaai/turing-admin:${{ inputs.tag }}
@@ -39,11 +50,10 @@ jobs:
   deploy:
     runs-on: [ self-hosted, awsdev ]
     steps:
-      - name: See user
-        run: echo $(whoami)
-
-      - name: Pull image
-        run: docker pull ${{ env.FULL_IMAGE_TAG }}
-
-      - name: Run container
-        run: docker run -d -p ${{ inputs.eport }}:${{ inputs.iport }} --env-file /home/admin/.env ${{ env.FULL_IMAGE_TAG }}
+      - name: Request deployment to anton
+        uses: fjogeleit/http-request-action@v1.14.2
+        with:
+          url: 'http://${{ inputs.anton_address }}:42000/service/turing_admin?image=${{ env.FULL_IMAGE_TAG }}&tag=${{ inputs.tag }}&iport=${{ inputs.iport }}&eport=${{ inputs.eport }}&privileged=0&replace=1'
+          method: 'POST'
+          timeout: 20000
+          data: '{"DATASOURCE_PASSWORD": "${{ secrets.DATASOURCE_PASSWORD }}","DATASOURCE_SEED": "${{ secrets.DATASOURCE_SEED }}","DATASOURCE_URL": "${{ secrets.DATASOURCE_URL }}", "DATASOURCE_USERNAME": "${{ secrets.DATASOURCE_USERNAME }}"}'
