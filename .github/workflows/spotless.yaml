@@ -19,9 +19,12 @@ jobs:
   PDM_check:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Run PMD
         uses: kemsakurai/action-pmd@master
         with:
           github_token: ${{ secrets.ANTON_TOKEN }}
           fail_on_error: true
-          rulesets_path: src/main/resources/rulesets/java/rulesets.xml
+          rulesets_path: rulesets/java/rulesets.xml
