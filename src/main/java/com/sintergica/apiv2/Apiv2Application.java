@@ -250,7 +250,5 @@ public class Apiv2Application implements CommandLineRunner {
     companySubscription.setStartDate(new Date());
     companySubscriptionRepository.save(companySubscription);*/
 
-
-
   }
 }
