@@ -39,7 +39,7 @@ public class Client {
     return ResponseEntity.ok(this.dataUserRepository.findAll());
   }
 
-  @PostMapping
+  @PostMapping("/register")
   public ResponseEntity<HashMap<String, Object>> register(@Valid @RequestBody User user) {
     HashMap<String, Object> map = new HashMap<>();
     user.setRol(rolRepository.findByName("GUEST"));
