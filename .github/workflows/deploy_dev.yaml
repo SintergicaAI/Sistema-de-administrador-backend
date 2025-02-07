@@ -19,7 +19,7 @@ on:
       anton_address:
         type: string
         description: Direccion del anton en el cual se va a desplegar el servicio
-        required: true
+        required: false
         default: 3.144.151.147
 
   workflow_call:
@@ -40,7 +40,7 @@ on:
       anton_address:
         type: string
         description: Direccion del anton en el cual se va a desplegar el servicio
-        required: true
+        required: false
         default: 3.144.151.147
 
 env:
