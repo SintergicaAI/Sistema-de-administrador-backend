@@ -22,13 +22,8 @@ public class JWTFiltro extends OncePerRequestFilter {
   private final UserService userService;
   private static final Logger logger = LoggerFactory.getLogger(JWTFiltro.class);
 
-  public JWTFiltro(UserService userService)
+  public JWTFiltro(UserService userService) {
 
-
-
-
-
-  {
     this.userService = userService;
   }
 
