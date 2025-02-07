@@ -57,3 +57,4 @@ jobs:
           method: 'POST'
           timeout: 20000
           data: '{"DATASOURCE_PASSWORD": "${{ secrets.DATASOURCE_PASSWORD }}","DATASOURCE_SEED": "${{ secrets.DATASOURCE_SEED }}","DATASOURCE_URL": "${{ secrets.DATASOURCE_URL }}", "DATASOURCE_USERNAME": "${{ secrets.DATASOURCE_USERNAME }}"}'
+          bearerToken: ${{ secrets.GEN_PASSWORD }}
