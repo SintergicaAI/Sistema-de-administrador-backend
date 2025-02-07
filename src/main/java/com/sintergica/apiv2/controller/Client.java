@@ -82,48 +82,72 @@ public class Client {
     return ResponseEntity.badRequest().body(respuesta);
   }
 
-
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/addClientToCompany")
   public ResponseEntity<HashMap<String, String>> addClientToCompany(
-          @RequestParam String email,
-          @RequestParam UUID targetCompany) {
+      @RequestParam String email, @RequestParam UUID targetCompany) {
 
     Optional<Company> company = companyRepository.findById(targetCompany);
     User user = userRepository.findByEmail(email);
 
     if (user == null || company.isEmpty()) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-              .body(new HashMap<>(){{put("mensaje", "Error: El email o compañia no existen");}});
+          .body(
+              new HashMap<>() {
+                {
+                  put("mensaje", "Error: El email o compañia no existen");
+                }
+              });
     }
 
     if (user.getCompany() == null) {
       user.setCompany(company.get());
       userRepository.save(user);
-      return ResponseEntity.ok(new HashMap<>(){{put("mensaje", "Cliente guardado correctamente");};});
+      return ResponseEntity.ok(
+          new HashMap<>() {
+            {
+              put("mensaje", "Cliente guardado correctamente");
+            }
+            ;
+          });
     }
 
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(new HashMap<>(){{put("mensaje", "El usuario ya pertenece a una compañia");}});
+        .body(
+            new HashMap<>() {
+              {
+                put("mensaje", "El usuario ya pertenece a una compañia");
+              }
+            });
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/changeRolClient")
   public ResponseEntity<HashMap<String, String>> changeRolClient(
-          @RequestParam String email,
-          @RequestParam String newRolUser) {
+      @RequestParam String email, @RequestParam String newRolUser) {
 
     User user = userRepository.findByEmail(email);
     Rol rol = rolRepository.findByName(newRolUser);
 
     if (user == null || rol == null) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new HashMap<>(){{put("mensaje", "Error: El rol o el usuario no existe");}});
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(
+              new HashMap<>() {
+                {
+                  put("mensaje", "Error: El rol o el usuario no existe");
+                }
+              });
     }
 
     user.setRol(rol);
     userRepository.save(user);
 
-    return ResponseEntity.ok(new HashMap<>(){{put("mensaje", "Rol actualizado correctamente");}});
+    return ResponseEntity.ok(
+        new HashMap<>() {
+          {
+            put("mensaje", "Rol actualizado correctamente");
+          }
+        });
   }
 
   private String generateToken(String email) {
