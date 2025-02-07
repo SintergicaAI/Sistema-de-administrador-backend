@@ -24,4 +24,4 @@ jobs:
         with:
           github_token: ${{ secrets.ANTON_TOKEN }}
           fail_on_error: true
-          rulesets_path: rulesets/java/rulesets.xml
+          rulesets_path: src/main/resources/rulesets/java/rulesets.xml
