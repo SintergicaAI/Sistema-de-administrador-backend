@@ -1,6 +1,7 @@
 package com.sintergica.apiv2.servicios;
 
-import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.entidades.AuthEntity;
+import com.sintergica.apiv2.repositorio.AuthRepository;
 import com.sintergica.apiv2.repositorio.UserRepository;
 import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
@@ -13,11 +14,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 public class UserService implements UserDetailsService {
+  private final AuthRepository authRepository;
   private final UserRepository userRepository;
 
   @Override
   public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
-    User user = userRepository.findByEmail(correo);
+    AuthEntity user = authRepository.findByEmail(correo);
 
     if (user == null) {
       throw new UsernameNotFoundException("Usuario no encontrado");
@@ -31,13 +33,13 @@ public class UserService implements UserDetailsService {
         });
     });*/
 
-    authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRol().getName()));
+    authorities.add(new SimpleGrantedAuthority("ROLE_" + userRepository.findByEmail(correo).getRole()));
 
     return new org.springframework.security.core.userdetails.User(
         user.getEmail(), user.getPassword(), authorities);
   }
 
-  public User findByEmail(String correo) {
-    return userRepository.findByEmail(correo);
+  public AuthEntity findByEmail(String correo) {
+    return authRepository.findByEmail(correo);
   }
 }
