@@ -16,24 +16,23 @@ import lombok.Setter;
 @Table(name = "auth")
 public class AuthEntity {
 
-    @Id
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "id", nullable = false)
-    private String id;
+  @Id
+  @Size(max = 255)
+  @NotNull
+  @Column(name = "id", nullable = false)
+  private String id;
 
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "email", nullable = false)
-    @Email
-    private String email;
+  @Size(max = 255)
+  @NotNull
+  @Column(name = "email", nullable = false)
+  @Email
+  private String email;
 
-    @NotNull
-    @Column(name = "password", nullable = false, length = Integer.MAX_VALUE)
-    private String password;
+  @NotNull
+  @Column(name = "password", nullable = false, length = Integer.MAX_VALUE)
+  private String password;
 
-    @NotNull
-    @Column(name = "active", nullable = false)
-    private Boolean active = false;
-
+  @NotNull
+  @Column(name = "active", nullable = false)
+  private Boolean active = false;
 }

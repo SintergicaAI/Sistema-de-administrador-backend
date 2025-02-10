@@ -36,7 +36,8 @@ public class AuthController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<HashMap<String, Object>> register(@Valid @RequestBody AuthUserDTO authUserDTO) {
+  public ResponseEntity<HashMap<String, Object>> register(
+      @Valid @RequestBody AuthUserDTO authUserDTO) {
 
     HashMap<String, Object> map = new HashMap<>();
 
@@ -63,7 +64,6 @@ public class AuthController {
       map.put("token", token);
 
       return new ResponseEntity<>(map, HttpStatus.CREATED);
-
     }
 
     map.put("Exito", false);
@@ -86,7 +86,6 @@ public class AuthController {
       respuesta.put("token", token);
 
       return new ResponseEntity<>(respuesta, HttpStatus.OK);
-
     }
 
     respuesta.put("mensaje", "credenciales incorrectas");
@@ -94,7 +93,6 @@ public class AuthController {
 
     return ResponseEntity.badRequest().body(respuesta);
   }
-
 
   private String generateToken(String email) {
     return TokenUtilidades.createToken(Jwts.claims().subject(email).build());

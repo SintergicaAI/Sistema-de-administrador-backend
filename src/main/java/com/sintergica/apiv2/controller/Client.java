@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class Client {
 
   private final CompanyRepository companyRepository;
-  private final UserRepository userRepository;
   private final UserRepository dataUserRepository;
   private final RolRepository rolRepository;
   private final PasswordEncoder passwordEncoder;
@@ -88,7 +87,7 @@ public class Client {
       @RequestParam String email, @RequestParam UUID targetCompany) {
 
     Optional<Company> company = companyRepository.findById(targetCompany);
-    User user = userRepository.findByEmail(email);
+    User user = dataUserRepository.findByEmail(email);
 
     if (user == null || company.isEmpty()) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -102,7 +101,7 @@ public class Client {
 
     if (user.getCompany() == null) {
       user.setCompany(company.get());
-      userRepository.save(user);
+      dataUserRepository.save(user);
       return ResponseEntity.ok(
           new HashMap<>() {
             {
@@ -126,7 +125,7 @@ public class Client {
   public ResponseEntity<HashMap<String, String>> changeRolClient(
       @RequestParam String email, @RequestParam String newRolUser) {
 
-    User user = userRepository.findByEmail(email);
+    User user = dataUserRepository.findByEmail(email);
     Rol rol = rolRepository.findByName(newRolUser);
 
     if (user == null || rol == null) {
@@ -140,7 +139,7 @@ public class Client {
     }
 
     user.setRol(rol);
-    userRepository.save(user);
+    dataUserRepository.save(user);
 
     return ResponseEntity.ok(
         new HashMap<>() {
