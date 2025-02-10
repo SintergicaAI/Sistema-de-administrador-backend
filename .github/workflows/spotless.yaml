@@ -1,4 +1,4 @@
-name: "Spotless check"
+name: "General check"
 
 on:
   [ pull_request, workflow_dispatch, workflow_call ]
@@ -16,3 +16,14 @@ jobs:
       - name: Run spotless check
         run: mvn spotless:check
 
+  PDM_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run PMD
+        uses: kemsakurai/action-pmd@master
+        with:
+          github_token: ${{ secrets.ANTON_TOKEN }}
+          fail_on_error: true
