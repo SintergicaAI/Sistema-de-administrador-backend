@@ -1,9 +1,12 @@
 package com.sintergica.apiv2.entidades;
 
-import jakarta.persistence.*;
-import lombok.Data;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import java.util.UUID;
+import lombok.Data;
 
 @Entity
 @Data

@@ -1,7 +1,12 @@
 package com.sintergica.apiv2.entidades;
 
 import com.sintergica.apiv2.entidades.utils.UserSubscriptionKeys;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import java.util.Date;
 import lombok.Data;
 
