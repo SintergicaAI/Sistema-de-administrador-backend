@@ -1,8 +1,9 @@
 package com.sintergica.apiv2.entidades;
 
 import jakarta.persistence.*;
-import java.util.UUID;
 import lombok.Data;
+
+import java.util.UUID;
 
 @Entity
 @Data
