@@ -8,7 +8,6 @@ import com.sintergica.apiv2.repositorio.CompanyRepository;
 import com.sintergica.apiv2.repositorio.GrantRepository;
 import com.sintergica.apiv2.repositorio.GroupRepository;
 import com.sintergica.apiv2.repositorio.UserRepository;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
