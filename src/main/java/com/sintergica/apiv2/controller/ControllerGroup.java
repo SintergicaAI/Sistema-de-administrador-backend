@@ -64,23 +64,17 @@ public class ControllerGroup {
       currentGroup.get().getUser().add(currentUser);
       groupRepository.save(currentGroup.get());
 
-      return ResponseEntity.ok(
-          new HashMap<>() {
-            {
-              put("Exito", "Usuario agregado al grupo");
-            }
-          });
+      HashMap<String, String> response = new HashMap<>();
+      response.put("Exito", "Usuario agregado al grupo");
+      return ResponseEntity.ok(response);
     }
 
-    return ResponseEntity.badRequest()
-        .body(
-            new HashMap<>() {
-              {
-                put(
-                    "Sin exito",
-                    "Uno de los campos es nulo o la empresa no esta asociada con el usuario y grupo");
-              }
-            });
+    HashMap<String, String> response = new HashMap<>();
+    response.put(
+        "Sin exito",
+        "Uno de los campos es nulo o la empresa no esta asociada con el usuario y grupo");
+
+    return ResponseEntity.badRequest().body(response);
   }
 
   @PreAuthorize("hasRole('ADMIN')")
@@ -93,13 +87,9 @@ public class ControllerGroup {
     Optional<Company> company = companyRepository.findById(companyUUID);
 
     if (company.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(
-              new HashMap<>() {
-                {
-                  put("Sin exito", "La compañia no existe");
-                }
-              });
+      HashMap<String, Object> response = new HashMap<>();
+      response.put("Sin exito", "La compañia no existe");
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     Set<Grant> grants =
@@ -114,12 +104,10 @@ public class ControllerGroup {
     newGroup.setGrant(grants);
     groupRepository.save(newGroup);
 
-    return ResponseEntity.ok(
-        new HashMap<>() {
-          {
-            put("Exito", "Grupo agregado");
-          }
-        });
+    HashMap<String, Object> response = new HashMap<>();
+    response.put("Exito", "Grupo agregado");
+
+    return ResponseEntity.ok(response);
   }
 
   @GetMapping("/getGroupByUUID")
