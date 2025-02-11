@@ -1,24 +1,11 @@
 package com.sintergica.apiv2;
 
-import com.sintergica.apiv2.repositorio.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootApplication
 public class Apiv2Application implements CommandLineRunner {
-
-  @Autowired private CompanyRepository companyRepository;
-  @Autowired private UserRepository userRepository;
-  @Autowired private GroupRepository groupRepository;
-  @Autowired private PasswordEncoder passwordEncoder;
-  @Autowired private RolRepository rolRepository;
-  @Autowired private GrantRepository grantRepository;
-  @Autowired private PackageRepository packageRepository;
-  @Autowired private UserSubscriptionRepository userSubscriptionRepository;
-  @Autowired private CompanySubscriptionRepository companySubscriptionRepository;
 
   public static void main(String[] args) {
     SpringApplication.run(Apiv2Application.class, args);

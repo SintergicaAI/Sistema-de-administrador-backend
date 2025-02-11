@@ -91,34 +91,25 @@ public class Client {
     User user = userRepository.findByEmail(email);
 
     if (user == null || company.isEmpty()) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(
-              new HashMap<>() {
-                {
-                  put("mensaje", "Error: El email o compañia no existen");
-                }
-              });
+
+      HashMap<String, String> map = new HashMap<>();
+      map.put("mensaje", "Error: El email o compañia no existen");
+
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(map);
     }
 
     if (user.getCompany() == null) {
       user.setCompany(company.get());
       userRepository.save(user);
-      return ResponseEntity.ok(
-          new HashMap<>() {
-            {
-              put("mensaje", "Cliente guardado correctamente");
-            }
-            ;
-          });
+      HashMap<String, String> map = new HashMap<>();
+      map.put("mensaje", "Cliente guardado correctamente");
+      return ResponseEntity.ok(map);
     }
 
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(
-            new HashMap<>() {
-              {
-                put("mensaje", "El usuario ya pertenece a una compañia");
-              }
-            });
+    HashMap<String, String> map = new HashMap<>();
+    map.put("mensaje", "El usuario ya pertenece a una compañia");
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(map);
   }
 
   @PreAuthorize("hasRole('ADMIN')")
@@ -130,24 +121,17 @@ public class Client {
     Rol rol = rolRepository.findByName(newRolUser);
 
     if (user == null || rol == null) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-          .body(
-              new HashMap<>() {
-                {
-                  put("mensaje", "Error: El rol o el usuario no existe");
-                }
-              });
+      HashMap<String, String> map = new HashMap<>();
+      map.put("mensaje", "Error: El rol o el usuario no existe");
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(map);
     }
 
     user.setRol(rol);
     userRepository.save(user);
 
-    return ResponseEntity.ok(
-        new HashMap<>() {
-          {
-            put("mensaje", "Rol actualizado correctamente");
-          }
-        });
+    HashMap<String, String> map = new HashMap<>();
+    map.put("mensaje", "Rol actualizado correctamente");
+    return ResponseEntity.ok(map);
   }
 
   private String generateToken(String email) {
