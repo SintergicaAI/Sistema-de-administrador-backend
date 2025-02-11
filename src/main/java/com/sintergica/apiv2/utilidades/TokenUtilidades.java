@@ -13,6 +13,11 @@ public class TokenUtilidades {
   private static final Long TOKEN_LIFETIME_MILLS =
       30L * 24 * 60 * 60 * 1000 /*60L * 60 * 1000*/ /*60L * 1000*/;
 
+  private TokenUtilidades() {
+    throw new UnsupportedOperationException(
+        "Esta es una clase de utilidades y no debe ser instanciada.");
+  }
+
   public static String createToken(String username, String email, Long id) {
 
     Date expirationDate = new Date(System.currentTimeMillis() + TOKEN_LIFETIME_MILLS);
