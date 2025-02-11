@@ -59,7 +59,7 @@ public class ControllerGroup {
         && currentUser != null
         && currentUser.getCompany() != null
         && currentGroup.get().getCompany() != null
-        && (currentUser.getCompany().getId() == currentGroup.get().getCompany().getId())) {
+        && currentUser.getCompany().getId() == currentGroup.get().getCompany().getId()) {
 
       currentGroup.get().getUser().add(currentUser);
       groupRepository.save(currentGroup.get());
