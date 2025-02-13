@@ -1,20 +1,19 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
-  title: API Sintergica
-  description: API para gestionar clientes, empresas y roles
-  version: 1.0.0
+  title: API de Gestión de Clientes
+  version: 1.0.6
+  description: API para gestión de usuarios, empresas y grupos
+
+servers:
+  - url: http://localhost:8080
+    description: Servidor local
 
 paths:
-  /clients:
-    get:
-      summary: Obtener todos los clientes
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Lista de clientes obtenida correctamente
+  /clients/register:
     post:
-      summary: Registrar un nuevo cliente
+      tags:
+        - Autenticación
+      summary: Registrar nuevo usuario
       requestBody:
         required: true
         content:
@@ -23,209 +22,255 @@ paths:
               $ref: '#/components/schemas/User'
       responses:
         '201':
-          description: Cliente registrado exitosamente
+          description: Usuario registrado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Exito:
+                    type: boolean
+                  token:
+                    type: string
         '400':
-          description: El cliente ya existe
+          description: Error en el registro
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /clients/login:
     post:
-      summary: Iniciar sesión de usuario
+      tags:
+        - Autenticación
+      summary: Iniciar sesión
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserLogin'
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
       responses:
         '200':
-          description: Inicio de sesión exitoso
-        '400':
-          description: Credenciales incorrectas
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensaje:
+                    type: string
+                  exitoso:
+                    type: boolean
+                  token:
+                    type: string
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /clients/addClientToCompany:
+  /clients/{email}/company/{uuid}:
     post:
-      summary: Agregar un cliente a una empresa
+      tags:
+        - Administración
+      summary: Asignar usuario a compañía
       security:
         - bearerAuth: []
       parameters:
         - name: email
-          in: query
+          in: path
           required: true
           schema:
             type: string
-        - name: targetCompany
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Cliente agregado a la empresa
-        '400':
-          description: Error en los datos proporcionados
-
-  /clients/changeRolClient:
-    post:
-      summary: Cambiar el rol de un cliente
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: email
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: newRolUser
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Rol cambiado correctamente
-        '400':
-          description: Error en los datos proporcionados
-
-  /company:
-    get:
-      summary: Obtener todas las compañías
-      responses:
-        '200':
-          description: Lista de compañías obtenida correctamente
-    post:
-      summary: Agregar una nueva compañía
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Company'
-      responses:
-        '200':
-          description: Compañía agregada correctamente
-
-  /company/getCompany:
-    post:
-      summary: Obtener una compañía por UUID
-      parameters:
+            format: email
         - name: uuid
-          in: query
+          in: path
           required: true
           schema:
             type: string
             format: uuid
       responses:
         '200':
-          description: Compañía encontrada correctamente
+          description: Usuario asignado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensaje:
+                    type: string
         '404':
-          description: Compañía no encontrada
+          description: Recurso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /group:
-    get:
-      summary: Obtener todos los grupos
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Lista de grupos obtenida correctamente
+  /clients/{email}/rol/{nameRol}:
     post:
-      summary: Agregar un nuevo grupo
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Group'
-      responses:
-        '200':
-          description: Grupo agregado correctamente
-
-  /group/addNewClientToGroup:
-    get:
-      summary: Agregar un cliente a un grupo
+      tags:
+        - Administración
+      summary: Cambiar rol de usuario
       security:
         - bearerAuth: []
       parameters:
-        - name: groupId
-          in: query
+        - name: email
+          in: path
           required: true
           schema:
             type: string
-            format: uuid
-        - name: emailUser
-          in: query
+            format: email
+        - name: nameRol
+          in: path
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: Cliente agregado al grupo correctamente
-        '400':
-          description: Error en los datos proporcionados
-
-  /group/getGroupByUUID:
-    get:
-      summary: Obtener un grupo por UUID
-      parameters:
-        - name: groupUUID
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Grupo encontrado correctamente
+          description: Rol actualizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensaje:
+                    type: string
         '404':
-          description: Grupo no encontrado
+          description: Error en la operación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /clients/{email}/addGroup/{uuidGroup}:
+    post:
+      tags:
+        - Grupos
+      summary: Agregar usuario a grupo
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
+            format: email
+        - name: uuidGroup
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Usuario agregado al grupo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Success:
+                    type: boolean
+        '404':
+          description: Error en la operación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /clients/getEmployeeGroupsForCompany:
+    get:
+      tags:
+        - Administración
+      summary: Obtener grupos de empleados
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: size
+          in: query
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Listado paginado de empleados y sus grupos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        fullName:
+                          type: string
+                        Rol:
+                          type: string
+                        email:
+                          type: string
+                          format: email
+                        Groups:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                              name:
+                                type: string
 
 components:
   schemas:
     User:
       type: object
+      required:
+        - email
+        - password
       properties:
         email:
           type: string
           format: email
+          example: usuario@ejemplo.com
         password:
           type: string
-          format: password
-        rol:
-          type: string
-        company:
-          type: string
-          nullable: true
-    UserLogin:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          format: password
-    Company:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
+          minLength: 3
+          example: "123"
         name:
           type: string
-    Group:
+          example: Juan
+        lastName:
+          type: string
+          example: Pérez
+
+    ErrorResponse:
       type: object
       properties:
-        id:
+        mensaje:
           type: string
-          format: uuid
-        name:
-          type: string
-        company:
-          type: string
-          format: uuid
+        Exito:
+          type: boolean
+
   securitySchemes:
     bearerAuth:
       type: http
