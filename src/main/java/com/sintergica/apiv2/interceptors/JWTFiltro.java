@@ -1,6 +1,6 @@
 package com.sintergica.apiv2.interceptors;
 
-import com.sintergica.apiv2.servicios.UserService;
+import com.sintergica.apiv2.servicios.CustomUserDetailsService;
 import com.sintergica.apiv2.utilidades.TokenUtilidades;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,12 +19,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class JWTFiltro extends OncePerRequestFilter {
 
-  private final UserService userService;
+  private final CustomUserDetailsService customUserDetailsService;
   private static final Logger logger = LoggerFactory.getLogger(JWTFiltro.class);
 
-  public JWTFiltro(UserService userService) {
+  public JWTFiltro(CustomUserDetailsService customUserDetailsService) {
 
-    this.userService = userService;
+    this.customUserDetailsService = customUserDetailsService;
   }
 
   @Override
@@ -40,7 +40,7 @@ public class JWTFiltro extends OncePerRequestFilter {
         String correo = TokenUtilidades.getTokenClaims(token).getSubject();
 
         if (correo != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-          UserDetails user = userService.loadUserByUsername(correo);
+          UserDetails user = customUserDetailsService.loadUserByUsername(correo);
 
           if (!TokenUtilidades.isExpired(token)) {
 

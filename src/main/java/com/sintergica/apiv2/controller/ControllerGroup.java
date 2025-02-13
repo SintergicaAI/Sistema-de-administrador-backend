@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -116,5 +117,42 @@ public class ControllerGroup {
         .findById(groupUUID)
         .map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
+  }
+
+  @GetMapping("/{uuid}/deleteUser/{email}")
+  public ResponseEntity<HashMap<String, Object>> deleteUser(
+      @PathVariable(name = "uuid") UUID uuidGroup, @PathVariable("email") String emailClient) {
+
+    Optional<Group> group = groupRepository.findById(uuidGroup);
+    User user = userRepository.findByEmail(emailClient);
+
+    HashMap<String, Object> response = new HashMap<>();
+
+    if (group.isEmpty()) {
+      response.put("Exito", false);
+      response.put("Mensaje", "Grupo no encontrado");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    if (user == null) {
+      response.put("Exito", false);
+      response.put("Mensaje", "Usuario no encontrado");
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    Group referenceGroup = group.get();
+    if (!referenceGroup.getUser().contains(user)) {
+      response.put("Exito", false);
+      response.put("Mensaje", "El usuario no pertenece al grupo");
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    referenceGroup.getUser().remove(user);
+    groupRepository.save(referenceGroup);
+
+    response.put("Exito", true);
+    response.put("Mensaje", "Usuario eliminado correctamente");
+
+    return ResponseEntity.ok(response);
   }
 }

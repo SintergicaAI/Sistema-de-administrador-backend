@@ -11,11 +11,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GroupRepository extends JpaRepository<Group, UUID> {
+
   Group findByName(String name);
 
-  @Query(
-      "SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM Group g JOIN g.user u WHERE g.id = :groupId AND u.id = :userId")
-  boolean existsUserInGroup(@Param("groupId") UUID groupId, @Param("userId") UUID userId);
-
   List<Group> findAllByCompany(Company company);
+
+  @Query("SELECT DISTINCT g FROM Group g JOIN FETCH g.user u WHERE u.id IN :userIds")
+  List<Group> findGroupsByUserIdsIn(@Param("userIds") List<UUID> userIds);
 }

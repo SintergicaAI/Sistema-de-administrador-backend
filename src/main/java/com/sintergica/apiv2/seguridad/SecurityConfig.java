@@ -1,7 +1,6 @@
 package com.sintergica.apiv2.seguridad;
 
 import com.sintergica.apiv2.interceptors.JWTFiltro;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -19,7 +18,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-  @Autowired private JWTFiltro jwtFiltro;
+  private final JWTFiltro jwtFiltro;
+
+  public SecurityConfig(JWTFiltro jwtFiltro) {
+    this.jwtFiltro = jwtFiltro;
+  }
 
   @Bean
   SecurityFilterChain configure(HttpSecurity http) throws Exception {
@@ -45,6 +48,6 @@ public class SecurityConfig {
 
   @Bean
   public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
+    return new BCryptPasswordEncoder(12);
   }
 }
