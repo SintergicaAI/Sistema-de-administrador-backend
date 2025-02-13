@@ -14,6 +14,7 @@ import io.jsonwebtoken.Jwts;
 import jakarta.validation.Valid;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
+import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -44,24 +45,26 @@ public class Client {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<HashMap<String, Object>> register(@Valid @RequestBody User user, @RequestParam UUID signInToken) {
+  public ResponseEntity<HashMap<String, Object>> register(
+      @Valid @RequestBody User user, @RequestParam UUID signInToken) {
     HashMap<String, Object> response = new HashMap<>();
     Optional<Invitation> invitation = invitationRepository.findById(signInToken);
 
-    if(invitation.isEmpty()){
+    if (invitation.isEmpty()) {
       response.put("message", "Invalid SignIn Token");
       return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
-    HashMap<String, Object> validateToken = InvitationTokenUtils.validateToken(invitation.get(), user.getEmail());
+    Pair<Boolean,String> validateToken =
+        InvitationTokenUtils.validateToken(invitation.get(), user.getEmail());
 
-    if(!(boolean) validateToken.get("isValid")){
-      response.put("message",validateToken.get("message"));
+    if (!validateToken.a) {
+      response.put("message", validateToken.b);
       return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
     user.setRol(rolRepository.findByName("GUEST"));
-    user.setCompany(null);// We'll need to remove this later
+    user.setCompany(null); // We'll need to remove this later
     user.setPassword(passwordEncoder.encode(user.getPassword()));
 
     if (this.dataUserRepository.findByEmail(user.getEmail()) == null) {
