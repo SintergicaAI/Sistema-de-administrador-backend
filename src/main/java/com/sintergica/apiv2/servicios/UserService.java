@@ -6,7 +6,6 @@ import com.sintergica.apiv2.entidades.Rol;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.CompanyRepository;
 import com.sintergica.apiv2.repositorio.GroupRepository;
-import com.sintergica.apiv2.repositorio.RolRepository;
 import com.sintergica.apiv2.repositorio.UserRepository;
 import com.sintergica.apiv2.utilidades.TokenUtilidades;
 import io.jsonwebtoken.Jwts;
