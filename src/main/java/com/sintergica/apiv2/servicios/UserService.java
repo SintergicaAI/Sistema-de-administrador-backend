@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@RequiredArgsConstructor
 @Service
 public class UserService {
 
@@ -34,24 +36,12 @@ public class UserService {
   private final GroupRepository groupRepository;
   private final PasswordEncoder passwordEncoder;
   private final RolRepository rolRepository;
-
-  public UserService(
-      UserRepository userRepository,
-      PasswordEncoder passwordEncoder,
-      RolRepository rolRepository,
-      CompanyRepository companyRepository,
-      GroupRepository groupRepository) {
-    this.userRepository = userRepository;
-    this.passwordEncoder = passwordEncoder;
-    this.rolRepository = rolRepository;
-    this.companyRepository = companyRepository;
-    this.groupRepository = groupRepository;
-  }
+  private final RolService rolService;
 
   public Map<String, Object> registerUser(User user) {
     HashMap<String, Object> response = new HashMap<>();
 
-    user.setRol(rolRepository.findByName("GUEST"));
+    user.setRol(rolService.getRolByName("GUEST"));
     user.setCompany(null);
     user.setPassword(passwordEncoder.encode(user.getPassword()));
 
@@ -121,7 +111,7 @@ public class UserService {
       throw new RuntimeException("Usuario no encontrado");
     }
 
-    Rol role = rolRepository.findByName(newRole);
+    Rol role = rolService.getRolByName(newRole);
     if (role == null) {
       throw new RuntimeException("Rol no existe");
     }
