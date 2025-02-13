@@ -4,8 +4,8 @@ import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.Rol;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.CompanyRepository;
-import com.sintergica.apiv2.repositorio.RolRepository;
 import com.sintergica.apiv2.repositorio.UserRepository;
+import com.sintergica.apiv2.servicios.RolService;
 import com.sintergica.apiv2.utilidades.TokenUtilidades;
 import io.jsonwebtoken.Jwts;
 import jakarta.validation.Valid;
@@ -30,7 +30,7 @@ public class Client {
   private final CompanyRepository companyRepository;
   private final UserRepository userRepository;
   private final UserRepository dataUserRepository;
-  private final RolRepository rolRepository;
+  private final RolService rolService;
   private final PasswordEncoder passwordEncoder;
 
   @PreAuthorize("hasRole('ADMIN')")
@@ -42,7 +42,7 @@ public class Client {
   @PostMapping
   public ResponseEntity<HashMap<String, Object>> register(@Valid @RequestBody User user) {
     HashMap<String, Object> map = new HashMap<>();
-    user.setRol(rolRepository.findByName("GUEST"));
+    user.setRol(rolService.getRolByName("GUEST"));
     user.setCompany(null);
     user.setPassword(passwordEncoder.encode(user.getPassword()));
 
@@ -118,7 +118,7 @@ public class Client {
       @RequestParam String email, @RequestParam String newRolUser) {
 
     User user = userRepository.findByEmail(email);
-    Rol rol = rolRepository.findByName(newRolUser);
+    Rol rol = rolService.getRolByName(newRolUser);
 
     if (user == null || rol == null) {
       HashMap<String, String> map = new HashMap<>();
