@@ -5,11 +5,9 @@ import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.CompanyRepository;
 import com.sintergica.apiv2.repositorio.GroupRepository;
-import com.sintergica.apiv2.repositorio.UserRepository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class ControllerCompany {
 
   @Autowired private CompanyRepository companyRepository;
-  @Autowired private UserRepository userRepository;
   @Autowired private GroupRepository groupRepository;
 
   @GetMapping
@@ -48,19 +45,6 @@ public class ControllerCompany {
         .findById(uuid)
         .map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
-  }
-
-  @PreAuthorize("hasAuthority('ADMIN')")
-  @GetMapping("/{uuid}/get")
-  public ResponseEntity<Company> getCompany(@PathVariable UUID uuid) {
-
-    Optional<Company> company = companyRepository.findById(uuid);
-
-    if (company.isPresent()) {
-      List<User> usersCompany = userRepository.findByCompany(company.get());
-    }
-
-    return null;
   }
 
   @PreAuthorize("hasRole('ADMIN')")

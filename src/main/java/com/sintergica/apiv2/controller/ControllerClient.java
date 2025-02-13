@@ -3,7 +3,6 @@ package com.sintergica.apiv2.controller;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.servicios.UserService;
 import jakarta.validation.Valid;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +26,9 @@ public class ControllerClient {
   private final UserService userService;
 
   @PostMapping("/register")
-  public ResponseEntity<HashMap<String, Object>> register(@Valid @RequestBody User user) {
+  public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody User user) {
 
-    HashMap<String, Object> serviceResponse = userService.registerUser(user);
+    Map<String, Object> serviceResponse = userService.registerUser(user);
 
     if (Boolean.TRUE.equals(serviceResponse.get("Exito"))) {
       return new ResponseEntity<>(serviceResponse, HttpStatus.CREATED);

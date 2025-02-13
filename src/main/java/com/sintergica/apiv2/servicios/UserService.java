@@ -40,7 +40,6 @@ public class UserService {
       PasswordEncoder passwordEncoder,
       RolRepository rolRepository,
       CompanyRepository companyRepository,
-      RolRepository roleRepository,
       GroupRepository groupRepository) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
@@ -49,7 +48,7 @@ public class UserService {
     this.groupRepository = groupRepository;
   }
 
-  public HashMap<String, Object> registerUser(User user) {
+  public Map<String, Object> registerUser(User user) {
     HashMap<String, Object> response = new HashMap<>();
 
     user.setRol(rolRepository.findByName("GUEST"));
