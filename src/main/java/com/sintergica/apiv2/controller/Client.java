@@ -1,14 +1,19 @@
 package com.sintergica.apiv2.controller;
 
 import com.sintergica.apiv2.entidades.Company;
+import com.sintergica.apiv2.entidades.Invitation;
 import com.sintergica.apiv2.entidades.Rol;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.CompanyRepository;
+import com.sintergica.apiv2.repositorio.InvitationRepository;
 import com.sintergica.apiv2.repositorio.RolRepository;
 import com.sintergica.apiv2.repositorio.UserRepository;
+import com.sintergica.apiv2.utilidades.InvitationTokenUtils;
 import com.sintergica.apiv2.utilidades.TokenUtilidades;
 import io.jsonwebtoken.Jwts;
 import jakarta.validation.Valid;
+
+import java.time.LocalDateTime;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,6 +37,7 @@ public class Client {
   private final UserRepository dataUserRepository;
   private final RolRepository rolRepository;
   private final PasswordEncoder passwordEncoder;
+  private final InvitationRepository invitationRepository;
 
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping
@@ -40,25 +46,42 @@ public class Client {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<HashMap<String, Object>> register(@Valid @RequestBody User user) {
-    HashMap<String, Object> map = new HashMap<>();
+  public ResponseEntity<HashMap<String, Object>> register(@Valid @RequestBody User user, @RequestParam UUID signInToken) {
+    HashMap<String, Object> response = new HashMap<>();
+    Optional<Invitation> invitation = invitationRepository.findById(signInToken);
+
+    if(invitation.isEmpty()){
+      response.put("message", "Invalid SignIn Token");
+      return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
+    HashMap<String, Object> validateToken = InvitationTokenUtils.validateToken(invitation.get(), user.getEmail());
+
+    if(!(boolean) validateToken.get("isValid")){
+      response.put("message",validateToken.get("message"));
+      return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
     user.setRol(rolRepository.findByName("GUEST"));
-    user.setCompany(null);
+    user.setCompany(null);// We'll need to remove this later
     user.setPassword(passwordEncoder.encode(user.getPassword()));
 
     if (this.dataUserRepository.findByEmail(user.getEmail()) == null) {
       this.dataUserRepository.save(user);
       String token = generateToken(user.getEmail());
-      map.put("Exito", true);
-      map.put("token", token);
+      response.put("Exito", true);
+      response.put("token", token);
 
-      return new ResponseEntity<>(map, HttpStatus.CREATED);
+      invitation.get().setActive(false);
+      invitationRepository.save(invitation.get());
+
+      return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    map.put("Exito", false);
-    map.put("token", null);
+    response.put("Exito", false);
+    response.put("token", null);
 
-    return ResponseEntity.badRequest().body(map);
+    return ResponseEntity.badRequest().body(response);
   }
 
   @PostMapping("/login")
