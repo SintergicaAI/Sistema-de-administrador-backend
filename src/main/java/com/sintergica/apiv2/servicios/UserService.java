@@ -35,7 +35,6 @@ public class UserService {
   private final CompanyRepository companyRepository;
   private final GroupRepository groupRepository;
   private final PasswordEncoder passwordEncoder;
-  private final RolRepository rolRepository;
   private final RolService rolService;
 
   public Map<String, Object> registerUser(User user) {
