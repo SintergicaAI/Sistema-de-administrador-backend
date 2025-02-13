@@ -8,12 +8,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "spring.mail")
 public class EmailConfig {
-  private boolean enable_auth;
-  private boolean enable_tls;
-  private int smtp_port;
-  private int ssl_port;
-  private String server;
-  private String from_email;
-  private String email_password;
-  private String base_url;
+    private boolean enable_auth;
+    private boolean enable_tls;
+    private int smtp_port;
+    private int ssl_port;
+    private String server;
+    private String from_email;
+    private String email_password;
+    private String base_url;
 }
