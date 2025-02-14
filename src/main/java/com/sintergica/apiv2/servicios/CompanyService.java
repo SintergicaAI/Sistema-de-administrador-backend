@@ -6,10 +6,7 @@ import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.CompanyRepository;
 import com.sintergica.apiv2.repositorio.GroupRepository;
 import com.sintergica.apiv2.repositorio.UserRepository;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import lombok.Data;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +31,7 @@ public class CompanyService {
     return this.companyRepository.findAll();
   }
 
-  public HashMap<String, Boolean> add(Company company) {
+  public Map<String, Boolean> add(Company company) {
     Optional<Company> optionalCompany = this.companyRepository.findById(company.getId());
 
     HashMap<String, Boolean> response = new HashMap<>();
@@ -49,7 +46,7 @@ public class CompanyService {
     return response;
   }
 
-  public HashMap<String, Company> getCompanyByUUID(UUID uuid) {
+  public Map<String, Company> getCompanyByUUID(UUID uuid) {
     HashMap<String, Company> response = new HashMap<>();
 
     Optional<Company> companyOptional = companyRepository.findById(uuid);
@@ -64,8 +61,8 @@ public class CompanyService {
     return response;
   }
 
-  public HashMap<String, String> deleteUserToCompany(UUID uuid, String emailClient) {
-    HashMap<String, String> response = new HashMap<>();
+  public Map<String, String> deleteUserToCompany(UUID uuid, String emailClient) {
+    Map<String, String> response = new HashMap<>();
 
     Company company = this.companyRepository.findById(uuid).get();
     User user = this.userRepository.findByEmail(emailClient);

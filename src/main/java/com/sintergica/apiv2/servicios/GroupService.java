@@ -8,12 +8,7 @@ import com.sintergica.apiv2.repositorio.CompanyRepository;
 import com.sintergica.apiv2.repositorio.GrantRepository;
 import com.sintergica.apiv2.repositorio.GroupRepository;
 import com.sintergica.apiv2.repositorio.UserRepository;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +35,7 @@ public class GroupService {
     return groupRepository.findAll();
   }
 
-  public HashMap<String, Boolean> save(Group group) {
+  public Map<String, Boolean> save(Group group) {
     Optional<Group> groupOptional = this.groupRepository.findById(group.getId());
     HashMap<String, Boolean> response = new HashMap<>();
 
@@ -54,7 +49,7 @@ public class GroupService {
     return response;
   }
 
-  public HashMap<String, String> addUserToGroup(UUID groupId, String emailUser) {
+  public Map<String, String> addUserToGroup(UUID groupId, String emailUser) {
     Optional<Group> currentGroupOpt = groupRepository.findById(groupId);
     User currentUser = userRepository.findByEmail(emailUser);
 
@@ -79,7 +74,7 @@ public class GroupService {
     return response;
   }
 
-  public HashMap<String, String> addNewGroup(
+  public Map<String, String> addNewGroup(
       String nameGroup, List<String> grantList, UUID companyUUID) {
     HashMap<String, String> response = new HashMap<>();
     Optional<Company> company = companyRepository.findById(companyUUID);
@@ -105,7 +100,7 @@ public class GroupService {
     return response;
   }
 
-  public HashMap<String, String> deleteUserFromGroup(UUID uuidGroup, String emailClient) {
+  public Map<String, String> deleteUserFromGroup(UUID uuidGroup, String emailClient) {
     HashMap<String, String> response = new HashMap<>();
 
     Optional<Group> group = groupRepository.findById(uuidGroup);
@@ -134,7 +129,7 @@ public class GroupService {
     return response;
   }
 
-  public HashMap<String, String> changeGrants(UUID uuidGroup, List<String> newGrants) {
+  public Map<String, String> changeGrants(UUID uuidGroup, List<String> newGrants) {
 
     Optional<Group> optionalGroup = this.groupRepository.findById(uuidGroup);
     HashMap<String, String> response = new HashMap<>();

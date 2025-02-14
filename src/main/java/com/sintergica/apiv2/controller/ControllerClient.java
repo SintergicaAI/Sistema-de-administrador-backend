@@ -5,12 +5,10 @@ import com.sintergica.apiv2.dto.WrapperUserDTO;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.servicios.UserService;
 import jakarta.validation.Valid;
-import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +44,7 @@ public class ControllerClient {
   public ResponseEntity<Map<String, String>> login(@Valid @RequestBody User userRequest) {
     Map<String, String> serviceResponse = userService.loginUser(userRequest);
 
-    if (serviceResponse.get("exitoso").equals("true")) {
+    if ("true".equals(serviceResponse.get("exitoso"))) {
       return ResponseEntity.ok(serviceResponse);
     }
 
@@ -104,7 +102,6 @@ public class ControllerClient {
       return ResponseEntity.ok(new WrapperUserDTO(result));
 
     } catch (ResponseStatusException ex) {
-      Page<UserDTO> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
       return ResponseEntity.status(ex.getStatusCode()).body(null);
     }
   }
@@ -116,7 +113,5 @@ public class ControllerClient {
     Page<UserDTO> result = this.userService.searhUser(name, pageable);
 
     return ResponseEntity.ok(new WrapperUserDTO(result));
-
   }
-  
 }

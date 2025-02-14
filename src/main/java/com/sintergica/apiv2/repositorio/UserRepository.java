@@ -19,10 +19,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
   Page<User> findByName(String name, Pageable pageable);
 
-
-  @Query("SELECT u FROM User u WHERE " +
-          "u.company = :company AND " +
-          "(:name IS NULL OR :name = '' OR LOWER(u.name) LIKE LOWER(CONCAT('%', :name, '%')))")
-  Page<User> findByCompanyAndName(@Param("company") Company company, @Param("name") String name, Pageable pageable);
-
+  @Query(
+      "SELECT u FROM User u WHERE "
+          + "u.company = :company AND "
+          + "(:name IS NULL OR :name = '' OR LOWER(u.name) LIKE LOWER(CONCAT('%', :name, '%')))")
+  Page<User> findByCompanyAndName(
+      @Param("company") Company company, @Param("name") String name, Pageable pageable);
 }

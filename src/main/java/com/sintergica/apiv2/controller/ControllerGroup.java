@@ -3,9 +3,7 @@ package com.sintergica.apiv2.controller;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.repositorio.GroupRepository;
 import com.sintergica.apiv2.servicios.GroupService;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +36,7 @@ public class ControllerGroup {
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping
   public ResponseEntity<Group> addGroup(@RequestBody Group group) {
-    HashMap<String, Boolean> response = this.groupService.save(group);
+    Map<String, Boolean> response = this.groupService.save(group);
     if (response.containsKey("success")) {
       return ResponseEntity.ok(group);
     }
@@ -48,10 +46,10 @@ public class ControllerGroup {
 
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/addNewClientToGroup")
-  public ResponseEntity<HashMap<String, String>> addNewClientToGroup(
+  public ResponseEntity<Map<String, String>> addNewClientToGroup(
       @RequestParam UUID groupId, @RequestParam String emailUser) {
 
-    HashMap<String, String> serviceResponse = groupService.addUserToGroup(groupId, emailUser);
+    Map<String, String> serviceResponse = groupService.addUserToGroup(groupId, emailUser);
 
     if (serviceResponse.containsKey("success")) {
       return ResponseEntity.ok(serviceResponse);
@@ -62,12 +60,12 @@ public class ControllerGroup {
 
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/addNewGroup")
-  public ResponseEntity<HashMap<String, String>> addNewGroup(
+  public ResponseEntity<Map<String, String>> addNewGroup(
       @RequestParam String nameGroup,
       @RequestParam List<String> grantList,
       @RequestParam UUID companyUUID) {
 
-    HashMap<String, String> response = groupService.addNewGroup(nameGroup, grantList, companyUUID);
+    Map<String, String> response = groupService.addNewGroup(nameGroup, grantList, companyUUID);
     return ResponseEntity.ok(response);
   }
 
@@ -80,17 +78,17 @@ public class ControllerGroup {
   }
 
   @GetMapping("/{uuid}/deleteUser/{email}")
-  public ResponseEntity<HashMap<String, String>> deleteUser(
+  public ResponseEntity<Map<String, String>> deleteUser(
       @PathVariable(name = "uuid") UUID uuidGroup, @PathVariable("email") String emailClient) {
 
-    HashMap<String, String> response = groupService.deleteUserFromGroup(uuidGroup, emailClient);
+    Map<String, String> response = groupService.deleteUserFromGroup(uuidGroup, emailClient);
     return ResponseEntity.ok(response);
   }
 
   @GetMapping("/{uuid}/changeGrant/")
-  public ResponseEntity<HashMap<String, String>> changeGrant(
+  public ResponseEntity<Map<String, String>> changeGrant(
       @PathVariable UUID uuid, @RequestParam List<String> items) {
-    HashMap<String, String> response = this.groupService.changeGrants(uuid, items);
+    Map<String, String> response = this.groupService.changeGrants(uuid, items);
     return ResponseEntity.ok(response);
   }
 }

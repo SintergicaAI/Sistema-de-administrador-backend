@@ -205,8 +205,7 @@ public class UserService {
                   userTemp.getId(),
                   userTemp.getName(),
                   userTemp.getLastName(),
-                  userTemp.getEmail(),
-                  new ArrayList<>());
+                  userTemp.getEmail());
           userDTO.getGroupDTOList().add(new GroupDTO(group.getId(), group.getName()));
 
           listDTO.add(userDTO);
@@ -226,18 +225,12 @@ public class UserService {
     for (User user : usersInPage) {
       if (!existingIds.contains(user.getId())) {
         UserDTO newUser =
-            new UserDTO(
-                user.getId(),
-                user.getName(),
-                user.getLastName(),
-                user.getEmail(),
-                new ArrayList<>());
+            new UserDTO(user.getId(), user.getName(), user.getLastName(), user.getEmail());
         listDTO.add(newUser);
         existingIds.add(user.getId());
       }
     }
   }
-
 
   public Page<UserDTO> searhUser(String userName, Pageable pageable) {
 
@@ -246,7 +239,7 @@ public class UserService {
 
     if (user.getCompany() == null) {
       throw new ResponseStatusException(
-              HttpStatus.BAD_REQUEST, "El usuario no tiene ninguna organización asignada");
+          HttpStatus.BAD_REQUEST, "El usuario no tiene ninguna organización asignada");
     }
 
     Company company = companyRepository.findById(user.getCompany().getId()).get();
@@ -265,7 +258,6 @@ public class UserService {
     List<UserDTO> listDTO = generatorUserDTOList(groups, users);
 
     return new PageImpl<>(listDTO, pageable, users.getTotalElements());
-
   }
 
   private String generateToken(String email) {

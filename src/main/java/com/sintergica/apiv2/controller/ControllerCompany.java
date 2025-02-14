@@ -2,9 +2,7 @@ package com.sintergica.apiv2.controller;
 
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.servicios.CompanyService;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,8 +30,8 @@ public class ControllerCompany {
   }
 
   @PostMapping("/add")
-  public ResponseEntity<HashMap<String, Boolean>> addNewCompany(@RequestBody Company company) {
-    HashMap<String, Boolean> response = companyService.add(company);
+  public ResponseEntity<Map<String, Boolean>> addNewCompany(@RequestBody Company company) {
+    Map<String, Boolean> response = companyService.add(company);
 
     if (response.containsKey("success")) {
       return ResponseEntity.ok(response);
@@ -43,8 +41,8 @@ public class ControllerCompany {
 
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/{uuid}")
-  public ResponseEntity<HashMap<String, Company>> getCompanyByUUID(@RequestParam UUID uuid) {
-    HashMap mapCompany = companyService.getCompanyByUUID(uuid);
+  public ResponseEntity<Map<String, Company>> getCompanyByUUID(@RequestParam UUID uuid) {
+    Map mapCompany = companyService.getCompanyByUUID(uuid);
 
     if (mapCompany.containsKey("success")) {
       return ResponseEntity.ok(mapCompany);
@@ -57,7 +55,7 @@ public class ControllerCompany {
   public ResponseEntity<String> deleteUserToCompany(
       @PathVariable UUID uuid, @PathVariable String email) {
 
-    HashMap<String, String> response = this.companyService.deleteUserToCompany(uuid, email);
+    Map<String, String> response = this.companyService.deleteUserToCompany(uuid, email);
 
     if (response.containsKey("error")) {
       return ResponseEntity.badRequest().body(response.get("error"));
