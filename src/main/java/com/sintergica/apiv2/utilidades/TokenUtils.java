@@ -7,7 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import java.util.Date;
 import java.util.HashMap;
 
-public class TokenUtils {
+public final class TokenUtils {
 
   private static final String ACCESS_TOKEN_SECRET = System.getenv("DATASOURCE_SEED");
   private static final Long TOKEN_LIFETIME_MILLS =
