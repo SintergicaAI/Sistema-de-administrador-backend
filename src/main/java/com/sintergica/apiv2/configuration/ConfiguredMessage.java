@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ConfiguredMessage {
-	private String key;
-	private String message;
+  private String key;
+  private String message;
 }

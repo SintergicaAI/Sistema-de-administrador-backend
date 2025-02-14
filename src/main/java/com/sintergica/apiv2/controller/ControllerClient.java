@@ -1,13 +1,10 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.entidades.Invitation;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.servicios.InvitationService;
 import com.sintergica.apiv2.servicios.UserService;
-import com.sintergica.apiv2.utilidades.InvitationTokenUtils;
 import jakarta.validation.Valid;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.misc.Pair;
@@ -27,23 +24,24 @@ public class ControllerClient {
   private final InvitationService invitationService;
 
   @PostMapping("/register")
-  public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody User user, @RequestParam UUID signInToken) {
+  public ResponseEntity<Map<String, Object>> register(
+      @Valid @RequestBody User user, @RequestParam UUID signInToken) {
 
-    Pair<Boolean,String> invitationResponse = invitationService.validateInvitation(user.getEmail(), signInToken);
+    Pair<Boolean, String> invitationResponse =
+        invitationService.validateInvitation(user.getEmail(), signInToken);
 
-    if(!invitationResponse.a){
+    if (!invitationResponse.a) {
       return ResponseEntity.status(HttpStatus.GONE).body(null);
     }
 
     Map<String, Object> serviceResponse = userService.registerUser(user);
 
-    serviceResponse.put("message",invitationResponse.b);
+    serviceResponse.put("message", invitationResponse.b);
     if (Boolean.TRUE.equals(serviceResponse.get("Exito"))) {
       return new ResponseEntity<>(serviceResponse, HttpStatus.CREATED);
     }
 
     return ResponseEntity.badRequest().body(serviceResponse);
-
   }
 
   @PostMapping("/login")
