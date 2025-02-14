@@ -1,20 +1,11 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.entidades.Company;
-import com.sintergica.apiv2.entidades.Grant;
 import com.sintergica.apiv2.entidades.Group;
-import com.sintergica.apiv2.entidades.User;
-import com.sintergica.apiv2.repositorio.CompanyRepository;
-import com.sintergica.apiv2.repositorio.GrantRepository;
 import com.sintergica.apiv2.repositorio.GroupRepository;
-import com.sintergica.apiv2.repositorio.UserRepository;
+import com.sintergica.apiv2.servicios.GroupService;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,20 +23,27 @@ import org.springframework.web.bind.annotation.RestController;
 public class ControllerGroup {
 
   @Autowired private GroupRepository groupRepository;
-  @Autowired private UserRepository userRepository;
-  @Autowired private CompanyRepository companyRepository;
-  @Autowired private GrantRepository grantRepository;
+  private GroupService groupService;
+
+  public ControllerGroup(GroupService groupService) {
+    this.groupService = groupService;
+  }
 
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping
   public ResponseEntity<List<Group>> getGroups() {
-    return ResponseEntity.ok(groupRepository.findAll());
+    return ResponseEntity.ok(groupService.findAll());
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping
   public ResponseEntity<Group> addGroup(@RequestBody Group group) {
-    return ResponseEntity.ok(groupRepository.save(group));
+    HashMap<String, Boolean> response = this.groupService.save(group);
+    if (response.containsKey("success")) {
+      return ResponseEntity.ok(group);
+    }
+
+    return ResponseEntity.status(HttpStatus.CONFLICT).build();
   }
 
   @PreAuthorize("hasRole('ADMIN')")
@@ -53,61 +51,23 @@ public class ControllerGroup {
   public ResponseEntity<HashMap<String, String>> addNewClientToGroup(
       @RequestParam UUID groupId, @RequestParam String emailUser) {
 
-    Optional<Group> currentGroup = groupRepository.findById(groupId);
-    User currentUser = userRepository.findByEmail(emailUser);
+    HashMap<String, String> serviceResponse = groupService.addUserToGroup(groupId, emailUser);
 
-    if (currentGroup != null
-        && currentUser != null
-        && currentUser.getCompany() != null
-        && currentGroup.get().getCompany() != null
-        && currentUser.getCompany().getId() == currentGroup.get().getCompany().getId()) {
-
-      currentGroup.get().getUser().add(currentUser);
-      groupRepository.save(currentGroup.get());
-
-      HashMap<String, String> response = new HashMap<>();
-      response.put("Exito", "Usuario agregado al grupo");
-      return ResponseEntity.ok(response);
+    if (serviceResponse.containsKey("success")) {
+      return ResponseEntity.ok(serviceResponse);
+    } else {
+      return ResponseEntity.badRequest().body(serviceResponse);
     }
-
-    HashMap<String, String> response = new HashMap<>();
-    response.put(
-        "Sin exito",
-        "Uno de los campos es nulo o la empresa no esta asociada con el usuario y grupo");
-
-    return ResponseEntity.badRequest().body(response);
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/addNewGroup")
-  public ResponseEntity<HashMap<String, Object>> addNewGroup(
+  public ResponseEntity<HashMap<String, String>> addNewGroup(
       @RequestParam String nameGroup,
       @RequestParam List<String> grantList,
       @RequestParam UUID companyUUID) {
 
-    Optional<Company> company = companyRepository.findById(companyUUID);
-
-    if (company.isEmpty()) {
-      HashMap<String, Object> response = new HashMap<>();
-      response.put("Sin exito", "La compañia no existe");
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
-    Set<Grant> grants =
-        grantList.stream()
-            .map(grantRepository::findByName)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
-
-    Group newGroup = new Group();
-    newGroup.setName(nameGroup);
-    newGroup.setCompany(company.get());
-    newGroup.setGrant(grants);
-    groupRepository.save(newGroup);
-
-    HashMap<String, Object> response = new HashMap<>();
-    response.put("Exito", "Grupo agregado");
-
+    HashMap<String, String> response = groupService.addNewGroup(nameGroup, grantList, companyUUID);
     return ResponseEntity.ok(response);
   }
 
@@ -120,39 +80,17 @@ public class ControllerGroup {
   }
 
   @GetMapping("/{uuid}/deleteUser/{email}")
-  public ResponseEntity<HashMap<String, Object>> deleteUser(
+  public ResponseEntity<HashMap<String, String>> deleteUser(
       @PathVariable(name = "uuid") UUID uuidGroup, @PathVariable("email") String emailClient) {
 
-    Optional<Group> group = groupRepository.findById(uuidGroup);
-    User user = userRepository.findByEmail(emailClient);
+    HashMap<String, String> response = groupService.deleteUserFromGroup(uuidGroup, emailClient);
+    return ResponseEntity.ok(response);
+  }
 
-    HashMap<String, Object> response = new HashMap<>();
-
-    if (group.isEmpty()) {
-      response.put("Exito", false);
-      response.put("Mensaje", "Grupo no encontrado");
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-    }
-
-    if (user == null) {
-      response.put("Exito", false);
-      response.put("Mensaje", "Usuario no encontrado");
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-    }
-
-    Group referenceGroup = group.get();
-    if (!referenceGroup.getUser().contains(user)) {
-      response.put("Exito", false);
-      response.put("Mensaje", "El usuario no pertenece al grupo");
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
-    referenceGroup.getUser().remove(user);
-    groupRepository.save(referenceGroup);
-
-    response.put("Exito", true);
-    response.put("Mensaje", "Usuario eliminado correctamente");
-
+  @GetMapping("/{uuid}/changeGrant/")
+  public ResponseEntity<HashMap<String, String>> changeGrant(
+      @PathVariable UUID uuid, @RequestParam List<String> items) {
+    HashMap<String, String> response = this.groupService.changeGrants(uuid, items);
     return ResponseEntity.ok(response);
   }
 }

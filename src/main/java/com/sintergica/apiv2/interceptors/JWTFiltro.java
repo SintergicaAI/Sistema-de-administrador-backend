@@ -1,7 +1,7 @@
 package com.sintergica.apiv2.interceptors;
 
 import com.sintergica.apiv2.servicios.CustomUserDetailsService;
-import com.sintergica.apiv2.utilidades.TokenUtilidades;
+import com.sintergica.apiv2.utilidades.TokenUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,13 +36,13 @@ public class JWTFiltro extends OncePerRequestFilter {
     if (authHeader != null && authHeader.startsWith("Bearer ")) {
       String token = authHeader.substring(7);
 
-      if (TokenUtilidades.getTokenClaims(token) != null) {
-        String correo = TokenUtilidades.getTokenClaims(token).getSubject();
+      if (TokenUtils.getTokenClaims(token) != null) {
+        String correo = TokenUtils.getTokenClaims(token).getSubject();
 
         if (correo != null && SecurityContextHolder.getContext().getAuthentication() == null) {
           UserDetails user = customUserDetailsService.loadUserByUsername(correo);
 
-          if (!TokenUtilidades.isExpired(token)) {
+          if (!TokenUtils.isExpired(token)) {
 
             UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());

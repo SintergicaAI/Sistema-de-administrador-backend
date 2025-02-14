@@ -1,12 +1,16 @@
 package com.sintergica.apiv2.controller;
 
+import com.sintergica.apiv2.dto.UserDTO;
+import com.sintergica.apiv2.dto.WrapperUserDTO;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.servicios.UserService;
 import jakarta.validation.Valid;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RequiredArgsConstructor
 @RestController
@@ -26,9 +31,9 @@ public class ControllerClient {
   private final UserService userService;
 
   @PostMapping("/register")
-  public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody User user) {
+  public ResponseEntity<Map<String, String>> register(@Valid @RequestBody User user) {
 
-    Map<String, Object> serviceResponse = userService.registerUser(user);
+    Map<String, String> serviceResponse = userService.registerUser(user);
 
     if (Boolean.TRUE.equals(serviceResponse.get("Exito"))) {
       return new ResponseEntity<>(serviceResponse, HttpStatus.CREATED);
@@ -38,10 +43,10 @@ public class ControllerClient {
   }
 
   @PostMapping("/login")
-  public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody User userRequest) {
-    Map<String, Object> serviceResponse = userService.loginUser(userRequest);
+  public ResponseEntity<Map<String, String>> login(@Valid @RequestBody User userRequest) {
+    Map<String, String> serviceResponse = userService.loginUser(userRequest);
 
-    if (Boolean.TRUE.equals(serviceResponse.get("exitoso"))) {
+    if (serviceResponse.get("exitoso").equals("true")) {
       return ResponseEntity.ok(serviceResponse);
     }
 
@@ -77,23 +82,30 @@ public class ControllerClient {
   }
 
   @PostMapping("/{email}/addGroup/{uuidGroup}")
-  public ResponseEntity<Map<String, Object>> addGroup(
+  public ResponseEntity<Map<String, String>> addGroup(
       @PathVariable String email, @PathVariable UUID uuidGroup) {
 
     try {
       userService.addUserToGroup(email, uuidGroup);
-      return ResponseEntity.ok(Map.of("Success", true));
+      return ResponseEntity.ok(Map.of("Success", "true"));
 
     } catch (RuntimeException ex) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND)
-          .body(Map.of("Success", false, "message", ex.getMessage()));
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("Success", "false"));
     }
   }
 
   @PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("/getEmployeeGroupsForCompany")
-  public ResponseEntity<Page<Map<String, Object>>> getEmployeeGroupsForCompany(Pageable pageable) {
-    Page<Map<String, Object>> result = userService.getEmployeeGroups(pageable);
-    return ResponseEntity.ok(result);
+  @GetMapping("/getEmployeeGroupsForCompanyRemastered")
+  public ResponseEntity<WrapperUserDTO> getEmployeeGroupsForCompanyRemastered(Pageable pageable) {
+    try {
+
+      Page<UserDTO> result = userService.getEmployeeGroupsRemastered(pageable);
+
+      return ResponseEntity.ok(new WrapperUserDTO(result));
+
+    } catch (ResponseStatusException ex) {
+      Page<UserDTO> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+      return ResponseEntity.status(ex.getStatusCode()).body(null);
+    }
   }
 }
