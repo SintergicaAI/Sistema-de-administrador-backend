@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: APIV2
+
+  datasource:
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+  config:
+    import:
+      - "messages.yml"
+  mail:
+    server: mail.sintergica.ai
+    enable-auth: true
+    enable-tls: true
+    smtp-port: 465
+    ssl-port: 465
+    from-email: turing@sintergica.ai
+    email-password: ${EMAIL_PASSWORD}
+    base-url: http://localhost:8080
+
+logging:
+  level:
+    org:
+      springframework:
+        jdbc: DEBUG
+
+server:
+  port: 8080
