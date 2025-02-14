@@ -108,4 +108,15 @@ public class ControllerClient {
       return ResponseEntity.status(ex.getStatusCode()).body(null);
     }
   }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/{name}")
+  public ResponseEntity<WrapperUserDTO> search(@PathVariable String name, Pageable pageable) {
+
+    Page<UserDTO> result = this.userService.searhUser(name, pageable);
+
+    return ResponseEntity.ok(new WrapperUserDTO(result));
+
+  }
+  
 }

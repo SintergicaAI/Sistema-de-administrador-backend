@@ -238,6 +238,36 @@ public class UserService {
     }
   }
 
+
+  public Page<UserDTO> searhUser(String userName, Pageable pageable) {
+
+    String userNameAdmin = SecurityContextHolder.getContext().getAuthentication().getName();
+    User user = userRepository.findByEmail(userNameAdmin);
+
+    if (user.getCompany() == null) {
+      throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST, "El usuario no tiene ninguna organización asignada");
+    }
+
+    Company company = companyRepository.findById(user.getCompany().getId()).get();
+
+    Page<User> users = userRepository.findByCompanyAndName(company, userName, pageable);
+
+    ArrayList<UUID> uuidUsers = new ArrayList<>();
+    List<User> usersPage = users.getContent();
+
+    for (User userTemp : usersPage) {
+      uuidUsers.add(userTemp.getId());
+    }
+
+    List<Group> groups = groupRepository.findGroupsByUserIdsIn(uuidUsers);
+
+    List<UserDTO> listDTO = generatorUserDTOList(groups, users);
+
+    return new PageImpl<>(listDTO, pageable, users.getTotalElements());
+
+  }
+
   private String generateToken(String email) {
     return TokenUtils.createToken(Jwts.claims().subject(email).build());
   }
