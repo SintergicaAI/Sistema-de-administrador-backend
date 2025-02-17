@@ -7,6 +7,14 @@ import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.CompanyRepository;
 import com.sintergica.apiv2.repositorio.UserRepository;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,15 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @Data
@@ -76,7 +75,7 @@ public class CompanyService {
 
     if (user.getCompany() == null) {
       throw new ResponseStatusException(
-              HttpStatus.BAD_REQUEST, "El usuario no tiene ninguna organización asignada");
+          HttpStatus.BAD_REQUEST, "El usuario no tiene ninguna organización asignada");
     }
 
     Company company = this.getCompanyById(user.getCompany().getId()).get();
@@ -104,7 +103,7 @@ public class CompanyService {
       for (User userTemp : group.getUser()) {
 
         Optional<UserDTO> foundUser =
-                listDTO.stream().filter(usere -> usere.getId().equals(userTemp.getId())).findFirst();
+            listDTO.stream().filter(usere -> usere.getId().equals(userTemp.getId())).findFirst();
 
         if (foundUser.isPresent()) {
           UserDTO userDTO = foundUser.get();
@@ -114,11 +113,11 @@ public class CompanyService {
 
         } else {
           UserDTO userDTO =
-                  new UserDTO(
-                          userTemp.getId(),
-                          userTemp.getName(),
-                          userTemp.getLastName(),
-                          userTemp.getEmail());
+              new UserDTO(
+                  userTemp.getId(),
+                  userTemp.getName(),
+                  userTemp.getLastName(),
+                  userTemp.getEmail());
           userDTO.getGroupDTOList().add(new GroupDTO(group.getId(), group.getName()));
 
           listDTO.add(userDTO);
@@ -138,7 +137,7 @@ public class CompanyService {
     for (User user : usersInPage) {
       if (!existingIds.contains(user.getId())) {
         UserDTO newUser =
-                new UserDTO(user.getId(), user.getName(), user.getLastName(), user.getEmail());
+            new UserDTO(user.getId(), user.getName(), user.getLastName(), user.getEmail());
         listDTO.add(newUser);
         existingIds.add(user.getId());
       }
@@ -152,7 +151,7 @@ public class CompanyService {
 
     if (user.getCompany() == null) {
       throw new ResponseStatusException(
-              HttpStatus.BAD_REQUEST, "El usuario no tiene ninguna organización asignada");
+          HttpStatus.BAD_REQUEST, "El usuario no tiene ninguna organización asignada");
     }
 
     Company company = this.getCompanyById(user.getCompany().getId()).get();
@@ -173,12 +172,7 @@ public class CompanyService {
     return new PageImpl<>(listDTO, pageable, users.getTotalElements());
   }
 
-
-
-
   public Optional<Company> getCompanyById(UUID uuid) {
     return this.companyRepository.findById(uuid);
   }
-
-
 }

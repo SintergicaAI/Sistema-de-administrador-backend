@@ -8,13 +8,12 @@ import com.sintergica.apiv2.repositorio.UserRepository;
 import com.sintergica.apiv2.utilidades.TokenUtils;
 import io.jsonwebtoken.Jwts;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -63,7 +62,7 @@ public class UserService {
       return false;
     }
 
-    if(!user.getPassword().equals(userRequest.getPassword())) {
+    if (!user.getPassword().equals(userRequest.getPassword())) {
       return false;
     }
 
@@ -79,7 +78,10 @@ public class UserService {
       throw new RuntimeException("Usuario no encontrado");
     }
 
-    Company company = companyService.getCompanyById(targetCompanyId).orElseThrow(() -> new RuntimeException("Compañía no encontrada"));
+    Company company =
+        companyService
+            .getCompanyById(targetCompanyId)
+            .orElseThrow(() -> new RuntimeException("Compañía no encontrada"));
 
     if (user.getCompany() != null) {
       response.put("mensaje", "El usuario ya pertenece a una compañía");
@@ -120,7 +122,10 @@ public class UserService {
       throw new RuntimeException("Usuario no encontrado");
     }
 
-    Group group = groupService.findGroupById(groupId).orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
+    Group group =
+        groupService
+            .findGroupById(groupId)
+            .orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
 
     if (!user.getCompany().getId().equals(group.getCompany().getId())) {
       throw new RuntimeException("El usuario y el grupo pertenecen a compañías diferentes");
@@ -133,7 +138,6 @@ public class UserService {
   public User findByEmail(String email) {
     return userRepository.findByEmail(email);
   }
-
 
   public String generateToken(String email) {
     return TokenUtils.createToken(Jwts.claims().subject(email).build());

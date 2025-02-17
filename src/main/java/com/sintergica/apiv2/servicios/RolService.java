@@ -26,7 +26,4 @@ public class RolService {
         .findFirst()
         .orElse(null);
   }
-
-
-
 }

@@ -4,11 +4,9 @@ import com.sintergica.apiv2.dto.UserDTO;
 import com.sintergica.apiv2.dto.WrapperUserDTO;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.servicios.CompanyService;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -82,7 +80,4 @@ public class ControllerCompany {
 
     return ResponseEntity.ok(new WrapperUserDTO(result));
   }
-
-
-
 }

@@ -8,7 +8,6 @@ import com.sintergica.apiv2.repositorio.CompanyRepository;
 import com.sintergica.apiv2.repositorio.GrantRepository;
 import com.sintergica.apiv2.repositorio.GroupRepository;
 import com.sintergica.apiv2.repositorio.UserRepository;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -53,10 +51,10 @@ public class GroupService {
     User currentUser = userRepository.findByEmail(emailUser);
 
     if (currentGroupOpt.isPresent()
-            && currentUser != null
-            && currentUser.getCompany() != null
-            && currentGroupOpt.get().getCompany() != null
-            && currentUser.getCompany().getId().equals(currentGroupOpt.get().getCompany().getId())) {
+        && currentUser != null
+        && currentUser.getCompany() != null
+        && currentGroupOpt.get().getCompany() != null
+        && currentUser.getCompany().getId().equals(currentGroupOpt.get().getCompany().getId())) {
 
       Group currentGroup = currentGroupOpt.get();
       currentGroup.getUser().add(currentUser);
@@ -69,12 +67,12 @@ public class GroupService {
 
     HashMap<String, String> response = new HashMap<>();
     response.put(
-            "error", "Uno de los campos es nulo o la empresa no esta asociada con el usuario y grupo");
+        "error", "Uno de los campos es nulo o la empresa no esta asociada con el usuario y grupo");
     return response;
   }
 
   public Map<String, String> addNewGroup(
-          String nameGroup, List<String> grantList, UUID companyUUID) {
+      String nameGroup, List<String> grantList, UUID companyUUID) {
     HashMap<String, String> response = new HashMap<>();
     Optional<Company> company = companyRepository.findById(companyUUID);
 
@@ -84,10 +82,10 @@ public class GroupService {
     }
 
     Set<Grant> grants =
-            grantList.stream()
-                    .map(grantRepository::findByName)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toSet());
+        grantList.stream()
+            .map(grantRepository::findByName)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
 
     Group newGroup = new Group();
     newGroup.setName(nameGroup);
@@ -161,5 +159,4 @@ public class GroupService {
   public List<Group> findGroupsByUserIdsIn(List<UUID> userIds) {
     return this.groupRepository.findGroupsByUserIdsIn(userIds);
   }
-
 }

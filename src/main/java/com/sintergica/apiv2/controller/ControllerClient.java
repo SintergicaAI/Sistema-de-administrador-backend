@@ -3,7 +3,6 @@ package com.sintergica.apiv2.controller;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.servicios.UserService;
 import jakarta.validation.Valid;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -96,6 +95,4 @@ public class ControllerClient {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("Success", "false"));
     }
   }
-
-
 }
