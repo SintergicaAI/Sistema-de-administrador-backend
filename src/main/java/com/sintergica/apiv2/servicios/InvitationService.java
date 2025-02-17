@@ -1,20 +1,21 @@
 package com.sintergica.apiv2.servicios;
 
+import com.sintergica.apiv2.configuration.MessagesConfig;
 import com.sintergica.apiv2.entidades.Invitation;
 import com.sintergica.apiv2.repositorio.InvitationRepository;
 import com.sintergica.apiv2.utilidades.InvitationTokenUtils;
 import java.util.Optional;
 import java.util.UUID;
+
+import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class InvitationService {
+  private final MessagesConfig messagesConfig;
   private final InvitationRepository invitationRepository;
-
-  public InvitationService(InvitationRepository invitationRepository) {
-    this.invitationRepository = invitationRepository;
-  }
 
   /**
    * @param email The email associated with the token
@@ -24,7 +25,7 @@ public class InvitationService {
     Optional<Invitation> invitation = invitationRepository.findById(signInToken);
 
     if (invitation.isEmpty()) {
-      return new Pair<>(false, "Invalid SignIn Token");
+      return new Pair<>(false, messagesConfig.getMessages().get("tokenInvalid"));
     }
 
     Pair<Boolean, String> validateToken =

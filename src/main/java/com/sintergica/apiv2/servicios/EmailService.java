@@ -1,6 +1,7 @@
 package com.sintergica.apiv2.servicios;
 
 import com.sintergica.apiv2.configuration.EmailConfig;
+import com.sintergica.apiv2.configuration.MessagesConfig;
 import com.sintergica.apiv2.entidades.Invitation;
 import com.sintergica.apiv2.repositorio.InvitationRepository;
 import com.sintergica.apiv2.utilidades.EmailUtils;
@@ -11,10 +12,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
   private final EmailConfig config;
+  private final MessagesConfig messagesConfig;
   private final InvitationRepository invitationRepository;
 
-  public EmailService(EmailConfig config, InvitationRepository invitationRepository) {
+  public EmailService(EmailConfig config, MessagesConfig messagesConfig, InvitationRepository invitationRepository) {
     this.config = config;
+    this.messagesConfig = messagesConfig;
     this.invitationRepository = invitationRepository;
   }
 
@@ -26,7 +29,7 @@ public class EmailService {
     boolean isSuccess = EmailUtils.sendEmail(emailObject, config);
 
     if (!isSuccess) {
-      return new Pair<>(false, "An error ocurred while sending the email");
+      return new Pair<>(false, messagesConfig.getMessages().get("emailSendError"));
     }
 
     Invitation invitation = new Invitation();
@@ -37,6 +40,6 @@ public class EmailService {
     invitationRepository.save(invitation);
 
     System.out.println(invitationRepository.findById(emailObject.getToken()));
-    return new Pair<>(true, "Sign Up email sent");
+    return new Pair<>(true, messagesConfig.getMessages().get("emailSent"));
   }
 }

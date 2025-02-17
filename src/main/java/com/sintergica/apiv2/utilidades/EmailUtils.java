@@ -75,11 +75,10 @@ public final class EmailUtils {
       message.setText(email.getBody(), "UTF-8");
       message.setSentDate(new Date());
       message.setRecipients(
-          Message.RecipientType.TO, InternetAddress.parse(email.getRecipients(), false));
+          Message.RecipientType.TO, InternetAddress.parse(email.getRecipients(), false)
+      );
 
-      System.out.println("Message is ready: " + message.getSubject());
       Transport.send(message);
-      System.out.println("Message was Sent");
       isSuccess = true;
     } catch (MessagingException e) {
       e.printStackTrace();
@@ -119,11 +118,10 @@ public final class EmailUtils {
       message.setText(email.getBody(), "UTF-8");
       message.setSentDate(new Date());
       message.setRecipients(
-          Message.RecipientType.TO, InternetAddress.parse(email.getRecipients(), false));
+          Message.RecipientType.TO, InternetAddress.parse(email.getRecipients(), false)
+      );
 
-      System.out.println("Message is ready: " + message.getSubject());
       Transport.send(message);
-      System.out.println("Message was Sent");
       isSuccess = true;
     } catch (MessagingException e) {
       e.printStackTrace();

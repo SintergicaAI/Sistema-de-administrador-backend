@@ -1,5 +1,6 @@
 package com.sintergica.apiv2.controller;
 
+import com.sintergica.apiv2.configuration.MessagesConfig;
 import com.sintergica.apiv2.servicios.EmailService;
 import com.sintergica.apiv2.utilidades.EmailUtils;
 import java.util.HashMap;
@@ -7,10 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author user
@@ -20,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class Email {
   private final EmailService emailService;
+  private final MessagesConfig messagesConfig;
 
   @PostMapping("/sendtoken")
   public ResponseEntity<HashMap<String, Object>> sendValidationEmail(
@@ -34,5 +33,9 @@ public class Email {
     }
 
     return ResponseEntity.ok(response);
+  }
+  @GetMapping("/hello")
+  public String hello() {
+    return messagesConfig.getMessages().get("testMesssage");
   }
 }
