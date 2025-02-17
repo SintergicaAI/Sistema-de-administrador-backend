@@ -1,8 +1,16 @@
 package com.sintergica.apiv2.controller;
 
+import com.sintergica.apiv2.dto.UserDTO;
+import com.sintergica.apiv2.dto.WrapperUserDTO;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.servicios.CompanyService;
-import java.util.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/company")
@@ -51,16 +60,29 @@ public class ControllerCompany {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mapCompany);
   }
 
-  @PostMapping("{uuid}/deleteUser/{email}")
-  public ResponseEntity<String> deleteUserToCompany(
-      @PathVariable UUID uuid, @PathVariable String email) {
+  @PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/getEmployeeGroupsByCompany")
+  public ResponseEntity<WrapperUserDTO> getEmployeeGroups(Pageable pageable) {
+    try {
 
-    Map<String, String> response = this.companyService.deleteUserToCompany(uuid, email);
+      Page<UserDTO> result = this.companyService.getEmployeeGroupsRemastered(pageable);
 
-    if (response.containsKey("error")) {
-      return ResponseEntity.badRequest().body(response.get("error"));
+      return ResponseEntity.ok(new WrapperUserDTO(result));
+
+    } catch (ResponseStatusException ex) {
+      return ResponseEntity.status(ex.getStatusCode()).body(null);
     }
-
-    return ResponseEntity.ok("success");
   }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/userName/{name}")
+  public ResponseEntity<WrapperUserDTO> search(@PathVariable String name, Pageable pageable) {
+
+    Page<UserDTO> result = this.companyService.searchUser(name, pageable);
+
+    return ResponseEntity.ok(new WrapperUserDTO(result));
+  }
+
+
+
 }

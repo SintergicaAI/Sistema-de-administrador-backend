@@ -1,25 +1,21 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.dto.UserDTO;
-import com.sintergica.apiv2.dto.WrapperUserDTO;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.servicios.UserService;
 import jakarta.validation.Valid;
+
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 @RequiredArgsConstructor
 @RestController
@@ -42,13 +38,22 @@ public class ControllerClient {
 
   @PostMapping("/login")
   public ResponseEntity<Map<String, String>> login(@Valid @RequestBody User userRequest) {
-    Map<String, String> serviceResponse = userService.loginUser(userRequest);
+    boolean isValidUser = userService.loginUser(userRequest);
+    HashMap<String, String> response = new HashMap<>();
 
-    if ("true".equals(serviceResponse.get("exitoso"))) {
-      return ResponseEntity.ok(serviceResponse);
+    if (isValidUser) {
+      String token = this.userService.generateToken(userRequest.getEmail());
+      response.put("mensaje", "Bienvenido");
+      response.put("exitoso", "true");
+      response.put("token", token);
+
+      return ResponseEntity.ok(response);
     }
 
-    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(serviceResponse);
+    response.put("mensaje", "Credenciales incorrectas");
+    response.put("exitoso", "false");
+
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
   }
 
   @PreAuthorize("hasRole('ADMIN')")
@@ -92,26 +97,5 @@ public class ControllerClient {
     }
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("/getEmployeeGroupsForCompanyRemastered")
-  public ResponseEntity<WrapperUserDTO> getEmployeeGroupsForCompanyRemastered(Pageable pageable) {
-    try {
 
-      Page<UserDTO> result = userService.getEmployeeGroupsRemastered(pageable);
-
-      return ResponseEntity.ok(new WrapperUserDTO(result));
-
-    } catch (ResponseStatusException ex) {
-      return ResponseEntity.status(ex.getStatusCode()).body(null);
-    }
-  }
-
-  @PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("/{name}")
-  public ResponseEntity<WrapperUserDTO> search(@PathVariable String name, Pageable pageable) {
-
-    Page<UserDTO> result = this.userService.searhUser(name, pageable);
-
-    return ResponseEntity.ok(new WrapperUserDTO(result));
-  }
 }
