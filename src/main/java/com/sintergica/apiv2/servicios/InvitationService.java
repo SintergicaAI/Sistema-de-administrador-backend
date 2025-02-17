@@ -6,7 +6,6 @@ import com.sintergica.apiv2.repositorio.InvitationRepository;
 import com.sintergica.apiv2.utilidades.InvitationTokenUtils;
 import java.util.Optional;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.stereotype.Service;

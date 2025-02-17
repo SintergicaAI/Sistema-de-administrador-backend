@@ -15,7 +15,10 @@ public class EmailService {
   private final MessagesConfig messagesConfig;
   private final InvitationRepository invitationRepository;
 
-  public EmailService(EmailConfig config, MessagesConfig messagesConfig, InvitationRepository invitationRepository) {
+  public EmailService(
+      EmailConfig config,
+      MessagesConfig messagesConfig,
+      InvitationRepository invitationRepository) {
     this.config = config;
     this.messagesConfig = messagesConfig;
     this.invitationRepository = invitationRepository;

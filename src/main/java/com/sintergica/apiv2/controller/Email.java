@@ -34,6 +34,7 @@ public class Email {
 
     return ResponseEntity.ok(response);
   }
+
   @GetMapping("/hello")
   public String hello() {
     return messagesConfig.getMessages().get("testMesssage");

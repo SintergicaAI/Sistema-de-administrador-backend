@@ -75,8 +75,7 @@ public final class EmailUtils {
       message.setText(email.getBody(), "UTF-8");
       message.setSentDate(new Date());
       message.setRecipients(
-          Message.RecipientType.TO, InternetAddress.parse(email.getRecipients(), false)
-      );
+          Message.RecipientType.TO, InternetAddress.parse(email.getRecipients(), false));
 
       Transport.send(message);
       isSuccess = true;
@@ -118,8 +117,7 @@ public final class EmailUtils {
       message.setText(email.getBody(), "UTF-8");
       message.setSentDate(new Date());
       message.setRecipients(
-          Message.RecipientType.TO, InternetAddress.parse(email.getRecipients(), false)
-      );
+          Message.RecipientType.TO, InternetAddress.parse(email.getRecipients(), false));
 
       Transport.send(message);
       isSuccess = true;
