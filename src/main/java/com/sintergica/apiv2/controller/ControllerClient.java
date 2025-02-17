@@ -1,12 +1,14 @@
 package com.sintergica.apiv2.controller;
 
 import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.servicios.InvitationService;
 import com.sintergica.apiv2.servicios.UserService;
 import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
@@ -22,12 +25,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class ControllerClient {
 
   private final UserService userService;
+  private final InvitationService invitationService;
 
   @PostMapping("/register")
-  public ResponseEntity<Map<String, String>> register(@Valid @RequestBody User user) {
+  public ResponseEntity<?> register(@Valid @RequestBody User user, @RequestParam UUID signInToken) {
 
+    Pair<Boolean, String> invitationResponse =
+        invitationService.validateInvitation(user.getEmail(), signInToken);
+
+    if (!invitationResponse.a) {
+      return ResponseEntity.status(HttpStatus.GONE).body(null);
+    }
     Map<String, String> serviceResponse = userService.registerUser(user);
 
+    serviceResponse.put("message", invitationResponse.b);
     if (Boolean.TRUE.equals(serviceResponse.get("Exito"))) {
       return new ResponseEntity<>(serviceResponse, HttpStatus.CREATED);
     }
