@@ -49,7 +49,7 @@ public class UserService {
     User user = this.findByEmail(email);
     Company company = companyService.getCompanyById(targetCompanyId);
 
-    if(user.getCompany() != null){
+    if (user.getCompany() != null) {
       throw new CompanyUserConflict("El usuario ya tiene asociada una compañia");
     }
 
@@ -81,7 +81,6 @@ public class UserService {
     groupService.save(group);
   }
 
-
   public Page<UserDTO> getEmployeeGroupsRemastered(Pageable pageable) {
 
     String userName = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -93,7 +92,7 @@ public class UserService {
 
     List<UserDTO> userDTOs = new ArrayList<>();
 
-    for (User userGroup : users){
+    for (User userGroup : users) {
 
       List<GroupDTO> groupDTOList = new ArrayList<>();
 
@@ -101,7 +100,13 @@ public class UserService {
         groupDTOList.add(new GroupDTO(group.getId(), group.getName()));
       }
 
-      UserDTO userDTO = new UserDTO(userGroup.getId(), userGroup.getName(), userGroup.getLastName(), userGroup.getEmail(), groupDTOList);
+      UserDTO userDTO =
+          new UserDTO(
+              userGroup.getId(),
+              userGroup.getName(),
+              userGroup.getLastName(),
+              userGroup.getEmail(),
+              groupDTOList);
 
       userDTOs.add(userDTO);
     }
@@ -111,7 +116,7 @@ public class UserService {
 
   public User findByEmail(String email) {
 
-    if(userRepository.findByEmail(email) == null) {
+    if (userRepository.findByEmail(email) == null) {
       throw new UserNotFound("Usuario no encontrado");
     }
 
@@ -127,5 +132,4 @@ public class UserService {
   public String generateToken(String email) {
     return TokenUtils.createToken(Jwts.claims().subject(email).build());
   }
-
 }

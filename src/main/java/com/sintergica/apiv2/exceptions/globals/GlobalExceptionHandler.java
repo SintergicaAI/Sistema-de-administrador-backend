@@ -14,34 +14,33 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(UserNotFound.class)
-    public ResponseEntity<String> handleUserNotFound(UserNotFound ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
+  @ExceptionHandler(UserNotFound.class)
+  public ResponseEntity<String> handleUserNotFound(UserNotFound ex) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+  }
 
-    @ExceptionHandler(CompanyNotFound.class)
-    public ResponseEntity<String> handleCompanyNotFound(CompanyNotFound ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
+  @ExceptionHandler(CompanyNotFound.class)
+  public ResponseEntity<String> handleCompanyNotFound(CompanyNotFound ex) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+  }
 
-    @ExceptionHandler(RolNotFound.class)
-    public ResponseEntity<String> handleRolNameNotFound(RolNotFound ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
+  @ExceptionHandler(RolNotFound.class)
+  public ResponseEntity<String> handleRolNameNotFound(RolNotFound ex) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+  }
 
-    @ExceptionHandler(GroupNotFound.class)
-    public ResponseEntity<String> handleGroupNotFound(GroupNotFound ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
+  @ExceptionHandler(GroupNotFound.class)
+  public ResponseEntity<String> handleGroupNotFound(GroupNotFound ex) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+  }
 
-    @ExceptionHandler(CompanyMismatchException.class)
-    public ResponseEntity<String> handleCompanyMismatch(CompanyMismatchException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
-    }
+  @ExceptionHandler(CompanyMismatchException.class)
+  public ResponseEntity<String> handleCompanyMismatch(CompanyMismatchException ex) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+  }
 
-    @ExceptionHandler(CompanyUserConflict.class)
-    public ResponseEntity<String> handleCompanyConflictUser(CompanyUserConflict ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-    }
-
+  @ExceptionHandler(CompanyUserConflict.class)
+  public ResponseEntity<String> handleCompanyConflictUser(CompanyUserConflict ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+  }
 }

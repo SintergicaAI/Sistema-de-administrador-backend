@@ -26,7 +26,8 @@ public class UserDTO {
       String name,
       String lastName,
       @Email(message = "Correo no valido") @NotBlank(message = "Correo no puede estar vacio")
-          String email, List<GroupDTO> groupDTOList) {
+          String email,
+      List<GroupDTO> groupDTOList) {
     this.id = id;
     this.name = name;
     this.lastName = lastName;

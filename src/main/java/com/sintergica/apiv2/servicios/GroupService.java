@@ -37,11 +37,10 @@ public class GroupService {
 
   public Group findGroupById(UUID uuidGroup) {
 
-    if(groupRepository.findById(uuidGroup).isPresent()){
+    if (groupRepository.findById(uuidGroup).isPresent()) {
       return groupRepository.findById(uuidGroup).get();
     }
 
     throw new GroupNotFound("Grupo no encontrado");
   }
-
 }

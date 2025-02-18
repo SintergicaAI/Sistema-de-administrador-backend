@@ -23,8 +23,8 @@ public class RolService {
 
   public Rol getRolByName(String name) {
 
-    for(Rol role : roles) {
-      if(name.equals(role.getName())) {
+    for (Rol role : roles) {
+      if (name.equals(role.getName())) {
         return role;
       }
     }

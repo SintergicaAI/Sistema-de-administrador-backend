@@ -29,12 +29,10 @@ public class CompanyService {
 
     Optional<Company> companyOptional = this.companyRepository.findById(uuid);
 
-    if(!companyOptional.isPresent()) {
+    if (!companyOptional.isPresent()) {
       throw new CompanyNotFound("Compañia no encontrada");
     }
 
     return this.companyRepository.findById(uuid).get();
-
-
   }
 }

@@ -40,10 +40,8 @@ public class ControllerGroup {
     return ResponseEntity.status(HttpStatus.CONFLICT).build();
   }
 
-
   @GetMapping("/getGroupByUUID")
   public ResponseEntity<Group> getGroupByUUID(@RequestParam UUID groupUUID) {
     return ResponseEntity.ok(groupService.findGroupById(groupUUID));
   }
-
 }

@@ -1,8 +1,7 @@
 package com.sintergica.apiv2.dto;
 
-import java.util.UUID;
-
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.UUID;
 import lombok.Data;
 import lombok.ToString;
 

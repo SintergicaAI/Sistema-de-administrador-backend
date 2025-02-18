@@ -1,13 +1,9 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.dto.UserDTO;
-import com.sintergica.apiv2.dto.WrapperUserDTO;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.servicios.CompanyService;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,5 +37,4 @@ public class ControllerCompany {
   public ResponseEntity<Company> getCompanyByUUID(@RequestParam UUID uuid) {
     return ResponseEntity.ok(companyService.getCompanyById(uuid));
   }
-
 }

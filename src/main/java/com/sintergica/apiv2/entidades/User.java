@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-
 import java.util.*;
-
 import lombok.Data;
 
 // @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
@@ -43,5 +41,4 @@ public class User {
 
   @ManyToMany(mappedBy = "user", fetch = FetchType.EAGER)
   private Set<Group> groups;
-
 }

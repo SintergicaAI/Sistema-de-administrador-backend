@@ -75,24 +75,22 @@ public class ControllerClient {
       @PathVariable(name = "email") String email,
       @PathVariable(name = "nameRol") String newRolUser) {
 
-      userService.changeUserRole(email, newRolUser);
+    userService.changeUserRole(email, newRolUser);
 
-      return ResponseEntity.ok("Rol cambiado");
+    return ResponseEntity.ok("Rol cambiado");
   }
 
   @PostMapping("/{email}/addGroup/{uuidGroup}")
-  public ResponseEntity<String> addGroup(
-      @PathVariable String email, @PathVariable UUID uuidGroup) {
+  public ResponseEntity<String> addGroup(@PathVariable String email, @PathVariable UUID uuidGroup) {
 
-      userService.addUserToGroup(email, uuidGroup);
-      return ResponseEntity.ok("Usuario agregado al grupo");
+    userService.addUserToGroup(email, uuidGroup);
+    return ResponseEntity.ok("Usuario agregado al grupo");
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/getEmployeeGroups")
   public ResponseEntity<WrapperUserDTO> getEmployeeGroups(Pageable pageable) {
-      Page<UserDTO> result = userService.getEmployeeGroupsRemastered(pageable);
-      return ResponseEntity.ok(new WrapperUserDTO(result));
+    Page<UserDTO> result = userService.getEmployeeGroupsRemastered(pageable);
+    return ResponseEntity.ok(new WrapperUserDTO(result));
   }
-
 }
