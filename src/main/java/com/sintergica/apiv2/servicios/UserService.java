@@ -36,7 +36,12 @@ public class UserService {
 
   public boolean registerUser(User user) {
 
-    this.findByEmail(user.getEmail());
+    User userEmail = this.userRepository.findByEmail(user.getEmail());
+
+    if (userEmail != null) {
+      return false;
+    }
+
     this.generateNewUser(user);
     this.userRepository.save(user);
 
