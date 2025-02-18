@@ -1,6 +1,7 @@
 package com.sintergica.apiv2.servicios;
 
 import com.sintergica.apiv2.entidades.Rol;
+import com.sintergica.apiv2.exceptions.role.RolNotFound;
 import com.sintergica.apiv2.repositorio.RolRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,9 +22,13 @@ public class RolService {
   }
 
   public Rol getRolByName(String name) {
-    return roles.stream()
-        .filter(rol -> rol.getName().equalsIgnoreCase(name))
-        .findFirst()
-        .orElse(null);
+
+    for(Rol role : roles) {
+      if(name.equals(role.getName())) {
+        return role;
+      }
+    }
+
+    throw new RolNotFound("Rol no encontrado");
   }
 }

@@ -1,17 +1,25 @@
 package com.sintergica.apiv2.servicios;
 
+import com.sintergica.apiv2.dto.GroupDTO;
+import com.sintergica.apiv2.dto.UserDTO;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.Rol;
 import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
+import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.repositorio.UserRepository;
 import com.sintergica.apiv2.utilidades.TokenUtils;
 import io.jsonwebtoken.Jwts;
 import jakarta.transaction.Transactional;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,27 +34,88 @@ public class UserService {
   private final CompanyService companyService;
   private final GroupService groupService;
 
-  public Map<String, String> registerUser(User user) {
-    HashMap<String, String> response = new HashMap<>();
+  public boolean registerUser(User user) {
 
-    if (isUserRegistered(user)) {
-      response.put("Exito", "false");
-      response.put("token", null);
-      return response;
-    }
+    this.findByEmail(user.getEmail());
+    this.generateNewUser(user);
+    this.userRepository.save(user);
 
-    generateNewUser(user);
-    userRepository.save(user);
-
-    String token = generateToken(user.getEmail());
-    response.put("Exito", "true");
-    response.put("token", token);
-
-    return response;
+    return true;
   }
 
-  private boolean isUserRegistered(User user) {
-    return userRepository.findByEmail(user.getEmail()) != null;
+  @Transactional
+  public void addUserToCompany(String email, UUID targetCompanyId) {
+
+    User user = this.findByEmail(email);
+    Company company = companyService.getCompanyById(targetCompanyId);
+
+    if(user.getCompany() != null){
+      throw new CompanyUserConflict("El usuario ya tiene asociada una compañia");
+    }
+
+    user.setCompany(company);
+    userRepository.save(user);
+  }
+
+  @Transactional
+  public void changeUserRole(String email, String newRole) {
+
+    User user = this.findByEmail(email);
+    Rol role = rolService.getRolByName(newRole);
+    user.setRol(role);
+
+    userRepository.save(user);
+  }
+
+  @Transactional
+  public void addUserToGroup(String email, UUID groupId) {
+
+    User user = this.findByEmail(email);
+    Group group = groupService.findGroupById(groupId);
+
+    if (!user.getCompany().getId().equals(group.getCompany().getId())) {
+      throw new CompanyUserConflict("El usuario o el grupo no tienen asociados la misma empresa");
+    }
+
+    group.getUser().add(user);
+    groupService.save(group);
+  }
+
+
+  public Page<UserDTO> getEmployeeGroupsRemastered(Pageable pageable) {
+
+    String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+
+    User user = this.findByEmail(userName);
+    Company company = this.companyService.getCompanyById(user.getCompany().getId());
+
+    Page<User> users = this.userRepository.findAllByCompany(company, pageable);
+
+    List<UserDTO> userDTOs = new ArrayList<>();
+
+    for (User userGroup : users){
+
+      List<GroupDTO> groupDTOList = new ArrayList<>();
+
+      for (Group group : userGroup.getGroups()) {
+        groupDTOList.add(new GroupDTO(group.getId(), group.getName()));
+      }
+
+      UserDTO userDTO = new UserDTO(userGroup.getId(), userGroup.getName(), userGroup.getLastName(), userGroup.getEmail(), groupDTOList);
+
+      userDTOs.add(userDTO);
+    }
+
+    return new PageImpl<>(userDTOs, pageable, users.getTotalElements());
+  }
+
+  public User findByEmail(String email) {
+
+    if(userRepository.findByEmail(email) == null) {
+      throw new UserNotFound("Usuario no encontrado");
+    }
+
+    return userRepository.findByEmail(email);
   }
 
   private void generateNewUser(User user) {
@@ -55,91 +124,8 @@ public class UserService {
     user.setPassword(passwordEncoder.encode(user.getPassword()));
   }
 
-  public boolean loginUser(User userRequest) {
-    User user = this.findByEmail(userRequest.getEmail());
-
-    if (user == null) {
-      return false;
-    }
-
-    if (!user.getPassword().equals(userRequest.getPassword())) {
-      return false;
-    }
-
-    return true;
-  }
-
-  @Transactional
-  public Map<String, String> addUserToCompany(String email, UUID targetCompanyId) {
-    Map<String, String> response = new HashMap<>();
-
-    User user = userRepository.findByEmail(email);
-    if (user == null) {
-      throw new RuntimeException("Usuario no encontrado");
-    }
-
-    Company company =
-        companyService
-            .getCompanyById(targetCompanyId)
-            .orElseThrow(() -> new RuntimeException("Compañía no encontrada"));
-
-    if (user.getCompany() != null) {
-      response.put("mensaje", "El usuario ya pertenece a una compañía");
-      return response;
-    }
-
-    user.setCompany(company);
-    userRepository.save(user);
-
-    response.put("mensaje", "El cliente se ha asignado a una compañia");
-    return response;
-  }
-
-  @Transactional
-  public Map<String, String> changeUserRole(String email, String newRole) {
-
-    User user = userRepository.findByEmail(email);
-    if (user == null) {
-      throw new RuntimeException("Usuario no encontrado");
-    }
-
-    Rol role = rolService.getRolByName(newRole);
-    if (role == null) {
-      throw new RuntimeException("Rol no existe");
-    }
-    user.setRol(role);
-    userRepository.save(user);
-
-    return Map.of("mensaje", "Rol actualizado correctamente");
-  }
-
-  @Transactional
-  public void addUserToGroup(String email, UUID groupId) {
-
-    User user = userRepository.findByEmail(email);
-
-    if (user == null) {
-      throw new RuntimeException("Usuario no encontrado");
-    }
-
-    Group group =
-        groupService
-            .findGroupById(groupId)
-            .orElseThrow(() -> new RuntimeException("Grupo no encontrado"));
-
-    if (!user.getCompany().getId().equals(group.getCompany().getId())) {
-      throw new RuntimeException("El usuario y el grupo pertenecen a compañías diferentes");
-    }
-
-    group.getUser().add(user);
-    groupService.save(group);
-  }
-
-  public User findByEmail(String email) {
-    return userRepository.findByEmail(email);
-  }
-
   public String generateToken(String email) {
     return TokenUtils.createToken(Jwts.claims().subject(email).build());
   }
+
 }

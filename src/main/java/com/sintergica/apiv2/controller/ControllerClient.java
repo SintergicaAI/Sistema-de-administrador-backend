@@ -1,5 +1,7 @@
 package com.sintergica.apiv2.controller;
 
+import com.sintergica.apiv2.dto.UserDTO;
+import com.sintergica.apiv2.dto.WrapperUserDTO;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.servicios.UserService;
 import jakarta.validation.Valid;
@@ -7,9 +9,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,73 +31,68 @@ public class ControllerClient {
   @PostMapping("/register")
   public ResponseEntity<Map<String, String>> register(@Valid @RequestBody User user) {
 
-    Map<String, String> serviceResponse = userService.registerUser(user);
+    HashMap<String, String> response = new HashMap<>();
+    boolean serviceResponse = userService.registerUser(user);
 
-    if (Boolean.TRUE.equals(serviceResponse.get("Exito"))) {
-      return new ResponseEntity<>(serviceResponse, HttpStatus.CREATED);
+    if (!serviceResponse) {
+      response.put("token", null);
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
-    return ResponseEntity.badRequest().body(serviceResponse);
+    String token = this.userService.generateToken(user.getEmail());
+    response.put("token", token);
+
+    return ResponseEntity.badRequest().body(response);
   }
 
   @PostMapping("/login")
   public ResponseEntity<Map<String, String>> login(@Valid @RequestBody User userRequest) {
-    boolean isValidUser = userService.loginUser(userRequest);
+    User user = userService.findByEmail(userRequest.getEmail());
     HashMap<String, String> response = new HashMap<>();
 
-    if (isValidUser) {
-      String token = this.userService.generateToken(userRequest.getEmail());
-      response.put("mensaje", "Bienvenido");
-      response.put("exitoso", "true");
-      response.put("token", token);
-
+    if (user != null) {
+      response.put("token", this.userService.generateToken(userRequest.getEmail()));
       return ResponseEntity.ok(response);
     }
 
-    response.put("mensaje", "Credenciales incorrectas");
-    response.put("exitoso", "false");
-
+    response.put("token", "null");
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/{email}/company/{uuid}")
-  public ResponseEntity<Map<String, String>> addClientToCompany(
+  public ResponseEntity<String> addClientToCompany(
       @PathVariable(name = "email") String email, @PathVariable(name = "uuid") UUID targetCompany) {
 
-    try {
-      Map<String, String> serviceResponse = userService.addUserToCompany(email, targetCompany);
+    userService.addUserToCompany(email, targetCompany);
 
-      return ResponseEntity.ok(serviceResponse);
-    } catch (RuntimeException ex) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("mensaje", ex.getMessage()));
-    }
+    return ResponseEntity.ok("Cliente agregado a compañia");
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/{email}/rol/{nameRol}")
-  public ResponseEntity<Map<String, String>> changeRolClient(
+  public ResponseEntity<String> changeRolClient(
       @PathVariable(name = "email") String email,
       @PathVariable(name = "nameRol") String newRolUser) {
 
-    try {
-      Map<String, String> response = userService.changeUserRole(email, newRolUser);
-      return ResponseEntity.ok(response);
-    } catch (RuntimeException ex) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("mensaje", ex.getMessage()));
-    }
+      userService.changeUserRole(email, newRolUser);
+
+      return ResponseEntity.ok("Rol cambiado");
   }
 
   @PostMapping("/{email}/addGroup/{uuidGroup}")
-  public ResponseEntity<Map<String, String>> addGroup(
+  public ResponseEntity<String> addGroup(
       @PathVariable String email, @PathVariable UUID uuidGroup) {
 
-    try {
       userService.addUserToGroup(email, uuidGroup);
-      return ResponseEntity.ok(Map.of("Success", "true"));
-
-    } catch (RuntimeException ex) {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("Success", "false"));
-    }
+      return ResponseEntity.ok("Usuario agregado al grupo");
   }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/getEmployeeGroups")
+  public ResponseEntity<WrapperUserDTO> getEmployeeGroups(Pageable pageable) {
+      Page<UserDTO> result = userService.getEmployeeGroupsRemastered(pageable);
+      return ResponseEntity.ok(new WrapperUserDTO(result));
+  }
+
 }

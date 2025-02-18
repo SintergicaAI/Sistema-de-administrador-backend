@@ -1,21 +1,13 @@
 package com.sintergica.apiv2.servicios;
 
-import com.sintergica.apiv2.entidades.Company;
-import com.sintergica.apiv2.entidades.Grant;
 import com.sintergica.apiv2.entidades.Group;
-import com.sintergica.apiv2.entidades.User;
-import com.sintergica.apiv2.repositorio.CompanyRepository;
-import com.sintergica.apiv2.repositorio.GrantRepository;
+import com.sintergica.apiv2.exceptions.group.GroupNotFound;
 import com.sintergica.apiv2.repositorio.GroupRepository;
-import com.sintergica.apiv2.repositorio.UserRepository;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,9 +16,6 @@ import org.springframework.stereotype.Service;
 public class GroupService {
 
   private final GroupRepository groupRepository;
-  private final UserRepository userRepository;
-  private final CompanyRepository companyRepository;
-  private final GrantRepository grantRepository;
 
   public List<Group> findAll() {
     return groupRepository.findAll();
@@ -46,117 +35,13 @@ public class GroupService {
     return response;
   }
 
-  public Map<String, String> addUserToGroup(UUID groupId, String emailUser) {
-    Optional<Group> currentGroupOpt = groupRepository.findById(groupId);
-    User currentUser = userRepository.findByEmail(emailUser);
+  public Group findGroupById(UUID uuidGroup) {
 
-    if (currentGroupOpt.isPresent()
-        && currentUser != null
-        && currentUser.getCompany() != null
-        && currentGroupOpt.get().getCompany() != null
-        && currentUser.getCompany().getId().equals(currentGroupOpt.get().getCompany().getId())) {
-
-      Group currentGroup = currentGroupOpt.get();
-      currentGroup.getUser().add(currentUser);
-      groupRepository.save(currentGroup);
-
-      HashMap<String, String> response = new HashMap<>();
-      response.put("success", "Usuario agregado al grupo");
-      return response;
+    if(groupRepository.findById(uuidGroup).isPresent()){
+      return groupRepository.findById(uuidGroup).get();
     }
 
-    HashMap<String, String> response = new HashMap<>();
-    response.put(
-        "error", "Uno de los campos es nulo o la empresa no esta asociada con el usuario y grupo");
-    return response;
+    throw new GroupNotFound("Grupo no encontrado");
   }
 
-  public Map<String, String> addNewGroup(
-      String nameGroup, List<String> grantList, UUID companyUUID) {
-    HashMap<String, String> response = new HashMap<>();
-    Optional<Company> company = companyRepository.findById(companyUUID);
-
-    if (company.isEmpty()) {
-      response.put("error", "La compañia no existe");
-      return response;
-    }
-
-    Set<Grant> grants =
-        grantList.stream()
-            .map(grantRepository::findByName)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
-
-    Group newGroup = new Group();
-    newGroup.setName(nameGroup);
-    newGroup.setCompany(company.get());
-    newGroup.setGrant(grants);
-    groupRepository.save(newGroup);
-
-    response.put("success", "Grupo agregado");
-    return response;
-  }
-
-  public Map<String, String> deleteUserFromGroup(UUID uuidGroup, String emailClient) {
-    HashMap<String, String> response = new HashMap<>();
-
-    Optional<Group> group = groupRepository.findById(uuidGroup);
-    User user = userRepository.findByEmail(emailClient);
-
-    if (group.isEmpty()) {
-      response.put("error", "Grupo no encontrado");
-      return response;
-    }
-
-    if (user == null) {
-      response.put("error", "Usuario no encontrado");
-      return response;
-    }
-
-    Group referenceGroup = group.get();
-    if (!referenceGroup.getUser().contains(user)) {
-      response.put("error", "El usuario no pertenece al grupo");
-      return response;
-    }
-
-    referenceGroup.getUser().remove(user);
-    groupRepository.save(referenceGroup);
-
-    response.put("success", "Usuario eliminado correctamente");
-    return response;
-  }
-
-  public Map<String, String> changeGrants(UUID uuidGroup, List<String> newGrants) {
-
-    Optional<Group> optionalGroup = this.groupRepository.findById(uuidGroup);
-    HashMap<String, String> response = new HashMap<>();
-    if (optionalGroup.isPresent()) {
-
-      Set<Grant> grantList = optionalGroup.get().getGrant();
-
-      if (grantList != null) {
-        grantList.clear();
-
-        for (Grant grant : grantList) {
-          Grant cachedGrant = grantRepository.findByName(grant.getName());
-          grantList.add(cachedGrant);
-        }
-      }
-
-      optionalGroup.get().setGrant(grantList);
-      groupRepository.save(optionalGroup.get());
-    }
-
-    response.put("success", "Grupo agregado");
-
-    return response;
-  }
-
-  public Optional<Group> findGroupById(UUID uuidGroup) {
-    return groupRepository.findById(uuidGroup);
-  }
-
-  public List<Group> findGroupsByUserIdsIn(List<UUID> userIds) {
-    return this.groupRepository.findGroupsByUserIdsIn(userIds);
-  }
 }
