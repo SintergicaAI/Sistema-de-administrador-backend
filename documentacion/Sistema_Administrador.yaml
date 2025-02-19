@@ -190,6 +190,104 @@ paths:
                   message:
                     type: string
 
+
+  /clients/getEmployeeGroups:
+    get:
+      tags:
+        - Administración
+      summary: Obtener grupos de empleados paginados
+      description: Retorna lista de empleados con sus grupos, usando paginación
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Número de página (base 0)
+          schema:
+            type: integer
+            example: 0
+        - name: size
+          in: query
+          description: Cantidad de elementos por página
+          schema:
+            type: integer
+            example: 3
+        - name: sort
+          in: query
+          description: Campo de ordenamiento (opcional)
+          schema:
+            type: string
+            example: "name,asc"
+      responses:
+        '200':
+          description: Listado paginado de empleados y sus grupos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userDTOPage:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: "Carlos"
+                        lastName:
+                          type: string
+                          example: "Carlos"
+                        email:
+                          type: string
+                          format: email
+                          example: "carlos@gmail.com"
+                        groupDTOList:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                format: uuid
+                                example: "47b9f156-4f5f-45d7-b6c6-45d85b88156a"
+                              name:
+                                type: string
+                                example: "Almacen denmiblue administrador"
+                  currentPage:
+                    type: integer
+                    example: 0
+                  totalPages:
+                    type: integer
+                    example: 1
+                  totalElements:
+                    type: integer
+                    example: 3
+              example:   # Ejemplo explícito
+                userDTOPage:
+                  - name: "Carlos"
+                    lastName: "Carlos"
+                    email: "carlos@gmail.com"
+                    groupDTOList:
+                      - id: "47b9f156-4f5f-45d7-b6c6-45d85b88156a"
+                        name: "Almacen denmiblue administrador"
+                      - id: "ae3b3784-2c1c-4f55-8422-992bf8ccd33c"
+                        name: "Almacen denmiblue user"
+                  - name: "Alice"
+                    lastName: "James"
+                    email: "alice@gmail.com"
+                    groupDTOList:
+                      - id: "47b9f156-4f5f-45d7-b6c6-45d85b88156a"
+                        name: "Almacen denmiblue administrador"
+                currentPage: 0
+                totalPages: 1
+                totalElements: 3
+        '403':
+          description: Acceso no autorizado (sin rol ADMIN)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /clients/getEmployeeGroupsForCompany:
     get:
       tags:

@@ -7,13 +7,13 @@ import io.jsonwebtoken.security.Keys;
 import java.util.Date;
 import java.util.HashMap;
 
-public class TokenUtilidades {
+public final class TokenUtils {
 
   private static final String ACCESS_TOKEN_SECRET = System.getenv("DATASOURCE_SEED");
   private static final Long TOKEN_LIFETIME_MILLS =
       30L * 24 * 60 * 60 * 1000 /*60L * 60 * 1000*/ /*60L * 1000*/;
 
-  private TokenUtilidades() {
+  private TokenUtils() {
     throw new UnsupportedOperationException(
         "Esta es una clase de utilidades y no debe ser instanciada.");
   }
@@ -62,7 +62,7 @@ public class TokenUtilidades {
   }
 
   public static boolean isExpired(String token) {
-    return TokenUtilidades.isExpired(getTokenClaims(token));
+    return TokenUtils.isExpired(getTokenClaims(token));
   }
 
   public static boolean isExpired(Claims claims) {

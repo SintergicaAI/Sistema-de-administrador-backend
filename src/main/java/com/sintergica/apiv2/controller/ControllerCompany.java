@@ -1,20 +1,13 @@
 package com.sintergica.apiv2.controller;
 
 import com.sintergica.apiv2.entidades.Company;
-import com.sintergica.apiv2.entidades.Group;
-import com.sintergica.apiv2.entidades.User;
-import com.sintergica.apiv2.repositorio.CompanyRepository;
-import com.sintergica.apiv2.repositorio.GroupRepository;
-import java.util.Collections;
+import com.sintergica.apiv2.servicios.CompanyService;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,50 +16,25 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/company")
+@RequiredArgsConstructor
 public class ControllerCompany {
 
-  @Autowired private CompanyRepository companyRepository;
-  @Autowired private GroupRepository groupRepository;
+  private final CompanyService companyService;
 
   @GetMapping
   public ResponseEntity<List<Company>> getAllCompanies() {
-    return ResponseEntity.ok(companyRepository.findAll());
+    return ResponseEntity.ok(this.companyService.findAll());
   }
 
   @PostMapping("/add")
-  public ResponseEntity<Company> addNewCompany(@RequestBody Company company) {
-    return ResponseEntity.ok(companyRepository.save(company));
+  public ResponseEntity<String> addNewCompany(@RequestBody Company company) {
+    this.companyService.add(company);
+    return ResponseEntity.ok("Compañia agregada");
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/{uuid}")
   public ResponseEntity<Company> getCompanyByUUID(@RequestParam UUID uuid) {
-    return companyRepository
-        .findById(uuid)
-        .map(ResponseEntity::ok)
-        .orElse(ResponseEntity.notFound().build());
-  }
-
-  @PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("/{uuid}/client/{id}")
-  public ResponseEntity<Map<Group, List<User>>> getClientGroupsUser(
-      @PathVariable UUID uuid, @PathVariable(name = "id") UUID idClient) {
-
-    return companyRepository
-        .findById(uuid)
-        .map(
-            company ->
-                groupRepository.findAllByCompany(company).stream()
-                    .map(
-                        group ->
-                            Map.entry(
-                                group,
-                                group.getUser().stream()
-                                    .filter(user -> user.getId().equals(idClient))
-                                    .collect(Collectors.toList())))
-                    .filter(entry -> !entry.getValue().isEmpty())
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
-        .map(ResponseEntity::ok)
-        .orElseGet(() -> ResponseEntity.ok(Collections.emptyMap()));
+    return ResponseEntity.ok(companyService.getCompanyById(uuid));
   }
 }

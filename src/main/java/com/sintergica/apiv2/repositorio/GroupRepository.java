@@ -2,6 +2,7 @@ package com.sintergica.apiv2.repositorio;
 
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.Group;
+import com.sintergica.apiv2.entidades.User;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +19,6 @@ public interface GroupRepository extends JpaRepository<Group, UUID> {
 
   @Query("SELECT DISTINCT g FROM Group g JOIN FETCH g.user u WHERE u.id IN :userIds")
   List<Group> findGroupsByUserIdsIn(@Param("userIds") List<UUID> userIds);
+
+  List<Group> findByCompanyAndUserContaining(Company company, User user);
 }
