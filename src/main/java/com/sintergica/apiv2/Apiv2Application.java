@@ -1,7 +1,5 @@
 package com.sintergica.apiv2;
 
-import com.sintergica.apiv2.entidades.*;
-import com.sintergica.apiv2.repositorio.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
