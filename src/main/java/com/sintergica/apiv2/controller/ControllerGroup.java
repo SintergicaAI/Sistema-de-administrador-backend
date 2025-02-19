@@ -3,10 +3,8 @@ package com.sintergica.apiv2.controller;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.servicios.GroupService;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,12 +30,7 @@ public class ControllerGroup {
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping
   public ResponseEntity<Group> addGroup(@RequestBody Group group) {
-    Map<String, Boolean> response = this.groupService.save(group);
-    if (response.containsKey("success")) {
-      return ResponseEntity.ok(group);
-    }
-
-    return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    return ResponseEntity.ok(group);
   }
 
   @GetMapping("/getGroupByUUID")

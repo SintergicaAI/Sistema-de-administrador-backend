@@ -21,18 +21,8 @@ public class GroupService {
     return groupRepository.findAll();
   }
 
-  public Map<String, Boolean> save(Group group) {
-    Optional<Group> groupOptional = this.groupRepository.findById(group.getId());
-    HashMap<String, Boolean> response = new HashMap<>();
-
-    if (groupOptional.isPresent()) {
-      response.put("error", false);
-      return response;
-    }
-
-    response.put("success", true);
+  public void save(Group group) {
     this.groupRepository.save(group);
-    return response;
   }
 
   public Group findGroupById(UUID uuidGroup) {
