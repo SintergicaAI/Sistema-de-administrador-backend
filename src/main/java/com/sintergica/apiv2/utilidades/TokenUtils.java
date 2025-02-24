@@ -9,6 +9,8 @@ import java.util.HashMap;
 
 public final class TokenUtils {
 
+  private static final String SECRETREFRESH = "SECRET_REFRESH_TOKEN";
+
   private static final String ACCESS_TOKEN_SECRET = System.getenv("DATASOURCE_SEED");
   private static final Long TOKEN_LIFETIME_MILLS =
       30L * 24 * 60 * 60 * 1000 /*60L * 60 * 1000*/ /*60L * 1000*/;

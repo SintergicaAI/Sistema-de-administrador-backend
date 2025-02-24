@@ -7,10 +7,8 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.UUID;
 import lombok.Data;
-import lombok.ToString;
 
 @Data
-@ToString
 @JsonTypeName("user")
 public class UserDTO {
 

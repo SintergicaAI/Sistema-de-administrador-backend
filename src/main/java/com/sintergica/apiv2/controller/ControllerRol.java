@@ -1,32 +1,43 @@
 package com.sintergica.apiv2.controller;
 
+import com.sintergica.apiv2.dto.RolUserDTO;
 import com.sintergica.apiv2.entidades.Rol;
-import com.sintergica.apiv2.repositorio.RolRepository;
+import com.sintergica.apiv2.servicios.RolService;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/rol")
+@RequestMapping("/roles")
+@RequiredArgsConstructor
 public class ControllerRol {
 
-  @Autowired private RolRepository rolRepository;
+  private final RolService rolService;
 
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping
-  public ResponseEntity<List<Rol>> getRol() {
-    return ResponseEntity.ok().body(rolRepository.findAll());
+  public ResponseEntity<List<Rol>> getRoles() {
+    return ResponseEntity.ok().body(rolService.getRoles());
   }
 
   @PreAuthorize("hasRole('ADMIN')")
-  @PostMapping("/addNewRol")
+  @PostMapping
   public ResponseEntity<Rol> addNewRol(@RequestBody Rol rol) {
-    return ResponseEntity.ok().body(rolRepository.save(rol));
+    return ResponseEntity.ok().body(rolService.save(rol));
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @PostMapping("{name}/clients/{email}")
+  public ResponseEntity<RolUserDTO> changeRolClient(
+      @PathVariable(name = "email") String email, @PathVariable(name = "name") String newRolUser) {
+
+    return ResponseEntity.ok(this.rolService.changeUserRole(email, newRolUser));
   }
 }
