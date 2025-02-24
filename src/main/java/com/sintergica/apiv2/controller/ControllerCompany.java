@@ -59,8 +59,8 @@ public class ControllerCompany {
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/{uuid}/clients/{email}")
   public ResponseEntity<CompanyDTO> addClient(
-          @PathVariable(name = "uuid") UUID companyUuid,
-          @PathVariable(name = "email") String emailClient) {
+      @PathVariable(name = "uuid") UUID companyUuid,
+      @PathVariable(name = "email") String emailClient) {
 
     User userFound = userService.findByEmail(emailClient);
 
@@ -81,7 +81,8 @@ public class ControllerCompany {
     User user = this.companyService.addUserToCompany(userFound, company.get());
 
     return ResponseEntity.ok(
-            new CompanyDTO(company.get().getId(), company.get().getName(), user.getEmail(), user.getRol()));
+        new CompanyDTO(
+            company.get().getId(), company.get().getName(), user.getEmail(), user.getRol()));
   }
 
   @PreAuthorize("hasRole('ADMIN')")
@@ -101,6 +102,6 @@ public class ControllerCompany {
     }
 
     return ResponseEntity.ok(
-            new WrapperUserDTO(this.companyService.getGroupsCompany(companyUser, pageable)));
+        new WrapperUserDTO(this.companyService.getGroupsCompany(companyUser, pageable)));
   }
 }

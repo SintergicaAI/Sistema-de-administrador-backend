@@ -5,12 +5,10 @@ import com.sintergica.apiv2.entidades.Rol;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.role.RolNotFound;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
-
-import java.util.List;
-import java.util.Optional;
-
 import com.sintergica.apiv2.servicios.RolService;
 import com.sintergica.apiv2.servicios.UserService;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -9,12 +9,10 @@ import com.sintergica.apiv2.exceptions.group.GroupNotFound;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.servicios.GroupService;
 import com.sintergica.apiv2.servicios.UserService;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -61,8 +59,7 @@ public class ControllerGroup {
 
   @PostMapping("{uuid}/clients/{email}")
   public ResponseEntity<GroupDTO> addGroup(
-          @PathVariable String email,
-          @PathVariable(name = "uuid") UUID uuidGroup) {
+      @PathVariable String email, @PathVariable(name = "uuid") UUID uuidGroup) {
 
     User user = this.userService.findByEmail(email);
     if (user == null) {
