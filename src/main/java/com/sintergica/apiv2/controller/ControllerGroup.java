@@ -1,22 +1,19 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.entidades.Company;
-import com.sintergica.apiv2.entidades.Grant;
+import com.sintergica.apiv2.dto.GroupDTO;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
-import com.sintergica.apiv2.repositorio.CompanyRepository;
-import com.sintergica.apiv2.repositorio.GrantRepository;
-import com.sintergica.apiv2.repositorio.GroupRepository;
-import com.sintergica.apiv2.repositorio.UserRepository;
-import java.util.HashMap;
+import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
+import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
+import com.sintergica.apiv2.exceptions.group.GroupNotFound;
+import com.sintergica.apiv2.exceptions.user.UserNotFound;
+import com.sintergica.apiv2.servicios.GroupService;
+import com.sintergica.apiv2.servicios.UserService;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,135 +21,66 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/group")
+@RequiredArgsConstructor
 public class ControllerGroup {
 
-  @Autowired private GroupRepository groupRepository;
-  @Autowired private UserRepository userRepository;
-  @Autowired private CompanyRepository companyRepository;
-  @Autowired private GrantRepository grantRepository;
+  private final GroupService groupService;
+  private final UserService userService;
 
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping
-  public ResponseEntity<List<Group>> getGroups() {
-    return ResponseEntity.ok(groupRepository.findAll());
+  public ResponseEntity<List<GroupDTO>> getGroups() {
+    List<Group> groups = groupService.findAll();
+    List<GroupDTO> groupDTOList = new ArrayList<>();
+
+    groups.forEach(group -> groupDTOList.add(new GroupDTO(group.getId(), group.getName())));
+
+    return ResponseEntity.ok(groupDTOList);
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping
   public ResponseEntity<Group> addGroup(@RequestBody Group group) {
-    return ResponseEntity.ok(groupRepository.save(group));
+    return ResponseEntity.ok(groupService.save(group));
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("/addNewClientToGroup")
-  public ResponseEntity<HashMap<String, String>> addNewClientToGroup(
-      @RequestParam UUID groupId, @RequestParam String emailUser) {
-
-    Optional<Group> currentGroup = groupRepository.findById(groupId);
-    User currentUser = userRepository.findByEmail(emailUser);
-
-    if (currentGroup != null
-        && currentUser != null
-        && currentUser.getCompany() != null
-        && currentGroup.get().getCompany() != null
-        && currentUser.getCompany().getId() == currentGroup.get().getCompany().getId()) {
-
-      currentGroup.get().getUser().add(currentUser);
-      groupRepository.save(currentGroup.get());
-
-      HashMap<String, String> response = new HashMap<>();
-      response.put("Exito", "Usuario agregado al grupo");
-      return ResponseEntity.ok(response);
+  @GetMapping("/{uuid}")
+  public ResponseEntity<Group> getGroupByUUID(@PathVariable(name = "uuid") UUID groupUUID) {
+    Group groupFound = groupService.findGroupById(groupUUID);
+    if (groupFound == null) {
+      throw new GroupNotFound("Grupo no encontrado");
     }
-
-    HashMap<String, String> response = new HashMap<>();
-    response.put(
-        "Sin exito",
-        "Uno de los campos es nulo o la empresa no esta asociada con el usuario y grupo");
-
-    return ResponseEntity.badRequest().body(response);
+    return ResponseEntity.ok(groupFound);
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
-  @PostMapping("/addNewGroup")
-  public ResponseEntity<HashMap<String, Object>> addNewGroup(
-      @RequestParam String nameGroup,
-      @RequestParam List<String> grantList,
-      @RequestParam UUID companyUUID) {
+  @PostMapping("{uuid}/clients/{email}")
+  public ResponseEntity<GroupDTO> addGroup(
+      @PathVariable String email, @PathVariable(name = "uuid") UUID uuidGroup) {
 
-    Optional<Company> company = companyRepository.findById(companyUUID);
-
-    if (company.isEmpty()) {
-      HashMap<String, Object> response = new HashMap<>();
-      response.put("Sin exito", "La compañia no existe");
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
-    Set<Grant> grants =
-        grantList.stream()
-            .map(grantRepository::findByName)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toSet());
-
-    Group newGroup = new Group();
-    newGroup.setName(nameGroup);
-    newGroup.setCompany(company.get());
-    newGroup.setGrant(grants);
-    groupRepository.save(newGroup);
-
-    HashMap<String, Object> response = new HashMap<>();
-    response.put("Exito", "Grupo agregado");
-
-    return ResponseEntity.ok(response);
-  }
-
-  @GetMapping("/getGroupByUUID")
-  public ResponseEntity<Group> getGroupByUUID(@RequestParam UUID groupUUID) {
-    return groupRepository
-        .findById(groupUUID)
-        .map(ResponseEntity::ok)
-        .orElse(ResponseEntity.notFound().build());
-  }
-
-  @GetMapping("/{uuid}/deleteUser/{email}")
-  public ResponseEntity<HashMap<String, Object>> deleteUser(
-      @PathVariable(name = "uuid") UUID uuidGroup, @PathVariable("email") String emailClient) {
-
-    Optional<Group> group = groupRepository.findById(uuidGroup);
-    User user = userRepository.findByEmail(emailClient);
-
-    HashMap<String, Object> response = new HashMap<>();
-
-    if (group.isEmpty()) {
-      response.put("Exito", false);
-      response.put("Mensaje", "Grupo no encontrado");
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-    }
-
+    User user = this.userService.findByEmail(email);
     if (user == null) {
-      response.put("Exito", false);
-      response.put("Mensaje", "Usuario no encontrado");
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+      throw new UserNotFound("User not found");
     }
 
-    Group referenceGroup = group.get();
-    if (!referenceGroup.getUser().contains(user)) {
-      response.put("Exito", false);
-      response.put("Mensaje", "El usuario no pertenece al grupo");
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    Optional<Group> group = this.groupService.findById(uuidGroup);
+
+    if (!group.isPresent()) {
+      throw new GroupNotFound("Group not found");
     }
 
-    referenceGroup.getUser().remove(user);
-    groupRepository.save(referenceGroup);
+    if (user.getCompany() == null) {
+      throw new CompanyNotFound("Usuario sin compañia asociada");
+    }
 
-    response.put("Exito", true);
-    response.put("Mensaje", "Usuario eliminado correctamente");
+    if (!user.getCompany().getId().equals(group.get().getCompany().getId())) {
+      throw new CompanyUserConflict("El usuario o el grupo no tienen asociados la misma empresa");
+    }
 
-    return ResponseEntity.ok(response);
+    Group groupTarget = groupService.addUser(user, group.get());
+    return ResponseEntity.ok(new GroupDTO(groupTarget.getId(), groupTarget.getName()));
   }
 }

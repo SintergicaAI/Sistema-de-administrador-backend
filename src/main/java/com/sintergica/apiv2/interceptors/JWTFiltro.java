@@ -1,14 +1,12 @@
 package com.sintergica.apiv2.interceptors;
 
 import com.sintergica.apiv2.servicios.CustomUserDetailsService;
-import com.sintergica.apiv2.utilidades.TokenUtilidades;
+import com.sintergica.apiv2.utilidades.TokenUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,7 +18,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JWTFiltro extends OncePerRequestFilter {
 
   private final CustomUserDetailsService customUserDetailsService;
-  private static final Logger logger = LoggerFactory.getLogger(JWTFiltro.class);
 
   public JWTFiltro(CustomUserDetailsService customUserDetailsService) {
 
@@ -36,13 +33,13 @@ public class JWTFiltro extends OncePerRequestFilter {
     if (authHeader != null && authHeader.startsWith("Bearer ")) {
       String token = authHeader.substring(7);
 
-      if (TokenUtilidades.getTokenClaims(token) != null) {
-        String correo = TokenUtilidades.getTokenClaims(token).getSubject();
+      if (TokenUtils.getTokenClaims(token) != null) {
+        String correo = TokenUtils.getTokenClaims(token).getSubject();
 
         if (correo != null && SecurityContextHolder.getContext().getAuthentication() == null) {
           UserDetails user = customUserDetailsService.loadUserByUsername(correo);
 
-          if (!TokenUtilidades.isExpired(token)) {
+          if (!TokenUtils.isExpired(token)) {
 
             UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
