@@ -42,14 +42,13 @@ public class ControllerRol {
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("{name}/clients/{email}")
   public ResponseEntity<RolUserDTO> changeRolClient(
-      @PathVariable(name = "email") String email, @PathVariable(name = "name") String newRolUser) {
+          @PathVariable(name = "email") String email,
+          @PathVariable(name = "name") String newRolUser) {
 
-    User userFound =
-        Optional.ofNullable(userService.findByEmail(email))
-            .orElseThrow(
-                () -> {
-                  throw new UserNotFound("Usuario no encontrado");
-                });
+    User userFound = userService.findByEmail(email);
+    if (userFound == null) {
+      throw new UserNotFound("Usuario no encontrado");
+    }
 
     Rol rol = this.rolService.getRolByName(newRolUser);
     if (rol == null) {
@@ -58,6 +57,6 @@ public class ControllerRol {
 
     User user = this.rolService.changeUserRole(userFound, rol);
     return ResponseEntity.ok(
-        new RolUserDTO(user.getEmail(), user.getName(), user.getLastName(), user.getRol()));
+            new RolUserDTO(user.getEmail(), user.getName(), user.getLastName(), user.getRol()));
   }
 }
