@@ -2,8 +2,12 @@ package com.sintergica.apiv2.controller;
 
 import com.sintergica.apiv2.dto.RolUserDTO;
 import com.sintergica.apiv2.entidades.Rol;
+import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.exceptions.role.RolNotFound;
+import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.servicios.RolService;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,6 +42,20 @@ public class ControllerRol {
   public ResponseEntity<RolUserDTO> changeRolClient(
       @PathVariable(name = "email") String email, @PathVariable(name = "name") String newRolUser) {
 
-    return ResponseEntity.ok(this.rolService.changeUserRole(email, newRolUser));
+    User userFound =
+        Optional.ofNullable(rolService.getUserService().findByEmail(email))
+            .orElseThrow(
+                () -> {
+                  throw new UserNotFound("Usuario no encontrado");
+                });
+
+    Rol rol = this.rolService.getRolByName(newRolUser);
+    if (rol == null) {
+      throw new RolNotFound("Rol no encontrado");
+    }
+
+    User user = this.rolService.changeUserRole(userFound, rol);
+    return ResponseEntity.ok(
+        new RolUserDTO(user.getEmail(), user.getName(), user.getLastName(), user.getRol()));
   }
 }

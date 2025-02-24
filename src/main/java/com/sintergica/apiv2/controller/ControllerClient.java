@@ -2,8 +2,11 @@ package com.sintergica.apiv2.controller;
 
 import com.sintergica.apiv2.dto.LoginAndRegisterDTO;
 import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.exceptions.user.UserConflict;
+import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.servicios.UserService;
 import jakarta.validation.Valid;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,11 +23,39 @@ public class ControllerClient {
 
   @PostMapping("/register")
   public ResponseEntity<LoginAndRegisterDTO> register(@Valid @RequestBody User user) {
-    return ResponseEntity.ok(this.userService.registerUser(user));
+
+    Optional.ofNullable(this.userService.getUserRepository().findByEmail(user.getEmail()))
+        .ifPresent(
+            user1 -> {
+              throw new UserConflict("Este email ya existe en el sistema");
+            });
+
+    User userCreated = this.userService.registerUser(user);
+    return ResponseEntity.ok(
+        new LoginAndRegisterDTO(
+            userCreated.getEmail(),
+            userCreated.getName(),
+            userCreated.getLastName(),
+            userService.generateToken(user.getEmail())));
   }
 
   @PostMapping("/login")
   public ResponseEntity<LoginAndRegisterDTO> login(@Valid @RequestBody User user) {
-    return ResponseEntity.ok(this.userService.login(user));
+
+    User userValid = this.userService.findByEmail(user.getEmail());
+    if (userValid == null) {
+      throw new UserNotFound("Usuario no encontrado");
+    }
+
+    User userFound = this.userService.login(user);
+    if (userFound == null) {
+      throw new UserNotFound("Usuario o contraseñas incorrectos");
+    }
+    return ResponseEntity.ok(
+        new LoginAndRegisterDTO(
+            userFound.getEmail(),
+            userFound.getName(),
+            userFound.getLastName(),
+            userService.generateToken(userFound.getEmail())));
   }
 }

@@ -5,20 +5,16 @@ import com.sintergica.apiv2.dto.UserDTO;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
-import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
-import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
 import com.sintergica.apiv2.repositorio.CompanyRepository;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -38,48 +34,16 @@ public class CompanyService {
   }
 
   public Company getCompanyById(UUID uuid) {
-
-    Optional<Company> companyOptional = this.companyRepository.findById(uuid);
-
-    if (!companyOptional.isPresent()) {
-      throw new CompanyNotFound("Compañia no encontrada");
-    }
-
     return this.companyRepository.findById(uuid).get();
   }
 
   @Transactional
-  public User addUserToCompany(String email, UUID targetCompanyId) {
-
-    User user = this.userService.findByEmail(email);
-    Optional<Company> company = this.companyRepository.findById(targetCompanyId);
-
-    company.orElseThrow(
-        () -> {
-          throw new CompanyNotFound("Compañia no encontrada");
-        });
-
-    if (user.getCompany() != null) {
-      throw new CompanyUserConflict("El usuario ya tiene asociada una compañia");
-    }
-
-    user.setCompany(company.get());
-
+  public User addUserToCompany(User user, Company company) {
+    user.setCompany(company);
     return this.userService.save(user);
   }
 
-  public Page<UserDTO> getGroupsCompany(Pageable pageable) {
-
-    String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-
-    User user = this.userService.findByEmail(userName);
-    Company company = user.getCompany();
-
-    Optional.ofNullable(company)
-        .orElseThrow(
-            () -> {
-              throw new CompanyNotFound("El usuario no tiene una compañia asociada");
-            });
+  public Page<UserDTO> getGroupsCompany(Company company, Pageable pageable) {
 
     Page<User> users = this.userService.findAllByCompany(company, pageable);
 

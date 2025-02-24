@@ -2,18 +2,17 @@ package com.sintergica.apiv2.servicios;
 
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
-import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
-import com.sintergica.apiv2.exceptions.group.GroupNotFound;
 import com.sintergica.apiv2.repositorio.GroupRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Data
 public class GroupService {
 
   private final GroupRepository groupRepository;
@@ -23,29 +22,18 @@ public class GroupService {
     return groupRepository.findAll();
   }
 
-  public void save(Group group) {
-    this.groupRepository.save(group);
+  public Group save(Group group) {
+    return this.groupRepository.save(group);
   }
 
   public Group findGroupById(UUID uuidGroup) {
-    return groupRepository
-        .findById(uuidGroup)
-        .orElseThrow(() -> new GroupNotFound("Grupo no encontrado"));
+    return groupRepository.findById(uuidGroup).get();
   }
 
   @Transactional
-  public Group addUser(String email, UUID groupId) {
+  public Group addUser(User user, Group group) {
 
-    User user = this.userService.findByEmail(email);
-    Optional<Group> group = this.groupRepository.findById(groupId);
-
-    group.orElseThrow(() -> new GroupNotFound("Grupo no encontrado"));
-
-    if (!user.getCompany().getId().equals(group.get().getCompany().getId())) {
-      throw new CompanyUserConflict("El usuario o el grupo no tienen asociados la misma empresa");
-    }
-
-    group.get().getUser().add(user);
-    return this.groupRepository.save(group.get());
+    group.getUser().add(user);
+    return this.groupRepository.save(group);
   }
 }

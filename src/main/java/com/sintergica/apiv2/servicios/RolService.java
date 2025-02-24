@@ -1,9 +1,7 @@
 package com.sintergica.apiv2.servicios;
 
-import com.sintergica.apiv2.dto.RolUserDTO;
 import com.sintergica.apiv2.entidades.Rol;
 import com.sintergica.apiv2.entidades.User;
-import com.sintergica.apiv2.exceptions.role.RolNotFound;
 import com.sintergica.apiv2.repositorio.RolRepository;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
@@ -34,18 +32,14 @@ public class RolService {
         return role;
       }
     }
-
-    throw new RolNotFound("Rol no encontrado");
+    return null;
   }
 
   @Transactional
-  public RolUserDTO changeUserRole(String email, String newRole) {
-    User user = this.userService.findByEmail(email);
-    Rol role = this.getRolByName(newRole);
+  public User changeUserRole(User user, Rol role) {
     user.setRol(role);
-
     user = userService.save(user);
-    return new RolUserDTO(user.getEmail(), user.getName(), user.getLastName(), user.getRol());
+    return user;
   }
 
   public Rol save(Rol role) {

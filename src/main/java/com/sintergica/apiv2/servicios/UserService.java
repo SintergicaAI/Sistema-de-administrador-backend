@@ -1,15 +1,11 @@
 package com.sintergica.apiv2.servicios;
 
-import com.sintergica.apiv2.dto.LoginAndRegisterDTO;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.User;
-import com.sintergica.apiv2.exceptions.user.PasswordConflict;
-import com.sintergica.apiv2.exceptions.user.UserConflict;
-import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.repositorio.UserRepository;
 import com.sintergica.apiv2.utilidades.TokenUtils;
 import io.jsonwebtoken.Jwts;
-import java.util.Optional;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,52 +14,29 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Data
 public class UserService {
 
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
 
-  public LoginAndRegisterDTO registerUser(User user) {
-
-    Optional.ofNullable(this.userRepository.findByEmail(user.getEmail()))
-        .ifPresent(
-            user1 -> {
-              throw new UserConflict("Este email ya existe en el sistema");
-            });
-
+  public User registerUser(User user) {
     this.generateNewUser(user);
-    User savedUser = this.userRepository.save(user);
-
-    return new LoginAndRegisterDTO(
-        user.getEmail(),
-        user.getName(),
-        user.getLastName(),
-        this.generateToken(savedUser.getEmail()));
+    return this.userRepository.save(user);
   }
 
-  public LoginAndRegisterDTO login(User user) {
+  public User login(User user) {
 
-    User userFound =
-        Optional.ofNullable(this.userRepository.findByEmail(user.getEmail()))
-            .orElseThrow(() -> new UserNotFound("Email no encontrado"));
+    User userFound = userRepository.findByEmail(user.getEmail());
 
     if (!passwordEncoder.matches(user.getPassword(), userFound.getPassword())) {
-      throw new PasswordConflict("Contraseña incorrecta");
+      return null;
     }
 
-    return new LoginAndRegisterDTO(
-        userFound.getEmail(),
-        userFound.getName(),
-        userFound.getLastName(),
-        this.generateToken(userFound.getEmail()));
+    return userFound;
   }
 
   public User findByEmail(String email) {
-
-    if (userRepository.findByEmail(email) == null) {
-      throw new UserNotFound("Usuario no encontrado");
-    }
-
     return userRepository.findByEmail(email);
   }
 
