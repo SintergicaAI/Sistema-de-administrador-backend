@@ -1,14 +1,16 @@
 package com.sintergica.apiv2.controller;
 
+import com.sintergica.apiv2.dto.*;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
-import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
+import com.sintergica.apiv2.exceptions.company.*;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
+
+import java.util.*;
+
 import com.sintergica.apiv2.servicios.GroupService;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import com.sintergica.apiv2.servicios.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,11 +27,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class ControllerGroup {
 
   private final GroupService groupService;
+  private final UserService userService;
 
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping
-  public ResponseEntity<List<Group>> getGroups() {
-    return ResponseEntity.ok(groupService.findAll());
+  public ResponseEntity<List<GroupDTO>> getGroups() {
+    List<Group> groups = groupService.findAll();
+    List<GroupDTO> groupDTOList = new ArrayList<>();
+
+    groups.forEach(group ->
+      groupDTOList.add(new GroupDTO(group.getId(), group.getName()))
+    );
+
+    return ResponseEntity.ok(groupDTOList);
   }
 
   @PreAuthorize("hasRole('ADMIN')")
@@ -47,23 +57,28 @@ public class ControllerGroup {
   }
 
   @PostMapping("{uuid}/clients/{email}")
-  public ResponseEntity<Group> addGroup(
+  public ResponseEntity<GroupDTO> addGroup(
       @PathVariable String email, @PathVariable(name = "uuid") UUID uuidGroup) {
 
-    User user = this.groupService.getUserService().findByEmail(email);
+    User user = this.userService.findByEmail(email);
     Optional.ofNullable(user)
         .orElseThrow(
             () -> {
               throw new UserNotFound("User not found");
             });
 
-    Optional<Group> group = this.groupService.getGroupRepository().findById(uuidGroup);
+    Optional<Group> group = this.groupService.findById(uuidGroup);
     group.orElseThrow(() -> new GroupNotFound("Group not found"));
+
+    if(user.getCompany() == null){
+      throw new CompanyNotFound("Usuario sin compañia asociada");
+    }
 
     if (!user.getCompany().getId().equals(group.get().getCompany().getId())) {
       throw new CompanyUserConflict("El usuario o el grupo no tienen asociados la misma empresa");
     }
 
-    return ResponseEntity.ok(groupService.addUser(user, group.get()));
+    Group groupTarget = groupService.addUser(user, group.get());
+    return ResponseEntity.ok(new GroupDTO(groupTarget.getId(), groupTarget.getName()));
   }
 }

@@ -7,9 +7,9 @@ import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.CompanyRepository;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+
+import java.util.*;
+
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -70,4 +70,9 @@ public class CompanyService {
 
     return new PageImpl<>(userDTOs, pageable, users.getTotalElements());
   }
+
+  public Optional<Company> findById(UUID uuid) {
+    return this.companyRepository.findById(uuid);
+  }
+
 }

@@ -4,8 +4,9 @@ import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.GroupRepository;
 import jakarta.transaction.Transactional;
-import java.util.List;
-import java.util.UUID;
+
+import java.util.*;
+
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,10 @@ public class GroupService {
 
   public Group findGroupById(UUID uuidGroup) {
     return groupRepository.findById(uuidGroup).get();
+  }
+
+  public Optional<Group> findById(UUID uuidGroup) {
+    return groupRepository.findById(uuidGroup);
   }
 
   @Transactional

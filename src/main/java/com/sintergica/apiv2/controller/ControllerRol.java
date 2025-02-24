@@ -5,7 +5,8 @@ import com.sintergica.apiv2.entidades.Rol;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.role.RolNotFound;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
-import com.sintergica.apiv2.servicios.RolService;
+import com.sintergica.apiv2.servicios.*;
+
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ControllerRol {
 
   private final RolService rolService;
+  private final UserService userService;
 
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping
@@ -43,7 +45,7 @@ public class ControllerRol {
       @PathVariable(name = "email") String email, @PathVariable(name = "name") String newRolUser) {
 
     User userFound =
-        Optional.ofNullable(rolService.getUserService().findByEmail(email))
+        Optional.ofNullable(userService.findByEmail(email))
             .orElseThrow(
                 () -> {
                   throw new UserNotFound("Usuario no encontrado");

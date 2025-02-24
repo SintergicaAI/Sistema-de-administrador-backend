@@ -1,15 +1,16 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.dto.WrapperUserDTO;
+import com.sintergica.apiv2.dto.*;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
-import com.sintergica.apiv2.servicios.CompanyService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import com.sintergica.apiv2.servicios.CompanyService;
+import com.sintergica.apiv2.servicios.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ControllerCompany {
 
   private final CompanyService companyService;
+  private final UserService userService;
 
   @GetMapping
   public ResponseEntity<List<Company>> getAllCompanies() {
@@ -55,11 +57,11 @@ public class ControllerCompany {
 
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/{uuid}/clients/{email}")
-  public ResponseEntity<User> addClient(
+  public ResponseEntity<CompanyDTO> addClient(
       @PathVariable(name = "uuid") UUID companyUuid,
       @PathVariable(name = "email") String emailClient) {
 
-    User userFound = this.companyService.getUserService().findByEmail(emailClient);
+    User userFound = userService.findByEmail(emailClient);
     Optional.ofNullable(userFound)
         .orElseThrow(
             () -> {
@@ -72,14 +74,14 @@ public class ControllerCompany {
 
     Company company =
         this.companyService
-            .getCompanyRepository()
             .findById(companyUuid)
             .orElseThrow(
                 () -> {
                   throw new CompanyNotFound("Company not found");
                 });
+    User user = this.companyService.addUserToCompany(userFound, company);
 
-    return ResponseEntity.ok(this.companyService.addUserToCompany(userFound, company));
+    return ResponseEntity.ok(new CompanyDTO(company.getId(), company.getName(), user.getEmail(), user.getRol()));
   }
 
   @PreAuthorize("hasRole('ADMIN')")
@@ -88,7 +90,7 @@ public class ControllerCompany {
 
     String userName = SecurityContextHolder.getContext().getAuthentication().getName();
 
-    User user = this.companyService.getUserService().findByEmail(userName);
+    User user = this.userService.findByEmail(userName);
     Optional.ofNullable(user)
         .orElseThrow(
             () -> {

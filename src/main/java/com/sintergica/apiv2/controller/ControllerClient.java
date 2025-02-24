@@ -24,7 +24,7 @@ public class ControllerClient {
   @PostMapping("/register")
   public ResponseEntity<LoginAndRegisterDTO> register(@Valid @RequestBody User user) {
 
-    Optional.ofNullable(this.userService.getUserRepository().findByEmail(user.getEmail()))
+    Optional.ofNullable(this.userService.findByEmail(user.getEmail()))
         .ifPresent(
             user1 -> {
               throw new UserConflict("Este email ya existe en el sistema");
