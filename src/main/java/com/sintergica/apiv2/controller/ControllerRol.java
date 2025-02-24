@@ -8,7 +8,6 @@ import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.servicios.RolService;
 import com.sintergica.apiv2.servicios.UserService;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,8 +41,7 @@ public class ControllerRol {
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("{name}/clients/{email}")
   public ResponseEntity<RolUserDTO> changeRolClient(
-          @PathVariable(name = "email") String email,
-          @PathVariable(name = "name") String newRolUser) {
+      @PathVariable(name = "email") String email, @PathVariable(name = "name") String newRolUser) {
 
     User userFound = userService.findByEmail(email);
     if (userFound == null) {
@@ -57,6 +55,6 @@ public class ControllerRol {
 
     User user = this.rolService.changeUserRole(userFound, rol);
     return ResponseEntity.ok(
-            new RolUserDTO(user.getEmail(), user.getName(), user.getLastName(), user.getRol()));
+        new RolUserDTO(user.getEmail(), user.getName(), user.getLastName(), user.getRol()));
   }
 }
