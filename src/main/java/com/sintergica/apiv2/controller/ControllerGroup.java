@@ -1,14 +1,20 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.dto.*;
+import com.sintergica.apiv2.dto.GroupDTO;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
-import com.sintergica.apiv2.exceptions.company.*;
+import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
+import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.servicios.GroupService;
 import com.sintergica.apiv2.servicios.UserService;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -46,25 +52,28 @@ public class ControllerGroup {
 
   @GetMapping("/{uuid}")
   public ResponseEntity<Group> getGroupByUUID(@PathVariable(name = "uuid") UUID groupUUID) {
-    Group groupFound =
-        Optional.ofNullable(groupService.findGroupById(groupUUID))
-            .orElseThrow(() -> new GroupNotFound("Grupo no encontrado"));
+    Group groupFound = groupService.findGroupById(groupUUID);
+    if (groupFound == null) {
+      throw new GroupNotFound("Grupo no encontrado");
+    }
     return ResponseEntity.ok(groupFound);
   }
 
   @PostMapping("{uuid}/clients/{email}")
   public ResponseEntity<GroupDTO> addGroup(
-      @PathVariable String email, @PathVariable(name = "uuid") UUID uuidGroup) {
+          @PathVariable String email,
+          @PathVariable(name = "uuid") UUID uuidGroup) {
 
     User user = this.userService.findByEmail(email);
-    Optional.ofNullable(user)
-        .orElseThrow(
-            () -> {
-              throw new UserNotFound("User not found");
-            });
+    if (user == null) {
+      throw new UserNotFound("User not found");
+    }
 
     Optional<Group> group = this.groupService.findById(uuidGroup);
-    group.orElseThrow(() -> new GroupNotFound("Group not found"));
+
+    if (!group.isPresent()) {
+      throw new GroupNotFound("Group not found");
+    }
 
     if (user.getCompany() == null) {
       throw new CompanyNotFound("Usuario sin compañia asociada");
