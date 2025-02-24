@@ -6,11 +6,9 @@ import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.company.*;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
-
-import java.util.*;
-
 import com.sintergica.apiv2.servicios.GroupService;
 import com.sintergica.apiv2.servicios.UserService;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,9 +33,7 @@ public class ControllerGroup {
     List<Group> groups = groupService.findAll();
     List<GroupDTO> groupDTOList = new ArrayList<>();
 
-    groups.forEach(group ->
-      groupDTOList.add(new GroupDTO(group.getId(), group.getName()))
-    );
+    groups.forEach(group -> groupDTOList.add(new GroupDTO(group.getId(), group.getName())));
 
     return ResponseEntity.ok(groupDTOList);
   }
@@ -70,7 +66,7 @@ public class ControllerGroup {
     Optional<Group> group = this.groupService.findById(uuidGroup);
     group.orElseThrow(() -> new GroupNotFound("Group not found"));
 
-    if(user.getCompany() == null){
+    if (user.getCompany() == null) {
       throw new CompanyNotFound("Usuario sin compañia asociada");
     }
 

@@ -6,7 +6,6 @@ import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.role.RolNotFound;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.servicios.*;
-
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;

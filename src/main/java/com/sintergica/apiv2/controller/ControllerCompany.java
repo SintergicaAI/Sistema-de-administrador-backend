@@ -6,11 +6,11 @@ import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
+import com.sintergica.apiv2.servicios.CompanyService;
+import com.sintergica.apiv2.servicios.UserService;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import com.sintergica.apiv2.servicios.CompanyService;
-import com.sintergica.apiv2.servicios.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -81,7 +81,8 @@ public class ControllerCompany {
                 });
     User user = this.companyService.addUserToCompany(userFound, company);
 
-    return ResponseEntity.ok(new CompanyDTO(company.getId(), company.getName(), user.getEmail(), user.getRol()));
+    return ResponseEntity.ok(
+        new CompanyDTO(company.getId(), company.getName(), user.getEmail(), user.getRol()));
   }
 
   @PreAuthorize("hasRole('ADMIN')")
