@@ -20,35 +20,40 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - email
+                - password
+                - name
+                - lastName
+                - rol
+                - company
               properties:
                 email:
-                  required: true
+                  type: string
+                  format: email
                   example: "username@host.com"
                   description: "ingresa un email valido sino no te dejare meterlo a la base de datos"
-                  format: email
-                  type: string
                 password:
-                  required: true
+                  type: string
                   example: "123"
                   description: "La contraseña por lo menos deberá ser de longitud mayor a 2"
-                  type: string
                 name:
-                  required: true
+                  type: string
                   example: "Nombre"
-                  type: string
                 lastName:
-                  required: true
-                  example: "Apellido"
                   type: string
+                  example: "Apellido"
                 rol:
-                  required: true
-                  example: "null"
-                  type: null
+                  allOf:
+                    - $ref: '#/components/schemas/Rol'
+                  nullable: true
+                  example: null
                   description: "Debes incluir este campo y este debera ser null"
                 company:
-                  required: true
-                  example: "null"
-                  type: null
+                  allOf:
+                    - $ref: '#/components/schemas/Company'
+                  nullable: true
+                  example: null
                   description: "Debes incluir el campo y este debera ser null"
       responses:
         200:
@@ -86,14 +91,18 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - email
+                - password
               properties:
                 email:
-                  example: "user@host.com"
                   type: string
+                  format: email
+                  example: "user@host.com"
                   description: "user@host.com"
                 password:
-                  example: "123"
                   type: string
+                  example: "123"
                   description: "123"
       responses:
         200:
@@ -125,6 +134,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Warnings"
+
   /company:
     get:
       tags:
@@ -137,7 +147,8 @@ paths:
               schema:
                 type: array
                 description: "Retorno una lista de empresas"
-                $ref: "#/components/schemas/Company"
+                items:
+                  $ref: "#/components/schemas/Company"
     post:
       tags:
         - Registra una nueva empresa en el sistema
@@ -146,11 +157,15 @@ paths:
         content:
           application/json:
             schema:
-              description: "Esquema de datos"
               $ref: "#/components/schemas/Company"
       responses:
         200:
-          $ref: "#/components/schemas/Company"
+          description: "Compañía registrada"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Company"
+
   /company/uuid:
     get:
       description: "Obtienes datos de una empresa por medio de su uuid"
@@ -207,6 +222,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Warnings"
+
   /company/groups:
     get:
       description: "Obtiene todos los grupos asociados a esta compañia mediante el usuario que ha iniciado sesion si el usuario que inicio sesion es admin pero no tiene una compañia asociada entonces no tendras grupos"
@@ -249,7 +265,8 @@ paths:
               schema:
                 type: array
                 description: "Retorno una lista de grupos"
-                $ref: "#/components/schemas/Group"
+                items:
+                  $ref: "#/components/schemas/Group"
     post:
       tags:
         - Registra un grupo en el sistema
@@ -258,11 +275,14 @@ paths:
         content:
           application/json:
             schema:
-              description: "Esquema de datos"
               $ref: "#/components/schemas/Group"
       responses:
         200:
-          $ref: "#/components/schemas/Group"
+          description: "Grupo registrado"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
 
   /group/uuid:
     get:
@@ -321,7 +341,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/Warnings"
 
-
 components:
   schemas:
     Warnings:
@@ -331,7 +350,8 @@ components:
           type: string
         date:
           type: string
-          format: Date
+          format: date-time
+
     Group:
       type: object
       properties:
@@ -357,11 +377,13 @@ components:
 
     User:
       type: object
+      required:
+        - rol
+        - company
       properties:
         id:
           type: string
           format: uuid
-          required: false
         name:
           type: string
         lastName:
@@ -373,15 +395,14 @@ components:
           type: string
           format: password
         rol:
-          $ref: '#/components/schemas/Rol'
-          example: "null"
-          required: true
+          allOf:
+            - $ref: '#/components/schemas/Rol'
+          nullable: true
         company:
-          $ref: '#/components/schemas/Company'
-          required: true
-          example: "null"
+          allOf:
+            - $ref: '#/components/schemas/Company'
+          nullable: true
         groups:
-          required: false
           type: array
           items:
             $ref: '#/components/schemas/Group'
@@ -438,4 +459,3 @@ components:
           format: uuid
         name:
           type: string
-
