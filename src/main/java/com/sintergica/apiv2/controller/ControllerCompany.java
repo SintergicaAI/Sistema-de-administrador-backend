@@ -1,17 +1,14 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.dto.CompanyDTO;
-import com.sintergica.apiv2.dto.WrapperUserDTO;
-import com.sintergica.apiv2.entidades.Company;
-import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.dto.*;
+import com.sintergica.apiv2.entidades.*;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
-import com.sintergica.apiv2.servicios.CompanyService;
-import com.sintergica.apiv2.servicios.UserService;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import com.sintergica.apiv2.servicios.*;
+
+import java.util.*;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +29,7 @@ public class ControllerCompany {
 
   private final CompanyService companyService;
   private final UserService userService;
+  private final GroupService groupService;
 
   @GetMapping
   public ResponseEntity<List<Company>> getAllCompanies() {
@@ -55,6 +53,8 @@ public class ControllerCompany {
 
     return ResponseEntity.ok(company);
   }
+
+
 
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/{uuid}/clients/{email}")
@@ -87,6 +87,31 @@ public class ControllerCompany {
 
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/groups")
+  public ResponseEntity<List<GroupDTO>> getGroupsCompany() {
+
+    String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+    User user = this.userService.findByEmail(userName);
+
+    if(user == null) {
+      throw new UserNotFound("User not found");
+    }
+
+    if(user.getCompany() == null) {
+      throw new CompanyNotFound("Usuario sin compañia asociada agrega una compañia al usuario");
+    }
+
+    List<Group> groupsInCompany = this.groupService.findGroupByCompany(user.getCompany());
+    List<GroupDTO> groupDTOs = new ArrayList<>();
+
+    for (Group group : groupsInCompany) {
+      groupDTOs.add(new GroupDTO(group.getId(), group.getName()));
+    }
+
+    return ResponseEntity.ok(groupDTOs);
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/clients")
   public ResponseEntity<WrapperUserDTO> getEmployeeGroups(Pageable pageable) {
 
     String userName = SecurityContextHolder.getContext().getAuthentication().getName();

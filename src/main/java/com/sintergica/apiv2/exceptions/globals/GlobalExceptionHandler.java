@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(CompanyNotFound.class)
   public ResponseEntity<Warnings> handleCompanyNotFound(CompanyNotFound ex) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
         .body(new Warnings(ex.getMessage(), new Date()));
   }
 

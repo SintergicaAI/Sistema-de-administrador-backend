@@ -1,7 +1,6 @@
 package com.sintergica.apiv2.servicios;
 
-import com.sintergica.apiv2.entidades.Group;
-import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.entidades.*;
 import com.sintergica.apiv2.repositorio.GroupRepository;
 import jakarta.transaction.Transactional;
 import java.util.*;
@@ -31,6 +30,10 @@ public class GroupService {
 
   public Optional<Group> findById(UUID uuidGroup) {
     return groupRepository.findById(uuidGroup);
+  }
+
+  public List<Group> findGroupByCompany(Company company) {
+    return this.groupRepository.findAllByCompany(company);
   }
 
   @Transactional
