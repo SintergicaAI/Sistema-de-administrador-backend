@@ -1,268 +1,446 @@
 openapi: 3.0.3
 info:
-  title: API de Gestión de Clientes
-  version: 1.0.6
-  description: 'API para gestión de usuarios, empresas y grupos'
+  title: Sintergica API v2
+  description: 'API para gestión de usuarios, grupos y roles recuerda enviar el token de acceso en el header'
+  version: 2.0.0
 servers:
   - url: 'http://localhost:8080'
-    description: Servidor local
+    description: Servidor local de desarrollo
 paths:
-  /clients/register:
+  /user/register:
     post:
       tags:
-        - Autenticación
-      summary: Registrar nuevo usuario
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-      responses:
-        '201':
-          description: Usuario registrado exitosamente
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Exito:
-                    type: boolean
-                  token:
-                    type: string
-        '400':
-          description: Error en el registro
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /clients/login:
-    post:
-      tags:
-        - Autenticación
-      summary: Iniciar sesión
+        - Registro
+      summary: correo y contraseña que sean validos con los estandares
+      description: No requiere rol administrador
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - email
+                - password
+                - name
+                - lastName
+                - rol
+                - company
               properties:
                 email:
                   type: string
                   format: email
+                  example: username@host.com
+                  description: ingresa un email valido sino no te dejare meterlo a la base de datos
                 password:
                   type: string
+                  example: '123'
+                  description: La contraseña por lo menos deberá ser de longitud mayor a 2
+                name:
+                  type: string
+                  example: Nombre
+                lastName:
+                  type: string
+                  example: Apellido
+                rol:
+                  allOf:
+                    - $ref: '#/components/schemas/Rol'
+                  nullable: true
+                  example: null
+                  description: Debes incluir este campo y este debera ser null
+                company:
+                  allOf:
+                    - $ref: '#/components/schemas/Company'
+                  nullable: true
+                  example: null
+                  description: Debes incluir el campo y este debera ser null
       responses:
         '200':
-          description: Login exitoso
+          description: Se registra un nuevo usuario en la base de datos
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  mensaje:
+                  email:
                     type: string
-                  exitoso:
-                    type: boolean
+                  name:
+                    type: string
+                  lastName:
+                    type: string
                   token:
                     type: string
-        '401':
-          description: Credenciales inválidas
+                    example: asdni3ip3@sds
+                    description: Token de acceso que debes incluir en los headers para tener acceso a enpoints
+        '409':
+          description: Ya existe un usuario con este correo
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  '/clients/{email}/company/{uuid}':
+                $ref: '#/components/schemas/Warnings'
+  /user/login:
     post:
       tags:
-        - Administración
-      summary: Asignar usuario a compañía
-      security:
-        - bearerAuth: []
+        - Login
+      summary: Iniciar sesión
+      description: No se requiere rol administrador
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@host.com
+                  description: user@host.com
+                password:
+                  type: string
+                  example: '123'
+                  description: '123'
+      responses:
+        '200':
+          description: El usuario inicia sesión
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                  name:
+                    type: string
+                  lastName:
+                    type: string
+                  token:
+                    type: string
+                    example: asdni3ip3@sds
+                    description: Token de acceso que debes incluir en los headers para tener acceso a enpoints
+        '401':
+          description: Contraseña incorrecta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warnings'
+        '404':
+          description: Usuario no registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warnings'
+  /company:
+    get:
+      tags:
+        - Obtener el catalogo de compañias
+      description: Te retorna toda la lista de empresas
+      responses:
+        '200':
+          description: Exito
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Company'
+    post:
+      tags:
+        - Registra una nueva empresa en el sistema
+      description: Manda los datos en un JSON
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Company'
+      responses:
+        '200':
+          description: Compañía registrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+  /company/uuid:
+    get:
+      description: Obtienes datos de una empresa por medio de su uuid
+      summary: Puedes obtener estos uuid haciendo uso del endpoint get o buscando alguna compañia asociada del usuario
       parameters:
-        - name: email
-          in: path
+        - name: uuid
+          in: query
           required: true
           schema:
             type: string
+            format: uuid
+      responses:
+        '200':
+          description: Respuesta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+  /company/uuid/clients/email:
+    post:
+      description: Añade un nuevo cliente a la compañia
+      summary: Ideal para meterle la compañia a un cliente
+      parameters:
+        - name: uuid
+          in: query
+          description: clave uuid de la empresa
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - name: email
+          in: query
+          description: email del cliente que quieres agregar a la compañia y este no debe tener una compañia asociada
+          required: true
+          schema:
             format: email
+            type: string
+      responses:
+        '200':
+          description: Exito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Compañia no encontrada o usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warnings'
+        '409':
+          description: El usuario ya tiene asociada una compañia
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warnings'
+  /company/groups:
+    get:
+      description: Obtiene todos los grupos asociados a esta compañia mediante el usuario que ha iniciado sesion si el usuario que inicio sesion es admin pero no tiene una compañia asociada entonces no tendras grupos
+      summary: Catalogos de grupos que pertenecen a una compañia
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Lista de grupos asociados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WrapperUserDTO'
+        '404':
+          description: Usuario sin compañia asociada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warnings'
+  /group:
+    get:
+      tags:
+        - Obtener el catalogo de grupos
+      description: Te retorna toda la lista de grupos
+      responses:
+        '200':
+          description: Exito
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Retorno una lista de grupos
+                items:
+                  $ref: '#/components/schemas/Group'
+    post:
+      tags:
+        - Registra un grupo en el sistema
+      description: Manda los datos en un JSON
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Group'
+      responses:
+        '200':
+          description: Grupo registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+  /group/uuid:
+    get:
+      description: ' Puedes obtener estos uuid haciendo uso del endpoint get o buscando alguna compañia asociada del usuario '
+      summary: Obtienes datos de un grupo por medio de su uuid
+      parameters:
+        - name: uuid
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Respuesta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+  '/groups/{uuid}/clients/{email}':
+    post:
+      operationId: addGroup
+      parameters:
         - name: uuid
           in: path
           required: true
           schema:
             type: string
             format: uuid
-      responses:
-        '200':
-          description: Usuario asignado exitosamente
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  mensaje:
-                    type: string
-        '404':
-          description: Recurso no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  '/clients/{email}/rol/{nameRol}':
-    post:
-      tags:
-        - Administración
-      summary: Cambiar rol de usuario
-      security:
-        - bearerAuth: []
-      parameters:
+          description: UUID del grupo
         - name: email
           in: path
           required: true
           schema:
             type: string
             format: email
-        - name: nameRol
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Rol actualizado
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  mensaje:
-                    type: string
-        '404':
-          description: Error en la operación
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  '/clients/{email}/addGroup/{uuidGroup}':
-    post:
-      tags:
-        - Grupos
-      summary: Agregar usuario a grupo
-      parameters:
-        - name: email
-          in: path
-          required: true
-          schema:
-            type: string
-            format: email
-        - name: uuidGroup
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+          description: Email del usuario
       responses:
         '200':
           description: Usuario agregado al grupo
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Success:
-                    type: boolean
+                $ref: '#/components/schemas/Group'
         '404':
-          description: Error en la operación
+          description: Grupo no encontrado
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  Success:
-                    type: boolean
-                  message:
-                    type: string
-  /clients/getEmployeeGroupsForCompany:
-    get:
-      tags:
-        - Administración
-      summary: Obtener grupos de empleados
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-        - name: size
-          in: query
-          schema:
-            type: integer
-        - name: sort
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Listado paginado de empleados y sus grupos
+                $ref: '#/components/schemas/Warnings'
+        '409':
+          description: Conflicto de empresa usuario/grupo
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  content:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        fullName:
-                          type: string
-                        Rol:
-                          type: string
-                        email:
-                          type: string
-                          format: email
-                        Groups:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              id:
-                                type: string
-                              name:
-                                type: string
+                $ref: '#/components/schemas/Warnings'
 components:
   schemas:
+    Warnings:
+      type: object
+      properties:
+        error:
+          type: string
+        date:
+          type: string
+          format: date-time
+    Group:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        company:
+          $ref: '#/components/schemas/Company'
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    Rol:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
     User:
       type: object
       required:
-        - email
-        - password
+        - rol
+        - company
       properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        lastName:
+          type: string
         email:
           type: string
           format: email
-          example: usuario@ejemplo.com
         password:
           type: string
-          minLength: 3
-          example: '123'
-        name:
-          type: string
-          example: Juan
-        lastName:
-          type: string
-          example: Pérez
-    ErrorResponse:
+          format: password
+        rol:
+          allOf:
+            - $ref: '#/components/schemas/Rol'
+          nullable: true
+        company:
+          allOf:
+            - $ref: '#/components/schemas/Company'
+          nullable: true
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+    UserDTO:
       type: object
       properties:
-        mensaje:
+        id:
           type: string
-        Exito:
-          type: boolean
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+          format: uuid
+        name:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupDTO'
+    GroupDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    WrapperUserDTO:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserDTO'
+        pageable:
+          type: object
+          properties:
+            pageNumber:
+              type: integer
+            pageSize:
+              type: integer
+        totalElements:
+          type: integer
+    Company:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
