@@ -142,11 +142,11 @@ paths:
       description: Te retorna toda la lista de empresas
       responses:
         200:
+          description: "Exito"
           content:
             application/json:
               schema:
                 type: array
-                description: "Retorno una lista de empresas"
                 items:
                   $ref: "#/components/schemas/Company"
     post:
@@ -206,6 +206,7 @@ paths:
             type: string
       responses:
         200:
+          description: "Exito"
           content:
             application/json:
               schema:
@@ -260,6 +261,7 @@ paths:
       description: Te retorna toda la lista de grupos
       responses:
         200:
+          description: "Exito"
           content:
             application/json:
               schema:
