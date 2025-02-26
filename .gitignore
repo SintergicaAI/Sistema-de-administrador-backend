@@ -3,3 +3,4 @@ target/
 .idea/dataSources.xml
 .idea/compiler.xml
 target/classes/**/*.class
+.gitignore
