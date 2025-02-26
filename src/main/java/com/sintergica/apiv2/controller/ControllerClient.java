@@ -1,21 +1,29 @@
 package com.sintergica.apiv2.controller;
 
 import com.sintergica.apiv2.dto.LoginAndRegisterDTO;
+import com.sintergica.apiv2.dto.SearchUserDTO;
+import com.sintergica.apiv2.dto.WrapperUserDTO;
 import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.user.UserConflict;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.servicios.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/clients")
+@RequestMapping("/users")
 public class ControllerClient {
 
   private final UserService userService;
@@ -37,7 +45,7 @@ public class ControllerClient {
             userService.generateToken(user.getEmail())));
   }
 
-  @PostMapping("/login")
+  @GetMapping("/login")
   public ResponseEntity<LoginAndRegisterDTO> login(@Valid @RequestBody User user) {
 
     User userValid = this.userService.findByEmail(user.getEmail());
@@ -59,4 +67,18 @@ public class ControllerClient {
             userFound.getLastName(),
             userService.generateToken(userFound.getEmail())));
   }
+
+  @GetMapping("{username}/search")
+  public ResponseEntity<WrapperUserDTO<SearchUserDTO>> searchUsers(@PathVariable String username, Pageable pageable) {
+
+    User user = this.userService.getUserLogged();
+    if(user.getCompany() == null) {
+      throw new CompanyNotFound("Usuario sin compañia asociada");
+    }
+
+    Page<SearchUserDTO> userPages = this.userService.getUsersByName(username, user.getCompany(), pageable);
+
+    return ResponseEntity.ok(new WrapperUserDTO<>(userPages));
+  }
+
 }

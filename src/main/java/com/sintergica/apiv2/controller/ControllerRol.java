@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,20 +27,20 @@ public class ControllerRol {
   private final RolService rolService;
   private final UserService userService;
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('SUPERADMIN')")
   @GetMapping
   public ResponseEntity<List<Rol>> getRoles() {
     return ResponseEntity.ok().body(rolService.getRoles());
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('SUPERADMIN')")
   @PostMapping
   public ResponseEntity<Rol> addNewRol(@RequestBody Rol rol) {
     return ResponseEntity.ok().body(rolService.save(rol));
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
-  @PostMapping("{name}/clients/{email}")
+  @PreAuthorize("hasRole('SUPERADMIN')")
+  @PatchMapping("{name}/clients/{email}")
   public ResponseEntity<RolUserDTO> changeRolClient(
       @PathVariable(name = "email") String email, @PathVariable(name = "name") String newRolUser) {
 

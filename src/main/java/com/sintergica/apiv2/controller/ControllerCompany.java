@@ -1,14 +1,22 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.dto.*;
-import com.sintergica.apiv2.entidades.*;
+import com.sintergica.apiv2.dto.CompanyDTO;
+import com.sintergica.apiv2.dto.GroupDTO;
+import com.sintergica.apiv2.dto.UserDTO;
+import com.sintergica.apiv2.dto.WrapperUserDTO;
+import com.sintergica.apiv2.entidades.Company;
+import com.sintergica.apiv2.entidades.Group;
+import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
-import com.sintergica.apiv2.servicios.*;
-
-import java.util.*;
-
+import com.sintergica.apiv2.servicios.CompanyService;
+import com.sintergica.apiv2.servicios.GroupService;
+import com.sintergica.apiv2.servicios.UserService;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -54,13 +62,12 @@ public class ControllerCompany {
     return ResponseEntity.ok(company);
   }
 
-
-
   @PreAuthorize("hasRole('ADMIN')")
-  @PostMapping("/{uuid}/clients/{email}")
-  public ResponseEntity<CompanyDTO> addClient(
-      @PathVariable(name = "uuid") UUID companyUuid,
-      @PathVariable(name = "email") String emailClient) {
+  @PostMapping("/clients/{email}")
+  public ResponseEntity<CompanyDTO> addClient(@PathVariable(name = "email") String emailClient) {
+
+    String userNameAdmin = SecurityContextHolder.getContext().getAuthentication().getName();
+    User admin = this.userService.findByEmail(userNameAdmin);
 
     User userFound = userService.findByEmail(emailClient);
 
@@ -72,9 +79,13 @@ public class ControllerCompany {
       throw new CompanyUserConflict("El usuario ya tiene asociada una compañia");
     }
 
-    Optional<Company> company = this.companyService.findById(companyUuid);
+    if (admin.getCompany() == null) {
+      throw new CompanyNotFound("El administrador no tiene una compañia asociada");
+    }
 
-    if (!company.isPresent()) {
+    Optional<Company> company = this.companyService.findById(admin.getCompany().getId());
+
+    if (company.isEmpty()) {
       throw new CompanyNotFound("Company not found");
     }
 
@@ -92,11 +103,11 @@ public class ControllerCompany {
     String userName = SecurityContextHolder.getContext().getAuthentication().getName();
     User user = this.userService.findByEmail(userName);
 
-    if(user == null) {
+    if (user == null) {
       throw new UserNotFound("User not found");
     }
 
-    if(user.getCompany() == null) {
+    if (user.getCompany() == null) {
       throw new CompanyNotFound("Usuario sin compañia asociada agrega una compañia al usuario");
     }
 
@@ -112,7 +123,7 @@ public class ControllerCompany {
 
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/clients")
-  public ResponseEntity<WrapperUserDTO> getEmployeeGroups(Pageable pageable) {
+  public ResponseEntity<WrapperUserDTO<UserDTO>> getEmployeeGroups(Pageable pageable) {
 
     String userName = SecurityContextHolder.getContext().getAuthentication().getName();
     User user = this.userService.findByEmail(userName);
@@ -127,6 +138,6 @@ public class ControllerCompany {
     }
 
     return ResponseEntity.ok(
-        new WrapperUserDTO(this.companyService.getGroupsCompany(companyUser, pageable)));
+        new WrapperUserDTO<UserDTO>(this.companyService.getGroupsCompany(companyUser, pageable)));
   }
 }

@@ -17,7 +17,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
   Page<User> findAllByCompany(Company company, Pageable pageable);
 
-  Page<User> findByName(String name, Pageable pageable);
+  Page<User> findByCompanyAndNameStartingWith(Company company, String name, Pageable pageable);
 
   @Query(
       "SELECT u FROM User u WHERE "

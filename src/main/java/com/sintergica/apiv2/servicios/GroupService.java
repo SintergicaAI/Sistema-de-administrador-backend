@@ -1,9 +1,15 @@
 package com.sintergica.apiv2.servicios;
 
-import com.sintergica.apiv2.entidades.*;
+import com.sintergica.apiv2.entidades.Company;
+import com.sintergica.apiv2.entidades.Group;
+import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.GroupRepository;
 import jakarta.transaction.Transactional;
-import java.util.*;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -40,6 +46,12 @@ public class GroupService {
   public Group addUser(User user, Group group) {
 
     group.getUser().add(user);
+    return this.groupRepository.save(group);
+  }
+
+  @Transactional
+  public Group deleteUser(Group group, User user) {
+    group.getUser().remove(user);
     return this.groupRepository.save(group);
   }
 }

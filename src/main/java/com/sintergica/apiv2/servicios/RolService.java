@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 public class RolService {
   private final RolRepository rolRepository;
   private final UserService userService;
-
   private final List<Rol> roles = new ArrayList<>();
 
   @EventListener(ApplicationReadyEvent.class)

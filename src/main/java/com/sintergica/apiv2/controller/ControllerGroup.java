@@ -16,6 +16,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,6 +46,15 @@ public class ControllerGroup {
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping
   public ResponseEntity<Group> addGroup(@RequestBody Group group) {
+
+    User userLogged = this.userService.getUserLogged();
+
+    if(userLogged.getCompany() == null) {
+      throw new CompanyNotFound("El usuario que ha iniciado sesion no tiene compañia asociada");
+    }
+
+    group.setCompany(userLogged.getCompany());
+
     return ResponseEntity.ok(groupService.save(group));
   }
 
@@ -57,6 +67,37 @@ public class ControllerGroup {
     return ResponseEntity.ok(groupFound);
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
+  @DeleteMapping("/{uuid}/clients/{email}")
+  public ResponseEntity<GroupDTO> deleteClientToGroup(
+      @PathVariable(name = "uuid") UUID groupUUID, @PathVariable String email) {
+
+    Group group = this.groupService.findGroupById(groupUUID);
+    User user = this.userService.findByEmail(email);
+
+    if (group == null) {
+      throw new GroupNotFound("Grupo no encontrado");
+    }
+
+    if (user == null) {
+      throw new UserNotFound("Usuario no encontrado");
+    }
+
+    if(group.getCompany() == null){
+      throw new CompanyNotFound("Grupo sin compañia asociada");
+    }
+
+    if (!user.getCompany().getId().equals(group.getCompany().getId())) {
+      throw new CompanyUserConflict("El usuario o el grupo no tienen asociados la misma empresa");
+    }
+
+    Group groupWithoutTheUser = this.groupService.deleteUser(group, user);
+
+    return ResponseEntity.ok(
+        new GroupDTO(groupWithoutTheUser.getId(), groupWithoutTheUser.getName()));
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("{uuid}/clients/{email}")
   public ResponseEntity<GroupDTO> addGroup(
       @PathVariable String email, @PathVariable(name = "uuid") UUID uuidGroup) {
@@ -68,7 +109,7 @@ public class ControllerGroup {
 
     Optional<Group> group = this.groupService.findById(uuidGroup);
 
-    if (!group.isPresent()) {
+    if (group.isEmpty()) {
       throw new GroupNotFound("Group not found");
     }
 

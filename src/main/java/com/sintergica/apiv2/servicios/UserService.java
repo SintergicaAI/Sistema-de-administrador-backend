@@ -1,5 +1,6 @@
 package com.sintergica.apiv2.servicios;
 
+import com.sintergica.apiv2.dto.SearchUserDTO;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.UserRepository;
@@ -8,9 +9,15 @@ import io.jsonwebtoken.Jwts;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +51,18 @@ public class UserService {
     return this.userRepository.findAllByCompany(company, pageable);
   }
 
+  public Page<SearchUserDTO> getUsersByName(String name, Company company, Pageable pageable) {
+
+    Page<User> userPage = userRepository.findByCompanyAndNameStartingWith(company, name, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()));
+    ArrayList<SearchUserDTO> searchUserDTOs = new ArrayList<>();
+
+    for (User user : userPage) {
+      searchUserDTOs.add(new SearchUserDTO(user.getEmail(), user.getName(), user.getRol(), user.getGroups().size()));
+    }
+
+    return new PageImpl<>(searchUserDTOs, pageable, userPage.getTotalElements());
+  }
+
   private void generateNewUser(User user) {
     user.setRol(null);
     user.setCompany(null);
@@ -57,4 +76,17 @@ public class UserService {
   public User save(User user) {
     return this.userRepository.save(user);
   }
+
+  public User getUserLogged(){
+    return this.userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+  }
+
+  public boolean hasLoggedInUserTheRole(String role) {
+    Collection<? extends GrantedAuthority> authentication =
+            SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+
+    return authentication.stream()
+                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(role));
+  }
+
 }
