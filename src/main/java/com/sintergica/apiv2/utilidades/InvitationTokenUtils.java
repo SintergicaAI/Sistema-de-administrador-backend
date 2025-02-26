@@ -12,22 +12,27 @@ import org.antlr.v4.runtime.misc.Pair;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class InvitationTokenUtils {
 
-  public static Pair<Boolean, String> validateToken(Invitation invitation, String email) {
-    MessagesConfig messagesConfig = new MessagesConfig();
+  /**
+   * Returns the state of the given token
+   * @param invitation Object {@code Invitation}
+   * @param email Email linked to the invitation
+   * @return {@code InvitationStates} to describe the token state
+   */
+  public static InvitationStates validateToken(Invitation invitation, String email) {
 
     if (!invitation.isActive()) {
-      return new Pair<>(false, messagesConfig.getMessages().get("tokenUsed"));
+      return InvitationStates.INACTIVE;
     }
 
     if (!invitation.getExpireDate().isBefore(LocalDateTime.now())
         && !invitation.getExpireDate().isAfter(LocalDateTime.of(2020, 1, 1, 0, 0))) {
-      return new Pair<>(true, messagesConfig.getMessages().get("tokenExpired"));
+      return InvitationStates.EXPIRED;
     }
 
     if (!email.equals(invitation.getEmail())) {
-      return new Pair<>(false, messagesConfig.getMessages().get("emailDifferent"));
+      return InvitationStates.DIFFERENT_EMAIL;
     }
 
-    return new Pair<>(true, messagesConfig.getMessages().get("tokenValid"));
+    return InvitationStates.VALID;
   }
 }
