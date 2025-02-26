@@ -6,6 +6,7 @@ import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.UserRepository;
 import com.sintergica.apiv2.utilidades.TokenUtils;
 import io.jsonwebtoken.Jwts;
+import java.util.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,8 +17,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -53,11 +52,15 @@ public class UserService {
 
   public Page<SearchUserDTO> getUsersByName(String name, Company company, Pageable pageable) {
 
-    Page<User> userPage = userRepository.findByCompanyAndNameStartingWith(company, name, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()));
+    Page<User> userPage =
+        userRepository.findByCompanyAndNameStartingWith(
+            company, name, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()));
     ArrayList<SearchUserDTO> searchUserDTOs = new ArrayList<>();
 
     for (User user : userPage) {
-      searchUserDTOs.add(new SearchUserDTO(user.getEmail(), user.getName(), user.getRol(), user.getGroups().size()));
+      searchUserDTOs.add(
+          new SearchUserDTO(
+              user.getEmail(), user.getName(), user.getRol(), user.getGroups().size()));
     }
 
     return new PageImpl<>(searchUserDTOs, pageable, userPage.getTotalElements());
@@ -77,16 +80,16 @@ public class UserService {
     return this.userRepository.save(user);
   }
 
-  public User getUserLogged(){
-    return this.userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName());
+  public User getUserLogged() {
+    return this.userRepository.findByEmail(
+        SecurityContextHolder.getContext().getAuthentication().getName());
   }
 
   public boolean hasLoggedInUserTheRole(String role) {
     Collection<? extends GrantedAuthority> authentication =
-            SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+        SecurityContextHolder.getContext().getAuthentication().getAuthorities();
 
     return authentication.stream()
-                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(role));
+        .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(role));
   }
-
 }

@@ -12,5 +12,4 @@ public class SearchUserDTO {
   private String username;
   private Rol rol;
   private int numberGroups;
-
 }

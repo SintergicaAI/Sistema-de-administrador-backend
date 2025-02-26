@@ -49,7 +49,7 @@ public class ControllerGroup {
 
     User userLogged = this.userService.getUserLogged();
 
-    if(userLogged.getCompany() == null) {
+    if (userLogged.getCompany() == null) {
       throw new CompanyNotFound("El usuario que ha iniciado sesion no tiene compañia asociada");
     }
 
@@ -83,7 +83,7 @@ public class ControllerGroup {
       throw new UserNotFound("Usuario no encontrado");
     }
 
-    if(group.getCompany() == null){
+    if (group.getCompany() == null) {
       throw new CompanyNotFound("Grupo sin compañia asociada");
     }
 

@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/users")
@@ -69,16 +68,17 @@ public class ControllerClient {
   }
 
   @GetMapping("{username}/search")
-  public ResponseEntity<WrapperUserDTO<SearchUserDTO>> searchUsers(@PathVariable String username, Pageable pageable) {
+  public ResponseEntity<WrapperUserDTO<SearchUserDTO>> searchUsers(
+      @PathVariable String username, Pageable pageable) {
 
     User user = this.userService.getUserLogged();
-    if(user.getCompany() == null) {
+    if (user.getCompany() == null) {
       throw new CompanyNotFound("Usuario sin compañia asociada");
     }
 
-    Page<SearchUserDTO> userPages = this.userService.getUsersByName(username, user.getCompany(), pageable);
+    Page<SearchUserDTO> userPages =
+        this.userService.getUsersByName(username, user.getCompany(), pageable);
 
     return ResponseEntity.ok(new WrapperUserDTO<>(userPages));
   }
-
 }

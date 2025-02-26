@@ -7,12 +7,10 @@ import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.CompanyRepository;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
