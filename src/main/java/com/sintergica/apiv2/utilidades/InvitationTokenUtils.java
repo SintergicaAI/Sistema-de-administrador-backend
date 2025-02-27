@@ -1,13 +1,14 @@
 package com.sintergica.apiv2.utilidades;
 
-import com.sintergica.apiv2.configuration.MessagesConfig;
 import com.sintergica.apiv2.entidades.Invitation;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.antlr.v4.runtime.misc.Pair;
 
+/**
+ * @author panther
+ */
 @Data
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class InvitationTokenUtils {
