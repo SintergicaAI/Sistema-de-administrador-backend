@@ -43,11 +43,12 @@ public class ControllerClient {
   @PostMapping("/register")
   public ResponseEntity<LoginAndRegisterDTO> register(@Valid @RequestBody User user) {
     User userFound = this.userService.findByEmail(user.getEmail());
+
     if (userFound != null) {
       throw new UserConflict("Este email ya existe en el sistema");
     }
 
-    if (!userFound.isActive()) {
+    if (userFound != null && !userFound.isActive()) {
       throw new UserForbidden(
           "Este email ya esta registrado en el sistema solicita al administrador que te de alta nuevamente");
     }
