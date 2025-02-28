@@ -4,6 +4,7 @@ import com.sintergica.apiv2.configuration.EmailConfig;
 import com.sintergica.apiv2.configuration.MessagesConfig;
 import com.sintergica.apiv2.entidades.Invitation;
 import com.sintergica.apiv2.repositorio.InvitationRepository;
+import com.sintergica.apiv2.utilidades.Email;
 import com.sintergica.apiv2.utilidades.EmailUtils;
 import com.sintergica.apiv2.utilidades.InvitationStates;
 import com.sintergica.apiv2.utilidades.InvitationTokenUtils;
@@ -24,7 +25,6 @@ public class InvitationService {
   private final EmailConfig config;
   private final MessagesConfig messagesConfig;
   private final InvitationRepository invitationRepository;
-  private final String FRONTEND_URL = config.getBase_url() + "/clients/register";
   private final HashMap<InvitationStates, String> invalidInvitationStates =
       new HashMap<>() {
         {
@@ -55,15 +55,16 @@ public class InvitationService {
    * @param emailObject The abstracted email with the token
    * @return {@code true} if token was sent successfully or {@code false} if token wasn't sent
    */
-  private Boolean sendToken(EmailUtils.Email emailObject) {
-    emailObject.appendToBody(FRONTEND_URL + "?signInToken=" + emailObject.getToken());
+  private Boolean sendToken(Email emailObject) {
+    final String FRONTEND_URL = config.getBase_url() + "/clients/register";
+    emailObject.getMessage().appendToBody(FRONTEND_URL + "?signInToken=" + emailObject.getToken());
     boolean isSuccess = EmailUtils.sendEmail(emailObject, config);
 
     if (!isSuccess) {
       return false;
     }
 
-    storeInvitation(emailObject.getRecipients().split(",")[0], emailObject.getToken());
+    storeInvitation(emailObject.getMessage().getRecipients().split(",")[0], emailObject.getToken());
 
     return true;
   }
@@ -74,7 +75,7 @@ public class InvitationService {
    * @param emailObject The abstracted email with the token
    * @return {@code true} if token was sent successfully or {@code false} if token wasn't sent
    */
-  public Boolean sendNewToken(EmailUtils.Email emailObject) {
+  public Boolean sendNewToken(Email emailObject) {
     emailObject.generateToken();
     return sendToken(emailObject);
   }
@@ -89,13 +90,17 @@ public class InvitationService {
   public Boolean resendToken(String email) {
     Optional<Invitation> invitation = invitationRepository.findByEmail(email);
 
+    Email emailObject = new Email();
+
     if (invitation.isEmpty()) {
-      EmailUtils.Email emailObject = new EmailUtils.Email();
       emailObject.generateToken();
       sendNewToken(emailObject);
       return false;
     }
 
+    emailObject.getMessage().setRecipients(email);
+    emailObject.setToken(invitation.get().getToken());
+    sendToken(emailObject);
     storeInvitation(email, invitation.get().getToken());
 
     return true;
@@ -152,6 +157,7 @@ public class InvitationService {
    */
   public Boolean validateInvitation(String email) {
     Optional<Invitation> invitation = invitationRepository.findByEmail(email);
+    System.out.println("leroooo " + email + "Invitacion" + invitation.isPresent());
     return invitation
         .filter(
             value ->

@@ -1,11 +1,10 @@
 package com.sintergica.apiv2.controller;
 
 import com.sintergica.apiv2.configuration.MessagesConfig;
-import com.sintergica.apiv2.servicios.EmailService;
+import com.sintergica.apiv2.dto.InvitationDTO;
 import com.sintergica.apiv2.servicios.InvitationService;
-import com.sintergica.apiv2.utilidades.EmailUtils;
+import com.sintergica.apiv2.utilidades.Email;
 import java.util.HashMap;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/invitation")
 @RequiredArgsConstructor
 public class InvitationController {
-  private final EmailService emailService;
   private final MessagesConfig messagesConfig;
   private final InvitationService invitationService;
 
@@ -33,7 +31,7 @@ public class InvitationController {
 
   @PostMapping("/send")
   public ResponseEntity<HashMap<String, Object>> sendInvitationEmail(
-      @RequestBody EmailUtils.Email emailObject) {
+      @RequestBody Email emailObject) {
     HashMap<String, Object> response = new HashMap<>();
 
     if (!invitationService.sendNewToken(emailObject)) {
@@ -47,15 +45,17 @@ public class InvitationController {
 
   @PostMapping("/regenerate")
   public ResponseEntity<HashMap<String, Object>> regenerateInvitationEmail(
-      @RequestBody String email) {
+      @RequestBody InvitationDTO invitationDTO) {
     HashMap<String, Object> response = new HashMap<>();
 
-    if (!invitationService.validateInvitation(email)) {
+    System.out.println("Eoooo" + invitationService.validateInvitation(invitationDTO.getEmail()));
+
+    if (!invitationService.validateInvitation(invitationDTO.getEmail())) {
       response.put("message", messagesConfig.getMessages().get("tokenInvalid"));
       return ResponseEntity.badRequest().body(response);
     }
 
-    if (!invitationService.resendToken(email)) {
+    if (!invitationService.resendToken(invitationDTO.getEmail())) {
       response.put("message", messagesConfig.getMessages().get("emailSendError"));
       return ResponseEntity.badRequest().body(response);
     }
@@ -66,9 +66,10 @@ public class InvitationController {
 
   @PostMapping("/validate")
   public ResponseEntity<HashMap<String, Object>> validateInvitation(
-      @RequestBody String email, @RequestBody UUID invitationToken) {
+      @RequestBody InvitationDTO invitationDTO) {
     HashMap<String, Object> response = new HashMap<>();
-    if (!invitationService.validateInvitation(email, invitationToken)) {
+
+    if (!invitationService.validateInvitation(invitationDTO.getEmail(), invitationDTO.getToken())) {
       response.put("message", messagesConfig.getMessages().get("tokenInvalid"));
       return ResponseEntity.badRequest().body(response);
     }
