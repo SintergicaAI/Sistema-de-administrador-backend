@@ -8,10 +8,10 @@ servers:
     description: Servidor local de desarrollo
 
 paths:
-  /user/register:
+  /users/register:
     post:
       tags:
-        - Clients
+        - users
       summary: correo y contraseña que sean validos con los estandares
       description: No requiere rol administrador
       requestBody:
@@ -80,10 +80,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/Warnings"
 
-  /user/login:
+  /users/login:
     post:
       tags:
-        - Clients
+        - users
       summary: "Iniciar sesión"
       description: "No se requiere rol administrador"
       requestBody:
@@ -135,27 +135,36 @@ paths:
               schema:
                 $ref: "#/components/schemas/Warnings"
 
-  /username/search:
+  /users/{username}/search:
     get:
       tags:
-        - Clients
-      description: "Buscar un empleado"
+        - users
+      description: "**Ejemplo de solicitud:**\n`GET /users/john.doe/search?page=1&size=10`"
+      security:
+        - JWT: []
       parameters:
         - name: username
-          in: query
+          in: path
+          required: true
+          example: 'Pedro'
           schema:
             type: string
             format: string
         - name : page
           in: query
+          required: true
+          example: '0'
           schema:
             type: integer
             format: integer
         - name: size
           in: query
+          required: true
+          example: '10'
           schema:
             type: integer
             format: integer
+
 
       responses:
         200:
@@ -254,56 +263,44 @@ paths:
               schema:
                 $ref: "#/components/schemas/Company"
 
-
-  /clients/email:
-    post:
-      security:
-        - JWT: []
+  /company/clients:
+    get:
       tags:
         - Company
-      description: "Agrega un nuevo cliente a la compañia"
-      summary: "Agrega un nuevo cliente a la compañía asociada al usuario autenticado. La compañía se obtiene a partir del JWT del usuario que ha iniciado sesión."
+      security:
+        - JWT: []
+      description : "Obtiene la lista de clientes asociados a una compañia"
       parameters:
-        - name: email
+        - name: page
           in: query
           schema:
-            type: string
-            format: string
+            type: integer
+            minimum: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
       responses:
         "200":
-          description: "Exito"
+          description: Usuario no encontrado
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  uuid:
-                    type: object
-                    format: string
-                    example: "ap3o24i343"
-                  name:
-                    type: string
-                    format: string
-                    example: "Juan"
-                  emailClient:
-                    type: string
-                    format: string
-                    example: "username@host.com"
-                  rol:
-                    type: object
-                    properties:
-                      uuid:
-                        type: string
-                        format: string
-                      name:
-                        type: string
-                        format: string
+                $ref: "#/components/schemas/WrapperUserDTO"
         "404":
-          description: "Usuario no encontrado"
+          description: Usuario no encontrado
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Warnings'
+                $ref: "#/components/schemas/Warnings"
+        "403":
+          description: compañia no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Warnings"
 
 
 
@@ -509,7 +506,6 @@ components:
       bearerFormat: JWT  # Especifica que el token es JWT
 
   schemas:
-
     CompanyDTO:
       type: object
       properties:
@@ -618,19 +614,23 @@ components:
     WrapperUserDTO:
       type: object
       properties:
-        content:
+        userDTOPage:
           type: array
+          description: Lista paginada de usuarios
           items:
             $ref: '#/components/schemas/UserDTO'
-        pageable:
-          type: object
-          properties:
-            pageNumber:
-              type: integer
-            pageSize:
-              type: integer
+        currentPage:
+          type: integer
+          description: Número de página actual (0-based)
+          example: 0
+        totalPages:
+          type: integer
+          description: Total de páginas disponibles
+          example: 1
         totalElements:
           type: integer
+          description: Total de registros encontrados
+          example: 4
 
     Company:
       type: object
@@ -640,3 +640,6 @@ components:
           format: uuid
         name:
           type: string
+
+
+

@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -92,6 +93,7 @@ public class ControllerClient {
             userService.generateRefreshToken(user.getEmail())));
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("{username}/search")
   public ResponseEntity<WrapperUserDTO<SearchUserDTO>> searchUsers(
       @PathVariable String username, Pageable pageable) {
