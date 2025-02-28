@@ -336,18 +336,6 @@ paths:
         - Company
       description: ''
       summary: Obtiene la compañia del usuario que ha iniciado sesión y a partir de esta se obtienen los grupos pertenecientes a esta
-      parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            minimum: 0
-        - name: size
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
       responses:
         '200':
           description: Lista de grupos asociados
