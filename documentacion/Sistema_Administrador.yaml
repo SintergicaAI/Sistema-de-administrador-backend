@@ -81,7 +81,7 @@ paths:
                 $ref: "#/components/schemas/Warnings"
 
   /user/login:
-    get:
+    post:
       tags:
         - Clients
       summary: "Iniciar sesión"
