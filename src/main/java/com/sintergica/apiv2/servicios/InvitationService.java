@@ -1,15 +1,16 @@
 package com.sintergica.apiv2.servicios;
 
+import com.sintergica.apiv2.configuration.EmailConfig;
 import com.sintergica.apiv2.configuration.MessagesConfig;
 import com.sintergica.apiv2.entidades.Invitation;
 import com.sintergica.apiv2.repositorio.InvitationRepository;
+import com.sintergica.apiv2.utilidades.EmailUtils;
 import com.sintergica.apiv2.utilidades.InvitationStates;
 import com.sintergica.apiv2.utilidades.InvitationTokenUtils;
-
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.stereotype.Service;
@@ -20,21 +21,93 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class InvitationService {
+  private final EmailConfig config;
   private final MessagesConfig messagesConfig;
   private final InvitationRepository invitationRepository;
-  private final HashMap<InvitationStates,String> invalidInvitationStates = new HashMap<>(){
-    {
-      put(InvitationStates.INVALID,"tokenInvalid");
-      put(InvitationStates.EXPIRED,"tokenExpired");
-      put(InvitationStates.DIFFERENT_EMAIL,"emailDifferent");
+  private final String FRONTEND_URL = config.getBase_url() + "/clients/register";
+  private final HashMap<InvitationStates, String> invalidInvitationStates =
+      new HashMap<>() {
+        {
+          put(InvitationStates.INVALID, "tokenInvalid");
+          put(InvitationStates.EXPIRED, "tokenExpired");
+          put(InvitationStates.DIFFERENT_EMAIL, "emailDifferent");
+        }
+      };
+
+  /**
+   * Stores the token into the database
+   *
+   * @param email The email associated with the token
+   * @param token The token to store into the database
+   */
+  private void storeInvitation(String email, UUID token) {
+    Invitation invitation = new Invitation();
+    invitation.setEmail(email);
+    invitation.setActive(true);
+    invitation.setToken(token);
+    invitation.setExpireDate(LocalDateTime.now().plusDays(7));
+    invitationRepository.save(invitation);
+  }
+
+  /**
+   * Sends an invitation token to a selected user
+   *
+   * @param emailObject The abstracted email with the token
+   * @return {@code true} if token was sent successfully or {@code false} if token wasn't sent
+   */
+  private Boolean sendToken(EmailUtils.Email emailObject) {
+    emailObject.appendToBody(FRONTEND_URL + "?signInToken=" + emailObject.getToken());
+    boolean isSuccess = EmailUtils.sendEmail(emailObject, config);
+
+    if (!isSuccess) {
+      return false;
     }
-  };
+
+    storeInvitation(emailObject.getRecipients().split(",")[0], emailObject.getToken());
+
+    return true;
+  }
+
+  /**
+   * Sends a invitation token via email
+   *
+   * @param emailObject The abstracted email with the token
+   * @return {@code true} if token was sent successfully or {@code false} if token wasn't sent
+   */
+  public Boolean sendNewToken(EmailUtils.Email emailObject) {
+    emailObject.generateToken();
+    return sendToken(emailObject);
+  }
+
+  /**
+   * If exists in the database, send the same token again, else send a new token and stores it in
+   * the database
+   *
+   * @param email The email associated with the token
+   * @return {@code true} if token was sent successfully or {@code false} if token wasn't sent
+   */
+  public Boolean resendToken(String email) {
+    Optional<Invitation> invitation = invitationRepository.findByEmail(email);
+
+    if (invitation.isEmpty()) {
+      EmailUtils.Email emailObject = new EmailUtils.Email();
+      emailObject.generateToken();
+      sendNewToken(emailObject);
+      return false;
+    }
+
+    storeInvitation(email, invitation.get().getToken());
+
+    return true;
+  }
 
   /**
    * Returns {@code true} if the specified token is valid and uses the token making it inactive
-   * @param email The email associated with the token
+   *
+   * @param email The email which wants to consume an invitation token
    * @param signInToken The token sent to the user
-   * @return {@code false} if invitation is invalid or {@code true} if invitation is valid and its corresponding message
+   * @return {@code false} if invitation is invalid or {@code true} if invitation is valid and its
+   *     corresponding message
    */
   public Pair<Boolean, String> consumeInvitation(String email, UUID signInToken) {
     Optional<Invitation> invitation = invitationRepository.findById(signInToken);
@@ -45,10 +118,9 @@ public class InvitationService {
 
     InvitationStates validateToken = InvitationTokenUtils.validateToken(invitation.get(), email);
 
-    if (invalidInvitationStates.containsKey(validateToken)){
-      return new Pair<>(false, messagesConfig.getMessages().get(
-              invalidInvitationStates.get(validateToken)
-      ));
+    if (invalidInvitationStates.containsKey(validateToken)) {
+      return new Pair<>(
+          false, messagesConfig.getMessages().get(invalidInvitationStates.get(validateToken)));
     }
 
     invitation.get().setActive(false);
@@ -58,23 +130,32 @@ public class InvitationService {
 
   /**
    * Returns {@code true} if the specified token is valid
-   * @param email The email associated with the token
+   *
+   * @param email The email which wants to consume an invitation token
    * @param invitationToken The token sent to the user
    * @return {@code false} if invitation is invalid or {@code true} if invitation is valid
    */
-  public Boolean validateInvitation(String email, UUID invitationToken){
+  public Boolean validateInvitation(String email, UUID invitationToken) {
     Optional<Invitation> invitation = invitationRepository.findById(invitationToken);
+    return invitation
+        .filter(
+            value ->
+                InvitationTokenUtils.validateToken(value, email).equals(InvitationStates.VALID))
+        .isPresent();
+  }
 
-    if (invitation.isEmpty()) {
-      return false;
-    }
-
-    InvitationStates validateToken = InvitationTokenUtils.validateToken(invitation.get(), email);
-
-    if (!validateToken.equals(InvitationStates.VALID)) {
-      return false;
-    }
-
-    return true;
+  /**
+   * Returns {@code true} if the specified email has a valid invitation
+   *
+   * @param email The email which wants to consume an invitation token
+   * @return {@code false} if email has an invalid invitation or {@code true} if invitation is valid
+   */
+  public Boolean validateInvitation(String email) {
+    Optional<Invitation> invitation = invitationRepository.findByEmail(email);
+    return invitation
+        .filter(
+            value ->
+                InvitationTokenUtils.validateToken(value, email).equals(InvitationStates.VALID))
+        .isPresent();
   }
 }

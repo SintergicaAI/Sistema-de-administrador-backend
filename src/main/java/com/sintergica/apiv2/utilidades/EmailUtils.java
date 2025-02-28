@@ -21,19 +21,18 @@ import lombok.NoArgsConstructor;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EmailUtils {
-
   /**
    * @author panther
    */
   @Data
   public static class Email {
-    private String fromEmail;
-    private String emailPassword;
     private String subject;
     private String body;
     private String recipients;
     private UUID token;
 
+    private String fromEmail;
+    private String emailPassword;
     private String server;
     private boolean enableAuth;
     private boolean enableTLS;
@@ -45,15 +44,15 @@ public final class EmailUtils {
       this.setBody(newBody);
     }
 
-    public String generateToken() {
+    public void generateToken() {
       UUID token = UUID.randomUUID();
       this.setToken(token);
-      return token.toString();
     }
   }
 
   /**
    * Sets the properties given by the {@code Email} object
+   *
    * @param email recives an {@code Email} object
    * @return A {@code Properties} object
    */
@@ -71,6 +70,7 @@ public final class EmailUtils {
 
   /**
    * Sets the properties given by the environment
+   *
    * @param config recives an {@code EmailConfig} object
    * @return A {@code Properties} object
    */
@@ -88,12 +88,15 @@ public final class EmailUtils {
 
   /**
    * Sends an email with the given configuration
+   *
    * @param properties The properties of the email provider
    * @param authenticator The credentials for the email provider
    * @param email The email to send
-   * @return {@code true} if the email was sent successfully or {@code false} if the email wasn't sent
+   * @return {@code true} if the email was sent successfully or {@code false} if the email wasn't
+   *     sent
    */
-  private static boolean sendEmail(Properties properties, Authenticator authenticator, Email email){
+  private static boolean sendEmail(
+      Properties properties, Authenticator authenticator, Email email) {
     Session session = Session.getInstance(properties, authenticator);
     boolean isSuccess = false;
 
@@ -109,7 +112,7 @@ public final class EmailUtils {
       message.setText(email.getBody(), "UTF-8");
       message.setSentDate(new Date());
       message.setRecipients(
-              Message.RecipientType.TO, InternetAddress.parse(email.getRecipients(), false));
+          Message.RecipientType.TO, InternetAddress.parse(email.getRecipients(), false));
 
       Transport.send(message);
       isSuccess = true;
@@ -122,9 +125,11 @@ public final class EmailUtils {
 
   /**
    * Sends an email with the given configuration
+   *
    * @param email The email to send
    * @param config The email provider configuration from the enviroment
-   * @return {@code true} if the email was sent successfully or {@code false} if the email wasn't sent
+   * @return {@code true} if the email was sent successfully or {@code false} if the email wasn't
+   *     sent
    */
   public static boolean sendEmail(Email email, EmailConfig config) {
     Properties properties = getProperties(config);
@@ -136,14 +141,15 @@ public final class EmailUtils {
           }
         };
 
-    return sendEmail(properties,authenticator,email);
-
+    return sendEmail(properties, authenticator, email);
   }
 
   /**
    * Sends an email
+   *
    * @param email The email to send
-   * @return {@code true} if the email was sent successfully or {@code false} if the email wasn't sent
+   * @return {@code true} if the email was sent successfully or {@code false} if the email wasn't
+   *     sent
    */
   public static boolean sendEmail(Email email) {
     Properties properties = getProperties(email);
@@ -155,6 +161,6 @@ public final class EmailUtils {
           }
         };
 
-    return sendEmail(properties,authenticator,email);
+    return sendEmail(properties, authenticator, email);
   }
 }

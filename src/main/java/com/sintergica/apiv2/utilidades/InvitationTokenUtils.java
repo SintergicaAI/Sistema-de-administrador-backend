@@ -15,6 +15,7 @@ public final class InvitationTokenUtils {
 
   /**
    * Returns the state of the given token
+   *
    * @param invitation Object {@code Invitation}
    * @param email Email linked to the invitation
    * @return {@code InvitationStates} to describe the token state

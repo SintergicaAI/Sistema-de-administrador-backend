@@ -6,9 +6,7 @@ import com.sintergica.apiv2.servicios.InvitationService;
 import com.sintergica.apiv2.utilidades.EmailUtils;
 import java.util.HashMap;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
-import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,26 +35,45 @@ public class InvitationController {
   public ResponseEntity<HashMap<String, Object>> sendInvitationEmail(
       @RequestBody EmailUtils.Email emailObject) {
     HashMap<String, Object> response = new HashMap<>();
-    Pair<Boolean, String> emailResponse = emailService.sendToken(emailObject);
 
-    response.put("message", emailResponse.b);
-
-    if (!emailResponse.a) {
+    if (!invitationService.sendNewToken(emailObject)) {
+      response.put("message", messagesConfig.getMessages().get("emailSendError"));
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    response.put("message", messagesConfig.getMessages().get("emailSent"));
+    return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/regenerate")
+  public ResponseEntity<HashMap<String, Object>> regenerateInvitationEmail(
+      @RequestBody String email) {
+    HashMap<String, Object> response = new HashMap<>();
+
+    if (!invitationService.validateInvitation(email)) {
+      response.put("message", messagesConfig.getMessages().get("tokenInvalid"));
+      return ResponseEntity.badRequest().body(response);
+    }
+
+    if (!invitationService.resendToken(email)) {
+      response.put("message", messagesConfig.getMessages().get("emailSendError"));
+      return ResponseEntity.badRequest().body(response);
+    }
+
+    response.put("message", messagesConfig.getMessages().get("tokenValid"));
     return ResponseEntity.ok(response);
   }
 
   @PostMapping("/validate")
-  public ResponseEntity<HashMap<String,Object>> validateInvitation(@RequestBody String email, @RequestBody UUID invitationToken){
-    HashMap<String,Object> response = new HashMap<>();
-    if(!invitationService.validateInvitation(email,invitationToken)){
-      response.put("message",messagesConfig.getMessages().get("tokenInvalid"));
+  public ResponseEntity<HashMap<String, Object>> validateInvitation(
+      @RequestBody String email, @RequestBody UUID invitationToken) {
+    HashMap<String, Object> response = new HashMap<>();
+    if (!invitationService.validateInvitation(email, invitationToken)) {
+      response.put("message", messagesConfig.getMessages().get("tokenInvalid"));
       return ResponseEntity.badRequest().body(response);
     }
 
-    response.put("message",messagesConfig.getMessages().get("tokenValid"));
+    response.put("message", messagesConfig.getMessages().get("tokenValid"));
     return ResponseEntity.ok(response);
   }
 }
