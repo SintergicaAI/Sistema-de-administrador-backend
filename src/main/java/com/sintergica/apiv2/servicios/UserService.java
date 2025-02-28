@@ -5,7 +5,7 @@ import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.UserRepository;
 import com.sintergica.apiv2.utilidades.TokenUtils;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import java.util.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -46,8 +46,9 @@ public class UserService {
     return userRepository.findByEmail(email);
   }
 
-  public Page<User> findAllByCompany(Company company, Pageable pageable) {
-    return this.userRepository.findAllByCompany(company, pageable);
+  public Page<User> findAllByCompanyAndIsActive(
+      Company company, boolean isActive, Pageable pageable) {
+    return this.userRepository.findAllByCompanyAndIsActive(company, isActive, pageable);
   }
 
   public Page<SearchUserDTO> getUsersByName(String name, Company company, Pageable pageable) {
@@ -69,11 +70,18 @@ public class UserService {
   private void generateNewUser(User user) {
     user.setRol(null);
     user.setCompany(null);
+    user.setActive(true);
     user.setPassword(passwordEncoder.encode(user.getPassword()));
   }
 
-  public String generateToken(String email) {
-    return TokenUtils.createToken(Jwts.claims().subject(email).build());
+  public String generateSessionToken(String email) {
+    return TokenUtils.createToken(
+        Jwts.claims().subject(email).add(TokenUtils.SUFFIX, TokenUtils.SESSION_TOKEN).build());
+  }
+
+  public String generateRefreshToken(String email) {
+    return TokenUtils.createRefreshToken(
+        Jwts.claims().subject(email).add(TokenUtils.SUFFIX, TokenUtils.REFRESH_TOKEN).build());
   }
 
   public User save(User user) {

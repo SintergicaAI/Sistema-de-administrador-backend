@@ -44,9 +44,15 @@ public class CompanyService {
     return this.userService.save(user);
   }
 
+  @Transactional
+  public User deleteUserFromCompany(User userFound) {
+    userFound.setActive(false);
+    return this.userService.save(userFound);
+  }
+
   public Page<UserDTO> getGroupsCompany(Company company, Pageable pageable) {
 
-    Page<User> users = this.userService.findAllByCompany(company, pageable);
+    Page<User> users = this.userService.findAllByCompanyAndIsActive(company, true, pageable);
 
     List<UserDTO> userDTOs = new ArrayList<>();
 

@@ -17,12 +17,12 @@ public class CompanySubscription {
 
   @Id
   @ManyToOne
-  @JoinColumn(name = "packageId", referencedColumnName = "id") // "id" es el nombre en Package
+  @JoinColumn(name = "packageId", referencedColumnName = "id")
   private Package packageId;
 
   @Id
   @ManyToOne
-  @JoinColumn(name = "subscriptionId", referencedColumnName = "id") // "id" es el nombre en User
+  @JoinColumn(name = "subscriptionId", referencedColumnName = "id")
   private Company subscriptionId;
 
   @Column(name = "startDate")

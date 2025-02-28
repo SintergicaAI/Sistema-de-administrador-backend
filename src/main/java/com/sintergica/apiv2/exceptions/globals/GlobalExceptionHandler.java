@@ -5,9 +5,8 @@ import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
 import com.sintergica.apiv2.exceptions.role.RolNotFound;
-import com.sintergica.apiv2.exceptions.user.PasswordConflict;
-import com.sintergica.apiv2.exceptions.user.UserConflict;
-import com.sintergica.apiv2.exceptions.user.UserNotFound;
+import com.sintergica.apiv2.exceptions.token.*;
+import com.sintergica.apiv2.exceptions.user.*;
 import java.util.Date;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +19,12 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(UserNotFound.class)
   public ResponseEntity<Warnings> handleUserNotFound(UserNotFound ex) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(new Warnings(ex.getMessage(), new Date()));
+  }
+
+  @ExceptionHandler(UserForbidden.class)
+  public ResponseEntity<Warnings> handleUserForbidden(UserForbidden ex) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
         .body(new Warnings(ex.getMessage(), new Date()));
   }
 
@@ -62,6 +67,12 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(CompanyUserConflict.class)
   public ResponseEntity<Warnings> handleCompanyConflictUser(CompanyUserConflict ex) {
     return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(new Warnings(ex.getMessage(), new Date()));
+  }
+
+  @ExceptionHandler(TokenForbidden.class)
+  public ResponseEntity<Warnings> handleTokenForbidden(TokenForbidden ex) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
         .body(new Warnings(ex.getMessage(), new Date()));
   }
 }

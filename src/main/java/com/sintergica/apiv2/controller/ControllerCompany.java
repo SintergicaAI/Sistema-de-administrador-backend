@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -62,6 +63,41 @@ public class ControllerCompany {
     return ResponseEntity.ok(company);
   }
 
+  @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
+  @DeleteMapping("/clients/{email}")
+  public ResponseEntity<CompanyDTO> deactivateCompanyUser(@PathVariable String email) {
+
+    User userLogged = this.userService.getUserLogged();
+    User userFound = this.userService.findByEmail(email);
+
+    if (userLogged.getCompany() == null) {
+      throw new CompanyNotFound("El administrador no tiene una compañia asociada");
+    }
+
+    if (userFound.getCompany() == null) {
+      throw new CompanyNotFound("El usuario no tiene una compañia asociada");
+    }
+
+    if (userFound == null) {
+      throw new UserNotFound("Usuario no encontrado");
+    }
+
+    if (userLogged.getCompany() != userFound.getCompany()) {
+      throw new CompanyUserConflict(
+          "Su compañia no coincide con la del usuario a elminar porque no es parte de su organización");
+    }
+
+    userFound = this.companyService.deleteUserFromCompany(userFound);
+
+    return ResponseEntity.ok(
+        new CompanyDTO(
+            userLogged.getCompany().getId(),
+            userLogged.getName(),
+            userFound.getEmail(),
+            userFound.getRol(),
+            userFound.isActive()));
+  }
+
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/clients/{email}")
   public ResponseEntity<CompanyDTO> addClient(@PathVariable(name = "email") String emailClient) {
@@ -93,7 +129,11 @@ public class ControllerCompany {
 
     return ResponseEntity.ok(
         new CompanyDTO(
-            company.get().getId(), company.get().getName(), user.getEmail(), user.getRol()));
+            company.get().getId(),
+            company.get().getName(),
+            user.getEmail(),
+            user.getRol(),
+            user.isActive()));
   }
 
   @PreAuthorize("hasRole('ADMIN')")

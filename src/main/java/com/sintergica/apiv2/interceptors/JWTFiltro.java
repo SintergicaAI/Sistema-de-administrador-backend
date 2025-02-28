@@ -35,17 +35,21 @@ public class JWTFiltro extends OncePerRequestFilter {
 
       if (TokenUtils.getTokenClaims(token) != null) {
         String correo = TokenUtils.getTokenClaims(token).getSubject();
+        String typeToken = TokenUtils.getTypeToken(token);
 
-        if (correo != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-          UserDetails user = customUserDetailsService.loadUserByUsername(correo);
+        if (typeToken != null && typeToken.equals(TokenUtils.SESSION_TOKEN)) {
 
-          if (!TokenUtils.isExpired(token)) {
+          if (correo != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails user = customUserDetailsService.loadUserByUsername(correo);
 
-            UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+            if (!TokenUtils.isExpired(token)) {
 
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+              UsernamePasswordAuthenticationToken authToken =
+                  new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+
+              authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+              SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
           }
         }
       }
