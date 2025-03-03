@@ -70,14 +70,28 @@ public class InvitationService {
   }
 
   /**
+   * Returns {@code true} if exist one invitation associated to the provided email
+   * @param email - The email associated to an invitation
+   * @return {@code true} if exists an invitation or {@code false} if doesn't exist
+   */
+  private Boolean existInvitation(String email){
+    Optional<Invitation> invitation = invitationRepository.findByEmail(email);
+    return invitation.isPresent();
+  }
+
+  /**
    * Sends a invitation token via email
    *
    * @param emailObject The abstracted email with the token
    * @return {@code true} if token was sent successfully or {@code false} if token wasn't sent
    */
   public Boolean sendNewToken(Email emailObject) {
-    emailObject.generateToken();
-    return sendToken(emailObject);
+    if(!existInvitation(emailObject.getMessage().getRecipients())){
+      emailObject.generateToken();
+      return sendToken(emailObject);
+    }
+
+    return resendToken(emailObject.getMessage().getRecipients());
   }
 
   /**
@@ -101,7 +115,6 @@ public class InvitationService {
     emailObject.getMessage().setRecipients(email);
     emailObject.setToken(invitation.get().getToken());
     sendToken(emailObject);
-    storeInvitation(email, invitation.get().getToken());
 
     return true;
   }
@@ -157,7 +170,6 @@ public class InvitationService {
    */
   public Boolean validateInvitation(String email) {
     Optional<Invitation> invitation = invitationRepository.findByEmail(email);
-    System.out.println("leroooo " + email + "Invitacion" + invitation.isPresent());
     return invitation
         .filter(
             value ->

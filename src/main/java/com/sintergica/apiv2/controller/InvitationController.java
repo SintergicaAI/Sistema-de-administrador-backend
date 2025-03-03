@@ -48,8 +48,6 @@ public class InvitationController {
       @RequestBody InvitationDTO invitationDTO) {
     HashMap<String, Object> response = new HashMap<>();
 
-    System.out.println("Eoooo" + invitationService.validateInvitation(invitationDTO.getEmail()));
-
     if (!invitationService.validateInvitation(invitationDTO.getEmail())) {
       response.put("message", messagesConfig.getMessages().get("tokenInvalid"));
       return ResponseEntity.badRequest().body(response);
