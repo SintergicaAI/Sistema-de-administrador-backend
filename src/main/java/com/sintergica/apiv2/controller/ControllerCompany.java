@@ -2,6 +2,7 @@ package com.sintergica.apiv2.controller;
 
 import com.sintergica.apiv2.dto.CompanyDTO;
 import com.sintergica.apiv2.dto.GroupDTO;
+import com.sintergica.apiv2.dto.SearchUserDTO;
 import com.sintergica.apiv2.dto.UserDTO;
 import com.sintergica.apiv2.dto.WrapperUserDTO;
 import com.sintergica.apiv2.entidades.Company;
@@ -9,6 +10,8 @@ import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
+import com.sintergica.apiv2.exceptions.group.GroupNotFound;
+import com.sintergica.apiv2.exceptions.role.RoleNotAllowedInGroupException;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.servicios.CompanyService;
 import com.sintergica.apiv2.servicios.GroupService;
@@ -18,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -162,7 +166,23 @@ public class ControllerCompany {
   }
 
   @PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("/clients")
+  @GetMapping("/users/{username}")
+  public ResponseEntity<WrapperUserDTO<SearchUserDTO>> searchUsers(
+          @PathVariable String username, Pageable pageable) {
+
+    User user = this.userService.getUserLogged();
+    if (user.getCompany() == null) {
+      throw new CompanyNotFound("Usuario sin compañia asociada");
+    }
+
+    Page<SearchUserDTO> userPages =
+            this.userService.getUsersByName(username, user.getCompany(), pageable);
+
+    return ResponseEntity.ok(new WrapperUserDTO<>(userPages));
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/users")
   public ResponseEntity<WrapperUserDTO<UserDTO>> getEmployeeGroups(Pageable pageable) {
 
     String userName = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -173,11 +193,79 @@ public class ControllerCompany {
     }
 
     Company companyUser = user.getCompany();
+
     if (companyUser == null) {
       throw new CompanyNotFound("El usuario no tiene una compañia asociada");
     }
 
+
     return ResponseEntity.ok(
         new WrapperUserDTO<UserDTO>(this.companyService.getGroupsCompany(companyUser, pageable)));
   }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @DeleteMapping("/groups/{uuid}/clients/{email}")
+  public ResponseEntity<GroupDTO> deleteClientToGroup(
+          @PathVariable(name = "uuid") UUID groupUUID, @PathVariable String email) {
+
+    Group group = this.groupService.findGroupById(groupUUID);
+    User user = this.userService.findByEmail(email);
+
+    if (group == null) {
+      throw new GroupNotFound("Grupo no encontrado");
+    }
+
+    if (user == null) {
+      throw new UserNotFound("Usuario no encontrado");
+    }
+
+    if (group.getCompany() == null) {
+      throw new CompanyNotFound("Grupo sin compañia asociada");
+    }
+
+    if (!user.getCompany().getId().equals(group.getCompany().getId())) {
+      throw new CompanyUserConflict("El usuario o el grupo no tienen asociados la misma empresa");
+    }
+
+    Group groupWithoutTheUser = this.groupService.deleteUser(group, user);
+
+    return ResponseEntity.ok(
+            new GroupDTO(groupWithoutTheUser.getId(), groupWithoutTheUser.getName()));
+  }
+
+  @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER') or hasRole('SUPERADMIN')")
+  @PostMapping("/groups/{uuid}/clients/{email}")
+  public ResponseEntity<GroupDTO> addGroup(
+          @PathVariable String email, @PathVariable(name = "uuid") UUID uuidGroup) {
+
+    User user = this.userService.findByEmail(email);
+    if (user == null) {
+      throw new UserNotFound("User not found");
+    }
+
+    Optional<Group> group = this.groupService.findById(uuidGroup);
+
+    if (group.isEmpty()) {
+      throw new GroupNotFound("Group not found");
+    }
+
+    if (user.getCompany() == null) {
+      throw new CompanyNotFound("Usuario sin compañia asociada");
+    }
+
+    if (!user.getCompany().getId().equals(group.get().getCompany().getId())) {
+      throw new CompanyUserConflict("El usuario o el grupo no tienen asociados la misma empresa");
+    }
+
+    if(user.getRol().getName().equals("ADMIN") || user.getRol().getName().equals("SUPERADMIN") || user.getRol().getName().equals("OWNER")) {
+      throw new RoleNotAllowedInGroupException("Los roles ADMIN, SUPERADMIN y OWNER no pueden estar en grupos");
+    }
+
+    Group groupTarget = groupService.addUser(user, group.get());
+
+    return ResponseEntity.ok(new GroupDTO(groupTarget.getId(), groupTarget.getName()));
+  }
+
+
+
 }

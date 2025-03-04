@@ -4,7 +4,7 @@ import com.sintergica.apiv2.exceptions.company.CompanyMismatchException;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
-import com.sintergica.apiv2.exceptions.role.RolNotFound;
+import com.sintergica.apiv2.exceptions.role.*;
 import com.sintergica.apiv2.exceptions.token.*;
 import com.sintergica.apiv2.exceptions.user.*;
 import java.util.Date;
@@ -44,6 +44,16 @@ public class GlobalExceptionHandler {
   public ResponseEntity<Warnings> handleCompanyNotFound(CompanyNotFound ex) {
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
         .body(new Warnings(ex.getMessage(), new Date()));
+  }
+
+  @ExceptionHandler(RolForbiddenException.class)
+  public ResponseEntity<Warnings> handleRolForbiddenException(RolNotFound ex) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Warnings(ex.getMessage(), new Date()));
+  }
+
+  @ExceptionHandler(RoleNotAllowedInGroupException.class)
+  public ResponseEntity<Warnings> handleRoleNotAllowedInGroupException(RoleNotAllowedInGroupException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(new Warnings(ex.getMessage(), new Date()));
   }
 
   @ExceptionHandler(RolNotFound.class)

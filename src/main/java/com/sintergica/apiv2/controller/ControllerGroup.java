@@ -4,19 +4,15 @@ import com.sintergica.apiv2.dto.GroupDTO;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
-import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
-import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.servicios.GroupService;
 import com.sintergica.apiv2.servicios.UserService;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -67,61 +63,5 @@ public class ControllerGroup {
     return ResponseEntity.ok(groupFound);
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
-  @DeleteMapping("/{uuid}/clients/{email}")
-  public ResponseEntity<GroupDTO> deleteClientToGroup(
-      @PathVariable(name = "uuid") UUID groupUUID, @PathVariable String email) {
 
-    Group group = this.groupService.findGroupById(groupUUID);
-    User user = this.userService.findByEmail(email);
-
-    if (group == null) {
-      throw new GroupNotFound("Grupo no encontrado");
-    }
-
-    if (user == null) {
-      throw new UserNotFound("Usuario no encontrado");
-    }
-
-    if (group.getCompany() == null) {
-      throw new CompanyNotFound("Grupo sin compañia asociada");
-    }
-
-    if (!user.getCompany().getId().equals(group.getCompany().getId())) {
-      throw new CompanyUserConflict("El usuario o el grupo no tienen asociados la misma empresa");
-    }
-
-    Group groupWithoutTheUser = this.groupService.deleteUser(group, user);
-
-    return ResponseEntity.ok(
-        new GroupDTO(groupWithoutTheUser.getId(), groupWithoutTheUser.getName()));
-  }
-
-  @PreAuthorize("hasRole('ADMIN')")
-  @PostMapping("{uuid}/clients/{email}")
-  public ResponseEntity<GroupDTO> addGroup(
-      @PathVariable String email, @PathVariable(name = "uuid") UUID uuidGroup) {
-
-    User user = this.userService.findByEmail(email);
-    if (user == null) {
-      throw new UserNotFound("User not found");
-    }
-
-    Optional<Group> group = this.groupService.findById(uuidGroup);
-
-    if (group.isEmpty()) {
-      throw new GroupNotFound("Group not found");
-    }
-
-    if (user.getCompany() == null) {
-      throw new CompanyNotFound("Usuario sin compañia asociada");
-    }
-
-    if (!user.getCompany().getId().equals(group.get().getCompany().getId())) {
-      throw new CompanyUserConflict("El usuario o el grupo no tienen asociados la misma empresa");
-    }
-
-    Group groupTarget = groupService.addUser(user, group.get());
-    return ResponseEntity.ok(new GroupDTO(groupTarget.getId(), groupTarget.getName()));
-  }
 }

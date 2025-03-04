@@ -1,12 +1,9 @@
 package com.sintergica.apiv2.controller;
 
 import com.sintergica.apiv2.dto.LoginAndRegisterDTO;
-import com.sintergica.apiv2.dto.SearchUserDTO;
 import com.sintergica.apiv2.dto.TokenDTO;
-import com.sintergica.apiv2.dto.WrapperUserDTO;
 import com.sintergica.apiv2.entidades.InvalidatedTokens;
 import com.sintergica.apiv2.entidades.User;
-import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.token.TokenForbidden;
 import com.sintergica.apiv2.exceptions.user.UserConflict;
 import com.sintergica.apiv2.exceptions.user.UserForbidden;
@@ -19,12 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -94,27 +86,13 @@ public class ControllerClient {
             userService.generateRefreshToken(user.getEmail())));
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("{username}/search")
-  public ResponseEntity<WrapperUserDTO<SearchUserDTO>> searchUsers(
-      @PathVariable String username, Pageable pageable) {
-
-    User user = this.userService.getUserLogged();
-    if (user.getCompany() == null) {
-      throw new CompanyNotFound("Usuario sin compañia asociada");
-    }
-
-    Page<SearchUserDTO> userPages =
-        this.userService.getUsersByName(username, user.getCompany(), pageable);
-
-    return ResponseEntity.ok(new WrapperUserDTO<>(userPages));
-  }
-
   @PostMapping("/refreshToken")
   public ResponseEntity<String> generateNewToken() {
     HttpServletRequest request =
         ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+
     String refreshToken = TokenUtils.extractToken(request.getHeader("Authorization"));
+
     InvalidatedTokens invalidatedTokens =
         this.invalidatedTokensService.getInvalidatedToken(refreshToken);
 
@@ -122,6 +100,8 @@ public class ControllerClient {
       throw new TokenForbidden(
           "El token ya ha sido invalidado imposible enviar un refresh token inicia sesion nuevamente para generar uno nuevo");
     }
+
+
 
     return ResponseEntity.ok(
         this.userService.generateSessionToken(
@@ -156,4 +136,5 @@ public class ControllerClient {
     return ResponseEntity.ok(
         new TokenDTO(invalidatedTokens.getRefreshToken(), refreshClaims.getSubject()));
   }
+
 }
