@@ -168,7 +168,7 @@ public class ControllerCompany {
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/users/{username}")
   public ResponseEntity<WrapperUserDTO<SearchUserDTO>> searchUsers(
-          @PathVariable String username, Pageable pageable) {
+      @PathVariable String username, Pageable pageable) {
 
     User user = this.userService.getUserLogged();
     if (user.getCompany() == null) {
@@ -176,7 +176,7 @@ public class ControllerCompany {
     }
 
     Page<SearchUserDTO> userPages =
-            this.userService.getUsersByName(username, user.getCompany(), pageable);
+        this.userService.getUsersByName(username, user.getCompany(), pageable);
 
     return ResponseEntity.ok(new WrapperUserDTO<>(userPages));
   }
@@ -198,7 +198,6 @@ public class ControllerCompany {
       throw new CompanyNotFound("El usuario no tiene una compañia asociada");
     }
 
-
     return ResponseEntity.ok(
         new WrapperUserDTO<UserDTO>(this.companyService.getGroupsCompany(companyUser, pageable)));
   }
@@ -206,7 +205,7 @@ public class ControllerCompany {
   @PreAuthorize("hasRole('ADMIN')")
   @DeleteMapping("/groups/{uuid}/clients/{email}")
   public ResponseEntity<GroupDTO> deleteClientToGroup(
-          @PathVariable(name = "uuid") UUID groupUUID, @PathVariable String email) {
+      @PathVariable(name = "uuid") UUID groupUUID, @PathVariable String email) {
 
     Group group = this.groupService.findGroupById(groupUUID);
     User user = this.userService.findByEmail(email);
@@ -230,13 +229,13 @@ public class ControllerCompany {
     Group groupWithoutTheUser = this.groupService.deleteUser(group, user);
 
     return ResponseEntity.ok(
-            new GroupDTO(groupWithoutTheUser.getId(), groupWithoutTheUser.getName()));
+        new GroupDTO(groupWithoutTheUser.getId(), groupWithoutTheUser.getName()));
   }
 
   @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER') or hasRole('SUPERADMIN')")
   @PostMapping("/groups/{uuid}/clients/{email}")
   public ResponseEntity<GroupDTO> addGroup(
-          @PathVariable String email, @PathVariable(name = "uuid") UUID uuidGroup) {
+      @PathVariable String email, @PathVariable(name = "uuid") UUID uuidGroup) {
 
     User user = this.userService.findByEmail(email);
     if (user == null) {
@@ -257,15 +256,15 @@ public class ControllerCompany {
       throw new CompanyUserConflict("El usuario o el grupo no tienen asociados la misma empresa");
     }
 
-    if(user.getRol().getName().equals("ADMIN") || user.getRol().getName().equals("SUPERADMIN") || user.getRol().getName().equals("OWNER")) {
-      throw new RoleNotAllowedInGroupException("Los roles ADMIN, SUPERADMIN y OWNER no pueden estar en grupos");
+    if (user.getRol().getName().equals("ADMIN")
+        || user.getRol().getName().equals("SUPERADMIN")
+        || user.getRol().getName().equals("OWNER")) {
+      throw new RoleNotAllowedInGroupException(
+          "Los roles ADMIN, SUPERADMIN y OWNER no pueden estar en grupos");
     }
 
     Group groupTarget = groupService.addUser(user, group.get());
 
     return ResponseEntity.ok(new GroupDTO(groupTarget.getId(), groupTarget.getName()));
   }
-
-
-
 }

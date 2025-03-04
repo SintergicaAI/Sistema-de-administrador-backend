@@ -62,6 +62,4 @@ public class ControllerGroup {
     }
     return ResponseEntity.ok(groupFound);
   }
-
-
 }

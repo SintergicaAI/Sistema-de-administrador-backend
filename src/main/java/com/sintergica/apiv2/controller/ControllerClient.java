@@ -141,5 +141,4 @@ public class ControllerClient {
     return ResponseEntity.ok(
         new TokenDTO(invalidatedTokens.getRefreshToken(), refreshClaims.getSubject()));
   }
-
 }

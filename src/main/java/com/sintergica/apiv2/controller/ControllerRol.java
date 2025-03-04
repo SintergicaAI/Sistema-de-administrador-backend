@@ -59,32 +59,35 @@ public class ControllerRol {
       throw new RolNotFound("Rol no encontrado");
     }
 
-    if(userFound.getRol().equals("USER") && newRolUser.equals("ADMIN") || userFound.getRol().equals("OWNER")) {
+    if (userFound.getRol().equals("USER") && newRolUser.equals("ADMIN")
+        || userFound.getRol().equals("OWNER")) {
 
       userFound.setGroups(null);
     }
 
-    if(userLog.getRol().equals("OWNER")){
+    if (userLog.getRol().equals("OWNER")) {
 
-      if(userLog.getCompany() == null || userFound.getCompany() == null){
+      if (userLog.getCompany() == null || userFound.getCompany() == null) {
         throw new CompanyNotFound("El usuario o el administrador no tienen compañia asociada");
       }
 
-      if(userLog.getCompany() != userFound.getCompany()){
+      if (userLog.getCompany() != userFound.getCompany()) {
         throw new CompanyUserConflict("El usuario y el owner no tienen la misma compañia asociada");
       }
     }
 
-    if(userLog.getRol().equals("ADMIN")){
-      if(userFound.getCompany() == null || userFound.getCompany() == null){
+    if (userLog.getRol().equals("ADMIN")) {
+      if (userFound.getCompany() == null || userFound.getCompany() == null) {
         throw new CompanyNotFound("El usuario o el administrador no tienen compañia asociada");
       }
 
-      if(userFound.getRol().getName().equals("SUPERADMIN") || userFound.getRol().getName().equals("OWNER")){
-        throw new RolForbiddenException("Sin privilegios para eliminar a un usuario con mayor jerarquia");
+      if (userFound.getRol().getName().equals("SUPERADMIN")
+          || userFound.getRol().getName().equals("OWNER")) {
+        throw new RolForbiddenException(
+            "Sin privilegios para eliminar a un usuario con mayor jerarquia");
       }
 
-      if(userLog.getCompany() != userFound.getCompany()){
+      if (userLog.getCompany() != userFound.getCompany()) {
         throw new CompanyUserConflict("El usuario y el admin no tienen la misma compañia asociada");
       }
     }

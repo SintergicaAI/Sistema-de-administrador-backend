@@ -8,6 +8,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "michelle")
 public class MichelleConfig {
-	private String url;
-	private String token;
+  private String url;
+  private String token;
 }

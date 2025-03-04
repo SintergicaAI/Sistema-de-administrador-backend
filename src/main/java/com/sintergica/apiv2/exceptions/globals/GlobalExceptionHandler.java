@@ -48,12 +48,15 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(RolForbiddenException.class)
   public ResponseEntity<Warnings> handleRolForbiddenException(RolNotFound ex) {
-    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Warnings(ex.getMessage(), new Date()));
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(new Warnings(ex.getMessage(), new Date()));
   }
 
   @ExceptionHandler(RoleNotAllowedInGroupException.class)
-  public ResponseEntity<Warnings> handleRoleNotAllowedInGroupException(RoleNotAllowedInGroupException ex) {
-    return ResponseEntity.status(HttpStatus.CONFLICT).body(new Warnings(ex.getMessage(), new Date()));
+  public ResponseEntity<Warnings> handleRoleNotAllowedInGroupException(
+      RoleNotAllowedInGroupException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(new Warnings(ex.getMessage(), new Date()));
   }
 
   @ExceptionHandler(RolNotFound.class)

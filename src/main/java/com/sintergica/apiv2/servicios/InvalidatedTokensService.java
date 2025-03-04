@@ -2,15 +2,13 @@ package com.sintergica.apiv2.servicios;
 
 import com.sintergica.apiv2.entidades.InvalidatedTokens;
 import com.sintergica.apiv2.repositorio.InvalidatedTokensRepository;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @Service
@@ -24,6 +22,7 @@ public class InvalidatedTokensService {
 
   public InvalidatedTokens addInvalidatedToken(InvalidatedTokens invalidatedTokens) {
     bannedTokens.add(invalidatedTokens.getRefreshToken());
+    eventService.triggerEvent(LOGOUT_EVENT);
     return invalidatedTokensRepository.save(invalidatedTokens);
   }
 
@@ -38,18 +37,15 @@ public class InvalidatedTokensService {
   @EventListener(ApplicationReadyEvent.class)
   public void loadBannedTokens() {
     bannedTokens.clear();
-    List<String> invalidToken = invalidatedTokensRepository.findAll().stream()
-        .map(InvalidatedTokens::getRefreshToken)
-        .toList();
+    List<String> invalidToken =
+        invalidatedTokensRepository.findAll().stream()
+            .map(InvalidatedTokens::getRefreshToken)
+            .toList();
     bannedTokens.addAll(invalidToken);
   }
 
   @EventListener(ApplicationReadyEvent.class)
   public void subscribeToLogout() {
-	  try {
-		  eventService.subscribeToEvent(LOGOUT_EVENT, UPDATE_TOKENS_ENDPOINT);
-	  } catch (IOException e) {
-		  throw new RuntimeException(e);
-	  }
+    eventService.subscribeToEvent(LOGOUT_EVENT, UPDATE_TOKENS_ENDPOINT);
   }
 }
