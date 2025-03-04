@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
+  private final InvalidatedTokensService invalidTokensService;
   private final UserRepository userRepository;
 
   @Override
