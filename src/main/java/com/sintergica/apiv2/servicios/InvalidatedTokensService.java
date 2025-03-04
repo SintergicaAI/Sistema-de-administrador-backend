@@ -18,7 +18,7 @@ public class InvalidatedTokensService {
   private final EventService eventService;
   private final List<String> bannedTokens = new ArrayList<>();
   private final String LOGOUT_EVENT = "logout";
-  private final String UPDATE_TOKENS_ENDPOINT = "/users/updateTokens";
+  private final String UPDATE_TOKENS_ENDPOINT = ":80/users/updateTokens";
 
   public InvalidatedTokens addInvalidatedToken(InvalidatedTokens invalidatedTokens) {
     bannedTokens.add(invalidatedTokens.getRefreshToken());
