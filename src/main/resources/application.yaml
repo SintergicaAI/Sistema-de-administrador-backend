@@ -36,5 +36,9 @@ logging:
       springframework:
         jdbc: DEBUG
 
+michelle:
+  url: "https://michelle-hoyto.ondigitalocean.app/event"
+  token: ${DATASOURCE_PASSWORD}
+
 server:
   port: 8080

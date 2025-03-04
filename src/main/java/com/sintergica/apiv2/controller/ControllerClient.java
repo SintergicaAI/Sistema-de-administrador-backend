@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -101,11 +102,15 @@ public class ControllerClient {
           "El token ya ha sido invalidado imposible enviar un refresh token inicia sesion nuevamente para generar uno nuevo");
     }
 
-
-
     return ResponseEntity.ok(
         this.userService.generateSessionToken(
             TokenUtils.getTokenClaims(refreshToken).getSubject()));
+  }
+
+  @GetMapping("/updateTokens")
+  public ResponseEntity<?> updateTokens() {
+    invalidatedTokensService.loadBannedTokens();
+    return ResponseEntity.ok().build();
   }
 
   @PostMapping("/logout")
