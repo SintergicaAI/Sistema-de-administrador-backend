@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="turing_dev@24.199.104.165" uuid="f944faa1-e856-4e93-916d-15bc5607c56a">
+    <data-source source="LOCAL" name="turing_dev@3.144.151.147" uuid="f944faa1-e856-4e93-916d-15bc5607c56a">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://24.199.104.165:5432/turing_dev</jdbc-url>
+      <jdbc-url>jdbc:postgresql://3.144.151.147:5432/turing_dev</jdbc-url>
       <jdbc-additional-properties>
         <property name="com.intellij.clouds.kubernetes.db.host.port" />
         <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />

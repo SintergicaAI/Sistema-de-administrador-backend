@@ -25,7 +25,13 @@ public class GroupService {
   }
 
   public Group save(Group group) {
-    return this.groupRepository.save(group);
+
+    try{
+      return this.groupRepository.save(group);
+    }catch (Exception e){
+      return null;
+    }
+
   }
 
   public Group findGroupById(UUID uuidGroup) {
@@ -52,4 +58,10 @@ public class GroupService {
     group.getUser().remove(user);
     return this.groupRepository.save(group);
   }
+
+  @Transactional
+  public Group findGroupByCompanyAndName(Company company, String name) {
+    return this.groupRepository.findByCompanyAndName(company, name);
+  }
+
 }

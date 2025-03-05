@@ -41,7 +41,7 @@ public class SecurityConfig {
                   .requestMatchers("/users/logout")
                   .permitAll()
                   .requestMatchers("/users/refreshToken")
-                  .permitAll()
+                  .permitAll().requestMatchers("/users/updateTokens").permitAll()
                   .anyRequest()
                   .authenticated();
             })

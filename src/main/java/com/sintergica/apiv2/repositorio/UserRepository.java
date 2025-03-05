@@ -17,7 +17,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
   Page<User> findAllByCompanyAndIsActive(Company company, boolean isActive, Pageable pageable);
 
-  Page<User> findByCompanyAndNameStartingWith(Company company, String name, Pageable pageable);
+  @Query("SELECT u FROM User u WHERE u.company = :company AND CONCAT(u.name, ' ', u.lastName) LIKE %:nameLastName%")
+  Page<User> findByCompanyAndNameAndLastNameStartingWith(
+          @Param("company") Company company,
+          @Param("nameLastName") String nameLastName,
+          Pageable pageable);
 
   @Query(
       "SELECT u FROM User u WHERE "

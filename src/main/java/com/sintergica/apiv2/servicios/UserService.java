@@ -1,8 +1,7 @@
 package com.sintergica.apiv2.servicios;
 
 import com.sintergica.apiv2.dto.SearchUserDTO;
-import com.sintergica.apiv2.entidades.Company;
-import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.entidades.*;
 import com.sintergica.apiv2.repositorio.UserRepository;
 import com.sintergica.apiv2.utilidades.TokenUtils;
 import io.jsonwebtoken.Jwts;
@@ -28,7 +27,6 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
 
   public User registerUser(User user) {
-    this.generateNewUser(user);
     return this.userRepository.save(user);
   }
 
@@ -55,7 +53,7 @@ public class UserService {
   public Page<SearchUserDTO> getUsersByName(String name, Company company, Pageable pageable) {
 
     Page<User> userPage =
-        userRepository.findByCompanyAndNameStartingWith(
+        userRepository.findByCompanyAndNameAndLastNameStartingWith(
             company, name, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()));
     ArrayList<SearchUserDTO> searchUserDTOs = new ArrayList<>();
 
@@ -68,12 +66,7 @@ public class UserService {
     return new PageImpl<>(searchUserDTOs, pageable, userPage.getTotalElements());
   }
 
-  private void generateNewUser(User user) {
-    user.setRol(null);
-    user.setCompany(null);
-    user.setActive(true);
-    user.setPassword(passwordEncoder.encode(user.getPassword()));
-  }
+
 
   public String generateSessionToken(String email) {
     return TokenUtils.createToken(

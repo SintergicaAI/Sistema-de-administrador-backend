@@ -14,13 +14,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/roles")
@@ -36,10 +30,13 @@ public class ControllerRol {
     return ResponseEntity.ok().body(rolService.getRoles());
   }
 
-  @PreAuthorize("hasRole('SUPERADMIN')")
   @PostMapping
-  public ResponseEntity<Rol> addNewRol(@RequestBody Rol rol) {
-    return ResponseEntity.ok().body(rolService.save(rol));
+  public ResponseEntity<Rol> addNewRol(@RequestParam String roleName) {
+
+    Rol newRol = new Rol();
+    newRol.setName(roleName);
+
+    return ResponseEntity.ok().body(rolService.save(newRol));
   }
 
   @PreAuthorize("hasRole('SUPERADMIN') or hasRole('OWNER') or hasRole('ADMIN')")

@@ -1,5 +1,7 @@
 package com.sintergica.apiv2.entidades;
 
+import java.util.Set;
+import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -11,15 +13,17 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.util.Set;
-import java.util.UUID;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
-@Table(name = "listGroup")
+@Table(name = "listGroup",
+        uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"name", "id_company"})
+})
 public class Group {
 
   @Id

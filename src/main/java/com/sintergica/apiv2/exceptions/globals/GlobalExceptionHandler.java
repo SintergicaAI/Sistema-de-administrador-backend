@@ -3,11 +3,19 @@ package com.sintergica.apiv2.exceptions.globals;
 import com.sintergica.apiv2.exceptions.company.CompanyMismatchException;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
+import com.sintergica.apiv2.exceptions.group.GroupConflict;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
-import com.sintergica.apiv2.exceptions.role.*;
-import com.sintergica.apiv2.exceptions.token.*;
-import com.sintergica.apiv2.exceptions.user.*;
+import com.sintergica.apiv2.exceptions.role.RolForbiddenException;
+import com.sintergica.apiv2.exceptions.role.RolNotFound;
+import com.sintergica.apiv2.exceptions.role.RoleNotAllowedInGroupException;
+import com.sintergica.apiv2.exceptions.token.TokenForbidden;
+
 import java.util.Date;
+
+import com.sintergica.apiv2.exceptions.user.PasswordConflict;
+import com.sintergica.apiv2.exceptions.user.UserConflict;
+import com.sintergica.apiv2.exceptions.user.UserForbidden;
+import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -88,4 +96,10 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
         .body(new Warnings(ex.getMessage(), new Date()));
   }
+
+  @ExceptionHandler(GroupConflict.class)
+  public ResponseEntity<Warnings> handleGroupConflict(GroupConflict ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(new Warnings(ex.getMessage(), new Date()));
+  }
+
 }

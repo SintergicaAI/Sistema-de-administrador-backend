@@ -13,12 +13,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface GroupRepository extends JpaRepository<Group, UUID> {
 
-  Group findByName(String name);
-
   List<Group> findAllByCompany(Company company);
 
-  @Query("SELECT DISTINCT g FROM Group g JOIN FETCH g.user u WHERE u.id IN :userIds")
-  List<Group> findGroupsByUserIdsIn(@Param("userIds") List<UUID> userIds);
+  Group findByCompanyAndName(Company company, String name);
 
-  List<Group> findByCompanyAndUserContaining(Company company, User user);
 }

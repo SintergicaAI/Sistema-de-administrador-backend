@@ -23,13 +23,14 @@ public class BannedTokenFilter implements Filter {
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
       throws IOException, ServletException {
-
-    HttpServletRequest httpRequest = (HttpServletRequest) request;
-    String token = httpRequest.getHeader("Authorization").split(" ")[1];
-    if (invalidTokenService.isTokenBanned(token)) {
-      ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_FORBIDDEN);
-    } else {
+      HttpServletRequest httpRequest = (HttpServletRequest) request;
+      String authHeader = httpRequest.getHeader("Authorization");
+      if (authHeader != null && authHeader.startsWith("Bearer ")) {
+          String token = httpRequest.getHeader("Authorization").split(" ")[1];
+          if (invalidTokenService.isTokenBanned(token)) {
+              ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_FORBIDDEN);
+          }
+      }
       chain.doFilter(request, response);
-    }
   }
 }
