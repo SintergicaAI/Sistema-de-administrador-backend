@@ -78,7 +78,7 @@ public class ControllerClient {
     User userFound = this.userService.login(user);
 
     if (userFound == null) {
-      throw new UserNotFound("Usuario o contraseñas incorrectos");
+      throw new UserNotFound("Usuario oi contraseñas incorrectos");
     }
 
     if (!userFound.isActive()) {
