@@ -4,8 +4,8 @@ info:
   description: 'API para gestión de usuarios, grupos y roles recuerda enviar el token de acceso en el header'
   version: 2.0.0
 servers:
-  - url: 'http://localhost:8080'
-    description: Servidor local de desarrollo
+  - url: 'http://3.144.151.147:80'
+    description: Entorno de desarrollo en la nube
 paths:
   /users/register:
     post:
@@ -42,18 +42,6 @@ paths:
                 lastName:
                   type: string
                   example: Apellido
-                rol:
-                  allOf:
-                    - $ref: '#/components/schemas/Rol'
-                  nullable: true
-                  example: null
-                  description: Debes incluir este campo y este debera ser null
-                company:
-                  allOf:
-                    - $ref: '#/components/schemas/Company'
-                  nullable: true
-                  example: null
-                  description: Debes incluir el campo y este debera ser null
       responses:
         '200':
           description: Se registra un nuevo usuario en la base de datos
@@ -72,6 +60,12 @@ paths:
                     type: string
                     example: asdni3ip3@sds
                     description: Token de acceso que debes incluir en los headers para tener acceso a enpoints
+                  refreshToken:
+                    type: string
+                    example: aspdasndi@ads
+                    description: Envia este token en el encabezado en vez de el token de session para obtener otro más
+                  rol:
+                    $ref: '#/components/schemas/Rol'
         '409':
           description: Ya existe un usuario con este correo
           content:
@@ -104,7 +98,7 @@ paths:
                   description: '123'
       responses:
         '200':
-          description: El usuario inicia sesión
+          description: Se registra un nuevo usuario en la base de datos
           content:
             application/json:
               schema:
@@ -120,6 +114,12 @@ paths:
                     type: string
                     example: asdni3ip3@sds
                     description: Token de acceso que debes incluir en los headers para tener acceso a enpoints
+                  refreshToken:
+                    type: string
+                    example: aspdasndi@ads
+                    description: Envia este token en el encabezado en vez de el token de session para obtener otro más
+                  rol:
+                    $ref: '#/components/schemas/Rol'
         '401':
           description: Contraseña incorrecta
           content:
@@ -132,13 +132,81 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Warnings'
-  '/users/{username}/search':
-    get:
+  /users/refreshToken:
+    post:
       tags:
         - users
+      description: Envia el token de tipo refresh en los encabezados que se te asigno al inicio de sesión
+      security:
+        - JWT: []
+      responses:
+        '200':
+          description: Se registra un nuevo usuario en la base de datos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                  name:
+                    type: string
+                  lastName:
+                    type: string
+                  token:
+                    type: string
+                    example: asdni3ip3@sds
+                    description: Token de acceso que debes incluir en los headers para tener acceso a enpoints
+                  refreshToken:
+                    type: string
+                    example: aspdasndi@ads
+                    description: Envia este token en el encabezado en vez de el token de session para obtener otro más
+                  rol:
+                    $ref: '#/components/schemas/Rol'
+        '403':
+          description: token invalidado o baneado porque cerraste la sesión
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warnings'
+  /users/logout:
+    post:
+      tags:
+        - users
+      description: 'Envia el token de tipo refresh en los encabezados que se te asigno al inicio de sesión este se guarda una vez recibido porque sé bloqueara, y queda inutilizable para generar refresh tokens'
+      security:
+        - JWT: []
+      responses:
+        '200':
+          description: Retorno del token bloqueado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  refreshToken:
+                    type: string
+                  email:
+                    type: string
+        '403':
+          description: token invalidado o baneado porque cerraste la sesión
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warnings'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warnings'
+  '/company/users/{username}':
+    get:
+      tags:
+        - Company
       description: |-
         **Ejemplo de solicitud:**
-        `GET /users/john.doe/search?page=1&size=10`
+        `GET company/users/john.doe/search?page=1&size=10`
       security:
         - JWT: []
       parameters:
@@ -233,7 +301,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Company'
-  /company/uuid:
+  '/company/{uuid}':
     get:
       security:
         - JWT: []
@@ -243,7 +311,7 @@ paths:
       summary: Obtienes una compañia por medio del uuid
       parameters:
         - name: uuid
-          in: query
+          in: path
           required: true
           schema:
             type: string
@@ -255,7 +323,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Company'
-  /company/clients:
+  /company/users:
     get:
       tags:
         - Company
@@ -293,7 +361,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Warnings'
-  /company/clients/email:
+  '/company/users/{email}':
     post:
       security:
         - JWT: []
@@ -303,7 +371,7 @@ paths:
         - Company
       parameters:
         - name: email
-          in: query
+          in: path
           description: email del cliente que quieres agregar a la compañia y este no debe tener una compañia asociada
           required: true
           schema:
@@ -380,7 +448,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Group'
-  /group/uuid:
+  '/group/{uuid}':
     get:
       tags:
         - Groups
@@ -388,7 +456,7 @@ paths:
       summary: Obtienes datos de un grupo por medio de su uuid
       parameters:
         - name: uuid
-          in: query
+          in: path
           required: true
           schema:
             type: string
@@ -400,10 +468,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Group'
-  '/{uuid}/clients/{email}':
+  '/company/group/{uuid}/clients/{email}':
     post:
       tags:
-        - Groups
+        - Company
       summary: Agregar cliente de un grupo
       security:
         - JWT: []
@@ -436,7 +504,7 @@ paths:
                 $ref: '#/components/schemas/Warnings'
     delete:
       tags:
-        - Groups
+        - Company
       summary: Eliminar cliente de un grupo
       security:
         - JWT: []
