@@ -17,6 +17,8 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.Date;
+import java.util.Objects;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -111,8 +113,8 @@ public class ControllerClient {
     }
 
     String token = this.userService.generateSessionToken(
-            TokenUtils.getTokenClaims(refreshToken).getSubject());
-    User user = this.userService.findByEmail(TokenUtils.getTokenClaims(token).getSubject());
+            Objects.requireNonNull(TokenUtils.getTokenClaims(refreshToken)).getSubject());
+    User user = this.userService.findByEmail(Objects.requireNonNull(TokenUtils.getTokenClaims(token)).getSubject());
 
     return ResponseEntity.ok(new LoginAndRegisterDTO(
             user.getId(),
