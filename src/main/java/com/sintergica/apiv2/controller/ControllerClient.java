@@ -47,11 +47,6 @@ public class ControllerClient {
       throw new UserConflict("Este email ya existe en el sistema");
     }
 
-    if (userFound != null && !userFound.isActive()) {
-      throw new UserForbidden(
-          "Este email ya esta registrado en el sistema solicita al administrador que te de alta nuevamente");
-    }
-
     user.setRol(rolRepository.findByName("USER"));
     user.setActive(true);
     user.setPassword(passwordEncoder.encode(user.getPassword()));
