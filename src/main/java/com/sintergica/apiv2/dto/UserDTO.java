@@ -17,7 +17,7 @@ public class UserDTO {
   private String name;
   private String lastName;
   private String email;
-  private List<GroupDTO> groupDTOList;
+  private List<GroupDTO> groups;
 
   public UserDTO(
       UUID id,
@@ -25,11 +25,11 @@ public class UserDTO {
       String lastName,
       @Email(message = "Correo no valido") @NotBlank(message = "Correo no puede estar vacio")
           String email,
-      List<GroupDTO> groupDTOList) {
+      List<GroupDTO> groups) {
     this.id = id;
     this.name = name;
     this.lastName = lastName;
     this.email = email;
-    this.groupDTOList = groupDTOList;
+    this.groups = groups;
   }
 }

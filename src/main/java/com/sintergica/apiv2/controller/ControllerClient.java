@@ -1,6 +1,7 @@
 package com.sintergica.apiv2.controller;
 
 import com.sintergica.apiv2.dto.LoginAndRegisterDTO;
+import com.sintergica.apiv2.dto.RegisterResponseDTO;
 import com.sintergica.apiv2.dto.TokenDTO;
 import com.sintergica.apiv2.entidades.InvalidatedTokens;
 import com.sintergica.apiv2.entidades.User;
@@ -17,6 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,7 +40,7 @@ public class ControllerClient {
   private final PasswordEncoder passwordEncoder;
 
   @PostMapping("/register")
-  public ResponseEntity<LoginAndRegisterDTO> register(@Valid @RequestBody User user) {
+  public ResponseEntity<RegisterResponseDTO> register(@Valid @RequestBody User user) {
     User userFound = this.userService.findByEmail(user.getEmail());
 
     if (userFound != null) {
@@ -56,14 +58,17 @@ public class ControllerClient {
 
     User userCreated = this.userService.registerUser(user);
 
-    return ResponseEntity.ok(
-        new LoginAndRegisterDTO(
-            userCreated.getId(),
-            userCreated.getEmail(),
-            userCreated.getName(),
-            userCreated.getLastName(),
-            userService.generateSessionToken(user.getEmail()),
-            userService.generateRefreshToken(user.getEmail()), userCreated.getRol()));
+    RegisterResponseDTO responseDTO = RegisterResponseDTO.builder().
+            id(userCreated.getId())
+            .email(userCreated.getEmail())
+            .name(userCreated.getName())
+            .last_name(userCreated.getLastName())
+            .role(userCreated.getRol().getName())
+            .token(userService.generateSessionToken(userCreated.getEmail()))
+            .refreshToken(userService.generateRefreshToken(user.getEmail()))
+            .build();
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
   }
 
   @PostMapping("/login")

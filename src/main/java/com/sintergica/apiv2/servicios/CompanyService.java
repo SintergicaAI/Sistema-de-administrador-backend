@@ -54,7 +54,7 @@ public class CompanyService {
 
     Page<User> users = this.userService.findAllByCompanyAndIsActive(company, true, pageable);
 
-    List<UserDTO> userDTOs = new ArrayList<>();
+    List<UserDTO> data = new ArrayList<>();
 
     for (User userGroup : users) {
 
@@ -64,7 +64,7 @@ public class CompanyService {
         groupDTOList.add(new GroupDTO(group.getId(), group.getName()));
       }
 
-      UserDTO userDTO =
+      UserDTO list =
           new UserDTO(
               userGroup.getId(),
               userGroup.getName(),
@@ -72,10 +72,10 @@ public class CompanyService {
               userGroup.getEmail(),
               groupDTOList);
 
-      userDTOs.add(userDTO);
+      data.add(list);
     }
 
-    return new PageImpl<>(userDTOs, pageable, users.getTotalElements());
+    return new PageImpl<>(data, pageable, users.getTotalElements());
   }
 
   public Optional<Company> findById(UUID uuid) {
