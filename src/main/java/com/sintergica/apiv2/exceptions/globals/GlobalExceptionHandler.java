@@ -9,13 +9,11 @@ import com.sintergica.apiv2.exceptions.role.RolForbiddenException;
 import com.sintergica.apiv2.exceptions.role.RolNotFound;
 import com.sintergica.apiv2.exceptions.role.RoleNotAllowedInGroupException;
 import com.sintergica.apiv2.exceptions.token.TokenForbidden;
-
-import java.util.Date;
-
 import com.sintergica.apiv2.exceptions.user.PasswordConflict;
 import com.sintergica.apiv2.exceptions.user.UserConflict;
 import com.sintergica.apiv2.exceptions.user.UserForbidden;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
+import java.util.Date;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -99,7 +97,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(GroupConflict.class)
   public ResponseEntity<Warnings> handleGroupConflict(GroupConflict ex) {
-    return ResponseEntity.status(HttpStatus.CONFLICT).body(new Warnings(ex.getMessage(), new Date()));
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(new Warnings(ex.getMessage(), new Date()));
   }
-
 }

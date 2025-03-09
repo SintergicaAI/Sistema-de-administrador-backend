@@ -1,10 +1,10 @@
 package com.sintergica.apiv2.seguridad;
 
-import com.fasterxml.jackson.databind.*;
-import com.sintergica.apiv2.exceptions.globals.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sintergica.apiv2.exceptions.globals.Warnings;
 import com.sintergica.apiv2.interceptors.JWTFiltro;
-import jakarta.servlet.http.*;
-import java.util.*;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.Date;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -41,7 +41,9 @@ public class SecurityConfig {
                   .requestMatchers("/users/logout")
                   .permitAll()
                   .requestMatchers("/users/refreshToken")
-                  .permitAll().requestMatchers("/users/updateTokens").permitAll()
+                  .permitAll()
+                  .requestMatchers("/users/updateTokens")
+                  .permitAll()
                   .anyRequest()
                   .authenticated();
             })

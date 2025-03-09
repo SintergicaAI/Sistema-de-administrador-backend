@@ -24,14 +24,17 @@ public class GroupService {
     return groupRepository.findAll();
   }
 
+  public List<Group> findGroupsByNameContainingIgnoreCase(String name) {
+    return this.groupRepository.findAllByNameContainingIgnoreCase(name);
+  }
+
   public Group save(Group group) {
 
-    try{
+    try {
       return this.groupRepository.save(group);
-    }catch (Exception e){
+    } catch (Exception e) {
       return null;
     }
-
   }
 
   public Group findGroupById(UUID uuidGroup) {
@@ -64,4 +67,13 @@ public class GroupService {
     return this.groupRepository.findByCompanyAndName(company, name);
   }
 
+  public List<Group> findByCompanyAndUserEmailAndGroupNameStartingWith(
+      Company company, String email, String groupName) {
+    return this.groupRepository.findByCompanyAndUserEmailAndGroupNameStartingWith(
+        company, email, groupName);
+  }
+
+  public List<Group> findByNameAndGroups(List<String> groups, Company company) {
+    return this.groupRepository.findByNameAndGroups(groups, company);
+  }
 }

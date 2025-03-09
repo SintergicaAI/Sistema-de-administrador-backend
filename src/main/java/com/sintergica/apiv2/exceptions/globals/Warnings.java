@@ -1,6 +1,6 @@
 package com.sintergica.apiv2.exceptions.globals;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
 
 public record Warnings(

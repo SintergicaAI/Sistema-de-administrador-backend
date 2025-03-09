@@ -22,7 +22,7 @@ public class InvalidatedTokensService {
 
   public InvalidatedTokens addInvalidatedToken(InvalidatedTokens invalidatedTokens) {
     bannedTokens.add(invalidatedTokens.getRefreshToken());
-//    eventService.triggerEvent(LOGOUT_EVENT);
+    //    eventService.triggerEvent(LOGOUT_EVENT);
     return invalidatedTokensRepository.save(invalidatedTokens);
   }
 
@@ -44,7 +44,7 @@ public class InvalidatedTokensService {
     bannedTokens.addAll(invalidToken);
   }
 
-//  @EventListener(ApplicationReadyEvent.class)
+  //  @EventListener(ApplicationReadyEvent.class)
   public void subscribeToLogout() {
     eventService.subscribeToEvent(LOGOUT_EVENT, UPDATE_TOKENS_ENDPOINT);
   }

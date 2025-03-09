@@ -9,7 +9,7 @@ import com.sintergica.apiv2.exceptions.token.TokenForbidden;
 import com.sintergica.apiv2.exceptions.user.UserConflict;
 import com.sintergica.apiv2.exceptions.user.UserForbidden;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
-import com.sintergica.apiv2.repositorio.*;
+import com.sintergica.apiv2.repositorio.RolRepository;
 import com.sintergica.apiv2.servicios.InvalidatedTokensService;
 import com.sintergica.apiv2.servicios.UserService;
 import com.sintergica.apiv2.utilidades.TokenUtils;
@@ -18,7 +18,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.Date;
 import java.util.Objects;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,14 +48,20 @@ public class ControllerClient {
       throw new UserConflict("Este email ya existe en el sistema");
     }
 
+    if (!userFound.isActive()) {
+      throw new UserForbidden(
+          "Este email ya esta registrado en el sistema solicita al administrador que te de alta nuevamente");
+    }
+
     user.setRol(rolRepository.findByName("USER"));
     user.setActive(true);
     user.setPassword(passwordEncoder.encode(user.getPassword()));
 
     User userCreated = this.userService.registerUser(user);
 
-    RegisterResponseDTO responseDTO = RegisterResponseDTO.builder().
-            id(userCreated.getId())
+    RegisterResponseDTO responseDTO =
+        RegisterResponseDTO.builder()
+            .id(userCreated.getId())
             .email(userCreated.getEmail())
             .name(userCreated.getName())
             .last_name(userCreated.getLastName())
@@ -80,7 +85,7 @@ public class ControllerClient {
     User userFound = this.userService.login(user);
 
     if (userFound == null) {
-      throw new UserNotFound("Usuario oi contraseñas incorrectos");
+      throw new UserNotFound("Usuario o contraseñas incorrectos");
     }
 
     if (!userFound.isActive()) {
@@ -94,7 +99,8 @@ public class ControllerClient {
             userFound.getName(),
             userFound.getLastName(),
             userService.generateSessionToken(userFound.getEmail()),
-            userService.generateRefreshToken(user.getEmail()), userFound.getRol()));
+            userService.generateRefreshToken(user.getEmail()),
+            userFound.getRol()));
   }
 
   @PostMapping("/refreshToken")
@@ -104,27 +110,29 @@ public class ControllerClient {
 
     String refreshToken = TokenUtils.extractToken(request.getHeader("Authorization"));
 
-    boolean invalidatedTokens =
-        this.invalidatedTokensService.isTokenBanned(refreshToken);
+    boolean invalidatedTokens = this.invalidatedTokensService.isTokenBanned(refreshToken);
 
     if (invalidatedTokens) {
       throw new TokenForbidden(
           "El token ya ha sido invalidado imposible enviar un refresh token inicia sesion nuevamente para generar uno nuevo");
     }
 
-    String token = this.userService.generateSessionToken(
+    String token =
+        this.userService.generateSessionToken(
             Objects.requireNonNull(TokenUtils.getTokenClaims(refreshToken)).getSubject());
-    User user = this.userService.findByEmail(Objects.requireNonNull(TokenUtils.getTokenClaims(token)).getSubject());
+    User user =
+        this.userService.findByEmail(
+            Objects.requireNonNull(TokenUtils.getTokenClaims(token)).getSubject());
 
-    return ResponseEntity.ok(new LoginAndRegisterDTO(
+    return ResponseEntity.ok(
+        new LoginAndRegisterDTO(
             user.getId(),
             user.getEmail(),
             user.getName(),
             user.getLastName(),
             token,
             refreshToken,
-            user.getRol()
-    ));
+            user.getRol()));
   }
 
   @GetMapping("/updateTokens")
@@ -148,7 +156,7 @@ public class ControllerClient {
       throw new TokenForbidden("Envia un refresh token valido");
     }
 
-    if(invalidatedTokensService.isTokenBanned(refreshToken)) {
+    if (invalidatedTokensService.isTokenBanned(refreshToken)) {
       throw new TokenForbidden("Token banned");
     }
 

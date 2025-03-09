@@ -1,12 +1,15 @@
 package com.sintergica.apiv2.servicios;
 
 import com.sintergica.apiv2.dto.SearchUserDTO;
-import com.sintergica.apiv2.entidades.*;
+import com.sintergica.apiv2.entidades.Company;
+import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.UserRepository;
 import com.sintergica.apiv2.utilidades.TokenUtils;
 import io.jsonwebtoken.Jwts;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -46,8 +49,13 @@ public class UserService {
   }
 
   public Page<User> findAllByCompanyAndIsActive(
-      Company company, boolean isActive, Pageable pageable) {
-    return this.userRepository.findAllByCompanyAndIsActive(company, isActive, pageable);
+      Company company, boolean isActive, String username, List<UUID> groups, Pageable pageable) {
+    return this.userRepository.findAllByCompanyAndIsActive(
+        company, isActive, username, groups, pageable);
+  }
+
+  public List<User> findByNameAndCompany(String fullName, Company company) {
+    return this.userRepository.findByNameAndCompany(fullName, company);
   }
 
   public Page<SearchUserDTO> getUsersByName(String name, Company company, Pageable pageable) {
@@ -65,8 +73,6 @@ public class UserService {
 
     return new PageImpl<>(searchUserDTOs, pageable, userPage.getTotalElements());
   }
-
-
 
   public String generateSessionToken(String email) {
     return TokenUtils.createToken(
