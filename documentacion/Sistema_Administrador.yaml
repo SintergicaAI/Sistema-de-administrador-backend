@@ -25,8 +25,6 @@ paths:
                 - password
                 - name
                 - lastName
-                - rol
-                - company
               properties:
                 email:
                   type: string
@@ -107,24 +105,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  email:
-                    type: string
-                  name:
-                    type: string
-                  lastName:
-                    type: string
-                  token:
-                    type: string
-                    example: "asdni3ip3@sds"
-                    description: "Token de acceso que debes incluir en los headers para tener acceso a enpoints"
-                  refreshToken:
-                    type: string
-                    example: "aspdasndi@ads"
-                    description: "Envia este token en el encabezado en vez de el token de session para obtener otro más"
-                  rol:
-                    $ref: "#/components/schemas/Rol"
+                $ref: "#/components/schemas/RegisterResponseDTO"
         404:
           description: "Usuario no registrado"
           content:
@@ -213,8 +194,6 @@ paths:
                 $ref: "#/components/schemas/Warnings"
 
 
-
-
   /company/users/{username}:
     get:
       tags:
@@ -244,6 +223,7 @@ paths:
           schema:
             type: integer
             format: integer
+
 
       responses:
         200:
@@ -351,15 +331,35 @@ paths:
       parameters:
         - name: page
           in: query
+          description: "page"
+          required: true
           schema:
             type: integer
             minimum: 0
         - name: size
           in: query
+          description: "size"
+          required: true
           schema:
             type: integer
             minimum: 1
             maximum: 100
+        - name: fullname
+          in: query
+          description: "nombre completo del cliente ('opcional')"
+          required: false
+          schema:
+            type: string
+        - name: groups
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+
+
+
       responses:
         "200":
           description: Usuario no encontrado
@@ -492,7 +492,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Group"
 
-  /company/group/{uuid}/clients/{email}:
+  /company/group/{name}/clients/{email}:
     post:
       tags:
         - Company
@@ -500,12 +500,12 @@ paths:
       security:
         - JWT: []
       parameters:
-        - name: uuid
+        - name: name
           in: path
           required: true
           schema:
             type: string
-            format: uuid
+            format: name
         - name: email
           in: path
           required: true
@@ -534,12 +534,12 @@ paths:
       security:
         - JWT: []
       parameters:
-        - name: uuid
+        - name: name
           in: path
           required: true
           schema:
             type: string
-            format: uuid
+            format: name
         - name: email
           in: path
           required: true
@@ -571,6 +571,31 @@ components:
       bearerFormat: JWT  # Especifica que el token es JWT
 
   schemas:
+
+    RegisterResponseDTO:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: string
+        name:
+          type: string
+          format: string
+        last_name:
+          type: string
+          format: string
+        token:
+          type: string
+          format: string
+        refreshToken:
+          type: string
+          format: string
+        Rol:
+          $ref: '#/components/schemas/Rol'
+
     CompanyDTO:
       type: object
       properties:
