@@ -117,6 +117,12 @@ public class ControllerClient {
           "El token ya ha sido invalidado imposible enviar un refresh token inicia sesion nuevamente para generar uno nuevo");
     }
 
+    String type = TokenUtils.getTypeToken(refreshToken);
+
+    if(TokenUtils.SESSION_TOKEN.equals(type)) {
+      throw new TokenForbidden("El token no es un token valido");
+    }
+
     String token =
         this.userService.generateSessionToken(
             Objects.requireNonNull(TokenUtils.getTokenClaims(refreshToken)).getSubject());

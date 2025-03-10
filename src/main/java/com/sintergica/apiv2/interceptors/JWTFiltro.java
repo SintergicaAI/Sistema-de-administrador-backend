@@ -38,7 +38,6 @@ public class JWTFiltro extends OncePerRequestFilter {
         String typeToken = TokenUtils.getTypeToken(token);
 
         if (typeToken != null && typeToken.equals(TokenUtils.SESSION_TOKEN)) {
-
           if (correo != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails user = customUserDetailsService.loadUserByUsername(correo);
 

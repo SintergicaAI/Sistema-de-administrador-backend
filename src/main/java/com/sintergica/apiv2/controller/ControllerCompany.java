@@ -261,8 +261,8 @@ public class ControllerCompany {
   @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
   @GetMapping("/users")
   public ResponseEntity<WrapperUserDTO<UserDTO>> getUsersAndGroups(
-      @RequestParam(required = false) String userName,
-      @RequestParam(required = false) List<String> groupName,
+      @RequestParam(required = false, name = "fullname") String userName,
+      @RequestParam(required = false, name = "groups") List<String> groupName,
       Pageable pegeable) {
 
     if (groupName == null) {
