@@ -2,8 +2,7 @@ package com.sintergica.apiv2.repositorio;
 
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.Group;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,6 +14,13 @@ public interface GroupRepository extends JpaRepository<Group, UUID> {
   List<Group> findAllByCompany(Company company);
 
   Group findByCompanyAndName(Company company, String name);
+
+  @Query(
+      "SELECT g FROM Group g "
+          + "WHERE g.company = :company "
+          + "AND LOWER(g.name) LIKE LOWER(CONCAT(:groupName, '%'))")
+  Set<Group> findByCompanyAndGroupNameStartingWithIgnoreCase(
+      @Param("company") Company company, @Param("groupName") String groupName);
 
   @Query(
       "SELECT g FROM Group g JOIN g.user u WHERE u.company = :company AND u.email = :email AND g.name ILIKE :groupName%")

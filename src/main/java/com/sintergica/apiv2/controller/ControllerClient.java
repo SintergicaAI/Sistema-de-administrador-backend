@@ -45,12 +45,11 @@ public class ControllerClient {
     User userFound = this.userService.findByEmail(user.getEmail());
 
     if (userFound != null) {
+      if (!userFound.isActive()) {
+        throw new UserForbidden(
+            "Este email ya esta registrado en el sistema solicita al administrador que te de alta nuevamente");
+      }
       throw new UserConflict("Este email ya existe en el sistema");
-    }
-
-    if (!userFound.isActive()) {
-      throw new UserForbidden(
-          "Este email ya esta registrado en el sistema solicita al administrador que te de alta nuevamente");
     }
 
     user.setRol(rolRepository.findByName("USER"));
@@ -119,7 +118,7 @@ public class ControllerClient {
 
     String type = TokenUtils.getTypeToken(refreshToken);
 
-    if(TokenUtils.SESSION_TOKEN.equals(type)) {
+    if (TokenUtils.SESSION_TOKEN.equals(type)) {
       throw new TokenForbidden("El token no es un token valido");
     }
 

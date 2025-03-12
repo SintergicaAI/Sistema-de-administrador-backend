@@ -7,12 +7,8 @@ import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.CompanyRepository;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.logging.*;
 import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -56,42 +52,42 @@ public class CompanyService {
 
   public Page<UserDTO> getUsersByCompanyAndOptionalUsername(
       Company company, String username, List<UUID> groups, Pageable pageable) {
-
     Page<User> users =
         this.userService.findAllByCompanyAndIsActive(company, true, username, groups, pageable);
-
-    List<UserDTO> data = new ArrayList<>();
-
-    for (User userGroup : users) {
-
-      List<GroupDTO> groupDTOList = new ArrayList<>();
-
-      for (Group group : userGroup.getGroups()) {
-        groupDTOList.add(new GroupDTO(group.getId(), group.getName()));
-      }
-
-      UserDTO list =
-          new UserDTO(
-              userGroup.getId(),
-              userGroup.getName(),
-              userGroup.getLastName(),
-              userGroup.getEmail(),
-              groupDTOList);
-
-      data.add(list);
-    }
-
+    List<UserDTO> data =
+        users.stream()
+            .map(
+                user ->
+                    new UserDTO(
+                        user.getId(),
+                        user.getName(),
+                        user.getLastName(),
+                        user.getEmail(),
+                        user.getGroups().stream()
+                            .map(group -> new GroupDTO(group.getId(), group.getName()))
+                            .collect(Collectors.toList())))
+            .collect(Collectors.toList());
     return new PageImpl<>(data, pageable, users.getTotalElements());
   }
 
   public Page<UserDTO> getGroupsByCompanyAndOptionalUsername(
-      List<String> groupName, Pageable pegeable) {
+      List<String> groupNames, Pageable pegeable) {
 
-    List<Group> groupsAssociateWithCompany =
-        this.groupService.findByNameAndGroups(groupName, userService.getUserLogged().getCompany());
+    Company userLogCompany = this.userService.getUserLogged().getCompany();
+
+    Set<Group> groupsAssociateWithCompany =
+        groupNames.stream()
+            .flatMap(
+                groupName ->
+                    groupService
+                        .findByCompanyAndGroupNameStartingWithIgnoreCase(userLogCompany, groupName)
+                        .stream())
+            .collect(Collectors.toSet());
+    /*List<Group> groupsAssociateWithCompany =
+        this.groupService.findByNameAndGroups(groupNames, userService.getUserLogged().getCompany());
+    */
     List<UUID> uuidListToGroupsAssociatedWithCompany =
         groupsAssociateWithCompany.stream().map(Group::getId).collect(Collectors.toList());
-
     return this.getUsersByCompanyAndOptionalUsername(
         this.userService.getUserLogged().getCompany(),
         null,
@@ -100,10 +96,22 @@ public class CompanyService {
   }
 
   public Page<UserDTO> getUsersByCompanyAndUsernameAndGroupsName(
-      String userName, List<String> groupName, Pageable pegeable) {
+      String userName, List<String> groupNames, Pageable pegeable) {
 
-    List<Group> groupsAssociateWithCompany =
-        groupService.findByNameAndGroups(groupName, userService.getUserLogged().getCompany());
+    Company userLogCompany = this.userService.getUserLogged().getCompany();
+
+    Set<Group> groupsAssociateWithCompany =
+        groupNames.stream()
+            .flatMap(
+                groupName ->
+                    groupService
+                        .findByCompanyAndGroupNameStartingWithIgnoreCase(userLogCompany, groupName)
+                        .stream())
+            .collect(Collectors.toSet());
+
+    /*List<Group> groupsAssociateWithCompany =
+        groupService.findByNameAndGroups(groupNames, userService.getUserLogged().getCompany());
+    */
     List<UUID> uuidListToGroupsAssociatedWithCompany =
         groupsAssociateWithCompany.stream().map(Group::getId).collect(Collectors.toList());
 

@@ -291,7 +291,7 @@ public class ControllerCompany {
     User userFound = this.userService.findByEmail(email);
 
     if (userLoggedCompany != userFound.getCompany()) {
-      throw new CompanyNotFound("El usuario no tiene esta compañoa asociada");
+      throw new CompanyNotFound("El usuario no tiene esta compañia asociada");
     }
 
     List<Group> groupList =

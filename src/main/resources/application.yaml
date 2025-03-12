@@ -7,15 +7,25 @@ spring:
     username: ${DATASOURCE_USERNAME}
     password: ${DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20 # Máximo de conexiones concurrentes
+      connection-timeout: 5000 # 5 segundos (ajusta según latencia)
+      idle-timeout: 300000 # 5 minutos
+      max-lifetime: 240000 # 4 minutos
+      minimum-idle: 5
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
+    #show-sql: true
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          batch_size: 30 # Optimiza inserts/updates
+          fetch_size: 100 # Reduce viajes a la BD
+        default_batch_fetch_size: 20 # Evita N+1 en relaciones
 
   config:
     import:

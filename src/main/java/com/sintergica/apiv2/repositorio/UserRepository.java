@@ -21,7 +21,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
   User findByEmail(String email);
 
   @Query(
-      "SELECT u FROM User u WHERE u.company = :company AND u.isActive = :isActive AND (:name IS NULL OR CONCAT(u.name, ' ', u.lastName) ILIKE %:name%) AND (:groupIds IS NULL OR EXISTS (SELECT g.id FROM u.groups g WHERE g.id IN :groupIds))")
+      "SELECT DISTINCT u FROM User u "
+          + "LEFT JOIN u.groups g "
+          + "WHERE u.company = :company "
+          + "AND u.isActive = :isActive "
+          + "AND (:name IS NULL OR CONCAT(u.name, ' ', u.lastName) ILIKE %:name%) "
+          + "AND (:groupIds IS NULL OR g.id IN :groupIds)")
   Page<User> findAllByCompanyAndIsActive(
       Company company, boolean isActive, String name, List<UUID> groupIds, Pageable pageable);
 

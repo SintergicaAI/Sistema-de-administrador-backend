@@ -5,9 +5,7 @@ import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.GroupRepository;
 import jakarta.transaction.Transactional;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -65,6 +63,12 @@ public class GroupService {
   @Transactional
   public Group findGroupByCompanyAndName(Company company, String name) {
     return this.groupRepository.findByCompanyAndName(company, name);
+  }
+
+  public Set<Group> findByCompanyAndGroupNameStartingWithIgnoreCase(
+      Company company, String groupName) {
+
+    return this.groupRepository.findByCompanyAndGroupNameStartingWithIgnoreCase(company, groupName);
   }
 
   public List<Group> findByCompanyAndUserEmailAndGroupNameStartingWith(
