@@ -18,7 +18,7 @@ public interface GroupRepository extends JpaRepository<Group, UUID> {
   @Query(
       "SELECT g FROM Group g "
           + "WHERE g.company = :company "
-          + "AND LOWER(g.name) LIKE LOWER(CONCAT(:groupName, '%'))")
+          + "AND LOWER(g.name) ILIKE LOWER(CONCAT(:groupName, '%'))")
   Set<Group> findByCompanyAndGroupNameStartingWithIgnoreCase(
       @Param("company") Company company, @Param("groupName") String groupName);
 

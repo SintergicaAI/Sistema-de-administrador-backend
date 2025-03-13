@@ -73,16 +73,14 @@ public class CompanyService {
   public Page<UserDTO> getGroupsByCompanyAndOptionalUsername(
       List<String> groupNames, Pageable pegeable) {
 
-    Company userLogCompany = this.userService.getUserLogged().getCompany();
+    Set<Group> groupsAssociateWithCompany = new HashSet<>();
+    for (String groupName : groupNames) {
+      Set<Group> groupsMatch =
+          this.groupService.findByCompanyAndGroupNameStartingWithIgnoreCase(
+              userService.getUserLogged().getCompany(), groupName);
+      groupsAssociateWithCompany.addAll(groupsMatch);
+    }
 
-    Set<Group> groupsAssociateWithCompany =
-        groupNames.stream()
-            .flatMap(
-                groupName ->
-                    groupService
-                        .findByCompanyAndGroupNameStartingWithIgnoreCase(userLogCompany, groupName)
-                        .stream())
-            .collect(Collectors.toSet());
     /*List<Group> groupsAssociateWithCompany =
         this.groupService.findByNameAndGroups(groupNames, userService.getUserLogged().getCompany());
     */
@@ -98,16 +96,13 @@ public class CompanyService {
   public Page<UserDTO> getUsersByCompanyAndUsernameAndGroupsName(
       String userName, List<String> groupNames, Pageable pegeable) {
 
-    Company userLogCompany = this.userService.getUserLogged().getCompany();
-
-    Set<Group> groupsAssociateWithCompany =
-        groupNames.stream()
-            .flatMap(
-                groupName ->
-                    groupService
-                        .findByCompanyAndGroupNameStartingWithIgnoreCase(userLogCompany, groupName)
-                        .stream())
-            .collect(Collectors.toSet());
+    Set<Group> groupsAssociateWithCompany = new HashSet<>();
+    for (String groupName : groupNames) {
+      Set<Group> groupsMatch =
+          this.groupService.findByCompanyAndGroupNameStartingWithIgnoreCase(
+              userService.getUserLogged().getCompany(), groupName);
+      groupsAssociateWithCompany.addAll(groupsMatch);
+    }
 
     /*List<Group> groupsAssociateWithCompany =
         groupService.findByNameAndGroups(groupNames, userService.getUserLogged().getCompany());
