@@ -7,13 +7,19 @@ import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.CompanyRepository;
 import jakarta.transaction.Transactional;
-import java.util.*;
-import java.util.logging.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -50,63 +56,81 @@ public class CompanyService {
     return this.userService.save(userFound);
   }
 
+  private List<UserDTO> parserUserToUserDTOAndGroupToList(List<User> users) {
+    return users.stream()
+            .map(
+                    user ->
+                            new UserDTO(
+                                    user.getId(),
+                                    user.getName(),
+                                    user.getLastName(),
+                                    user.getEmail(),
+                                    user.getGroups().stream()
+                                            .map(group -> new GroupDTO(group.getId(), group.getName()))
+                                            .collect(Collectors.toList())))
+            .collect(Collectors.toList());
+  }
+
   public Page<UserDTO> getUsersByCompanyAndOptionalUsername(
-      Company company, String username, List<UUID> groups, Pageable pageable) {
+      Company company, String username, List<UUID> groups, int size, int page) {
+
+    if (size == -1 || page == -1) {
+      List<User> users =
+          this.userService.findAllByCompanyAndIsActiveNotPageable(company, true, username, groups);
+
+      List<UserDTO> data = parserUserToUserDTOAndGroupToList(users);
+
+      int sizeList = (users.isEmpty()) ? 1 : users.size();
+
+      return new PageImpl<>(data, PageRequest.of(0, sizeList), sizeList);
+    }
+
+    Pageable pageable = PageRequest.of(page, size);
+
     Page<User> users =
         this.userService.findAllByCompanyAndIsActive(company, true, username, groups, pageable);
-    List<UserDTO> data =
-        users.stream()
-            .map(
-                user ->
-                    new UserDTO(
-                        user.getId(),
-                        user.getName(),
-                        user.getLastName(),
-                        user.getEmail(),
-                        user.getGroups().stream()
-                            .map(group -> new GroupDTO(group.getId(), group.getName()))
-                            .collect(Collectors.toList())))
-            .collect(Collectors.toList());
+
+    List<UserDTO> data = parserUserToUserDTOAndGroupToList(users.getContent());
+
     return new PageImpl<>(data, pageable, users.getTotalElements());
   }
 
   public Page<UserDTO> getGroupsByCompanyAndOptionalUsername(
-      List<String> groupNames, Pageable pegeable) {
+      List<String> groupNames, int size, int page) {
+    Company userLogCompany = userService.getUserLogged().getCompany();
 
-    Set<Group> groupsAssociateWithCompany = new HashSet<>();
-    for (String groupName : groupNames) {
-      Set<Group> groupsMatch =
-          this.groupService.findByCompanyAndGroupNameStartingWithIgnoreCase(
-              userService.getUserLogged().getCompany(), groupName);
-      groupsAssociateWithCompany.addAll(groupsMatch);
-    }
+    Set<Group> groupsAssociateWithCompany = searchGroupsAssociateWithCompany(userLogCompany, groupNames);
 
-    /*List<Group> groupsAssociateWithCompany =
-        this.groupService.findByNameAndGroups(groupNames, userService.getUserLogged().getCompany());
-    */
     List<UUID> uuidListToGroupsAssociatedWithCompany =
         groupsAssociateWithCompany.stream().map(Group::getId).collect(Collectors.toList());
+
     return this.getUsersByCompanyAndOptionalUsername(
         this.userService.getUserLogged().getCompany(),
         null,
         uuidListToGroupsAssociatedWithCompany,
-        pegeable);
+        size,
+        page);
   }
 
-  public Page<UserDTO> getUsersByCompanyAndUsernameAndGroupsName(
-      String userName, List<String> groupNames, Pageable pegeable) {
-
+  private Set<Group> searchGroupsAssociateWithCompany(Company company, List<String> groupNames) {
+    Company userLogCompany = company;
     Set<Group> groupsAssociateWithCompany = new HashSet<>();
     for (String groupName : groupNames) {
       Set<Group> groupsMatch =
           this.groupService.findByCompanyAndGroupNameStartingWithIgnoreCase(
-              userService.getUserLogged().getCompany(), groupName);
+              userLogCompany, groupName);
       groupsAssociateWithCompany.addAll(groupsMatch);
     }
 
-    /*List<Group> groupsAssociateWithCompany =
-        groupService.findByNameAndGroups(groupNames, userService.getUserLogged().getCompany());
-    */
+    return groupsAssociateWithCompany;
+  }
+
+  public Page<UserDTO> getUsersByCompanyAndUsernameAndGroupsName(
+      String userName, List<String> groupNames, int size, int page) {
+
+    Company userLogCompany = userService.getUserLogged().getCompany();
+    Set<Group> groupsAssociateWithCompany = searchGroupsAssociateWithCompany(userLogCompany, groupNames);
+
     List<UUID> uuidListToGroupsAssociatedWithCompany =
         groupsAssociateWithCompany.stream().map(Group::getId).collect(Collectors.toList());
 
@@ -115,7 +139,8 @@ public class CompanyService {
             this.userService.getUserLogged().getCompany(),
             userName,
             uuidListToGroupsAssociatedWithCompany,
-            pegeable);
+            size,
+            page);
 
     List<UserDTO> resultClientsList = new ArrayList<>(resultClients.getContent());
     Iterator<UserDTO> iterator = resultClientsList.iterator();
@@ -126,6 +151,10 @@ public class CompanyService {
           groupsAssociateWithCompany.stream().map(Group::getId).collect(Collectors.toSet());
       user.getGroups().removeIf(groupDTO -> !uuidValidList.contains(groupDTO.getId()));
     }
+
+    Pageable pegeable =
+        (size == -1 || page == -1) ? PageRequest.of(0, resultClients.getSize()) : PageRequest.of(page, size);
+
     return new PageImpl<>(resultClientsList, pegeable, resultClients.getTotalElements());
   }
 

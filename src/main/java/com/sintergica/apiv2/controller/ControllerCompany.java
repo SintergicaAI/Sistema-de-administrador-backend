@@ -23,6 +23,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.config.PageableHandlerMethodArgumentResolverCustomizer;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,6 +44,7 @@ public class ControllerCompany {
   private final CompanyService companyService;
   private final UserService userService;
   private final GroupService groupService;
+  private final PageableHandlerMethodArgumentResolverCustomizer pageableCustomizer;
 
   @GetMapping
   public ResponseEntity<List<Company>> getAllCompanies() {
@@ -263,23 +265,24 @@ public class ControllerCompany {
   public ResponseEntity<WrapperUserDTO<UserDTO>> getUsersAndGroups(
       @RequestParam(required = false, name = "fullname") String userName,
       @RequestParam(required = false, name = "groups") List<String> groupName,
-      Pageable pegeable) {
+      @RequestParam(required = false, defaultValue = "-1") int size,
+      @RequestParam(required = false, defaultValue = "-1") int page) {
 
     if (groupName == null) {
       return ResponseEntity.ok(
           new WrapperUserDTO<>(
               this.companyService.getUsersByCompanyAndOptionalUsername(
-                  this.userService.getUserLogged().getCompany(), userName, null, pegeable)));
+                  this.userService.getUserLogged().getCompany(), userName, null, size, page)));
     } else if (userName != null) {
       return ResponseEntity.ok(
           new WrapperUserDTO<>(
               this.companyService.getUsersByCompanyAndUsernameAndGroupsName(
-                  userName, groupName, pegeable)));
+                  userName, groupName, size, page)));
     }
 
     return ResponseEntity.ok(
         new WrapperUserDTO<>(
-            this.companyService.getGroupsByCompanyAndOptionalUsername(groupName, pegeable)));
+            this.companyService.getGroupsByCompanyAndOptionalUsername(groupName, size, page)));
   }
 
   @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")

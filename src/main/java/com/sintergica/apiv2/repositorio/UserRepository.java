@@ -31,6 +31,16 @@ public interface UserRepository extends JpaRepository<User, UUID> {
       Company company, boolean isActive, String name, List<UUID> groupIds, Pageable pageable);
 
   @Query(
+      "SELECT DISTINCT u FROM User u "
+          + "LEFT JOIN u.groups g "
+          + "WHERE u.company = :company "
+          + "AND u.isActive = :isActive "
+          + "AND (:name IS NULL OR CONCAT(u.name, ' ', u.lastName) ILIKE %:name%) "
+          + "AND (:groupIds IS NULL OR g.id IN :groupIds)")
+  List<User> findAllByCompanyAndIsActiveNotPageable(
+      Company company, boolean isActive, String name, List<UUID> groupIds);
+
+  @Query(
       "SELECT u FROM User u WHERE u.company = :company AND CONCAT(u.name, ' ', u.lastName) LIKE %:nameLastName%")
   Page<User> findByCompanyAndNameAndLastNameStartingWith(
       @Param("company") Company company,
