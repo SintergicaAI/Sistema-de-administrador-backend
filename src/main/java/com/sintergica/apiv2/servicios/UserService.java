@@ -6,10 +6,9 @@ import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.UserRepository;
 import com.sintergica.apiv2.utilidades.TokenUtils;
 import io.jsonwebtoken.Jwts;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+
+import java.util.*;
+
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -94,10 +93,16 @@ public class UserService {
     return this.userRepository.save(user);
   }
 
+
+  public Set<User> findByInIdsAndActiveAndCompanyList(Set<UUID> inIds, boolean isActive, Company company) {
+    return this.userRepository.findByIdInAndIsActiveAndCompany(inIds, isActive, company);
+  }
+
   public User getUserLogged() {
     return this.userRepository.findByEmail(
         SecurityContextHolder.getContext().getAuthentication().getName());
   }
+
 
   public boolean hasLoggedInUserTheRole(String role) {
     Collection<? extends GrantedAuthority> authentication =

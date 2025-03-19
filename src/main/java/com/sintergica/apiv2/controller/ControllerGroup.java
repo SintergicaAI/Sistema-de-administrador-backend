@@ -7,9 +7,13 @@ import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
 import com.sintergica.apiv2.servicios.GroupService;
 import com.sintergica.apiv2.servicios.UserService;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -39,9 +44,9 @@ public class ControllerGroup {
     return ResponseEntity.ok(groupDTOList);
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
   @PostMapping
-  public ResponseEntity<Group> addGroup(@RequestBody Group group) {
+  public ResponseEntity<Group> addGroup(@RequestBody Group group, @RequestParam(required = false) Set<UUID> users) {
 
     User userLogged = this.userService.getUserLogged();
 
@@ -50,6 +55,10 @@ public class ControllerGroup {
     }
 
     group.setCompany(userLogged.getCompany());
+    group.setUser(new HashSet<>());
+
+    Set<User> usersFound = this.userService.findByInIdsAndActiveAndCompanyList(users,true, userLogged.getCompany());
+    group.getUser().addAll(usersFound);
 
     return ResponseEntity.ok(groupService.save(group));
   }
