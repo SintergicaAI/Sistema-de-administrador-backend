@@ -24,7 +24,7 @@ paths:
                 - email
                 - password
                 - name
-                - lastName
+                - lastname
               properties:
                 email:
                   type: string
@@ -43,13 +43,15 @@ paths:
                   example: "Apellido"
 
       responses:
-        200:
+        201:
           description: "Se registra un nuevo usuario en la base de datos"
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  id:
+                    type: string
                   email:
                     type: string
                   name:
@@ -64,12 +66,11 @@ paths:
                     type: string
                     example: "aspdasndi@ads"
                     description: "Envia este token en el encabezado en vez de el token de session para obtener otro más"
-                  rol:
-                    $ref: "#/components/schemas/Rol"
-
+                  role:
+                    type: string
 
         409:
-          description: "Ya existe un usuario con este correo"
+          description: "Este email ya existe en el sistema"
           content:
             application/json:
               schema:
@@ -105,7 +106,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RegisterResponseDTO"
+                type: object
+                properties:
+                  id:
+                    type: string
+                  email:
+                    type: string
+                  name:
+                    type: string
+                  last_name:
+                    type: string
+                  token:
+                    type: string
+                    example: "asdni3ip3@sds"
+                    description: "Token de acceso que debes incluir en los headers para tener acceso a enpoints"
+                  refreshToken:
+                    type: string
+                    example: "aspdasndi@ads"
+                    description: "Envia este token en el encabezado en vez de el token de session para obtener otro más"
+                  role:
+                    $ref: "#/components/schemas/Warnings"
         404:
           description: "Usuario no registrado"
           content:
@@ -135,6 +155,8 @@ paths:
               schema:
                 type: object
                 properties:
+                  uuid:
+                    type: string
                   email:
                     type: string
                   name:
@@ -178,7 +200,6 @@ paths:
                     type: string
                   email:
                     type: string
-
 
         403:
           description: "token invalidado o baneado porque cerraste la sesión"
@@ -332,14 +353,14 @@ paths:
         - name: page
           in: query
           description: "page"
-          required: true
+          required: false
           schema:
             type: integer
             minimum: 0
         - name: size
           in: query
           description: "size"
-          required: true
+          required: false
           schema:
             type: integer
             minimum: 1
@@ -358,8 +379,6 @@ paths:
             items:
               type: string
 
-
-
       responses:
         "200":
           description: Usuario no encontrado
@@ -367,19 +386,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WrapperUserDTO"
-        "404":
-          description: Usuario no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Warnings"
-        "403":
-          description: compañia no encontrada
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Warnings"
 
+        403:
+          description: "Falta de permisos para acceder a este recurso o el token es invalido"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Warnings"
 
   /company/users/{email}:
     post:
@@ -416,6 +429,34 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Warnings"
+    delete:
+      security:
+        - JWT : []
+      description: "Añade un nuevo cliente a la compañia"
+      summary: "Agrega un cliente nuevo a una compañia y esta se obtiene del usuario que ha iniciado sesión"
+      tags:
+        - Company
+      parameters:
+        - name: email
+          in: path
+          description: "email del cliente que quieres agregar a la compañia y este no debe tener una compañia asociada"
+          required: true
+          schema:
+            format: email
+            type: string
+      responses:
+        200:
+          description: "Exito"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompanyDTO"
+        404:
+          description: "Compañia no encontrada o usuario no encontrado"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Warnings"
 
   /company/groups:
     get:
@@ -431,7 +472,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WrapperUserDTO"
+                $ref: "#/components/schemas/GroupDTO"
         404:
           description: "Usuario sin compañia asociada"
           content:
@@ -606,6 +647,8 @@ components:
           type: string
         emailClient:
           type: string
+        isActive:
+          type: boolean
         Rol:
           $ref: '#/components/schemas/Rol'
 
@@ -721,6 +764,45 @@ components:
           type: integer
           description: Total de registros encontrados
           example: 4
+
+    SearchUserDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+                example: jhon@gmail.com
+              username:
+                type: string
+                example: jhon
+              rol:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    example: 1237d4bc-5ea4-4967-8971-8f6f96d84167
+                  name:
+                    type: string
+                    enum: [USER]
+                    example: USER
+              numberGroups:
+                type: integer
+                example: 1
+        currentPage:
+          type: integer
+          example: 0
+        totalPages:
+          type: integer
+          example: 1
+        totalElements:
+          type: integer
+          example: 1
 
     Company:
       type: object
