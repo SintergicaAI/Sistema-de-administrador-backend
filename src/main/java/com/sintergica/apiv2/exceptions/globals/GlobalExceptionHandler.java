@@ -9,10 +9,7 @@ import com.sintergica.apiv2.exceptions.role.RolForbiddenException;
 import com.sintergica.apiv2.exceptions.role.RolNotFound;
 import com.sintergica.apiv2.exceptions.role.RoleNotAllowedInGroupException;
 import com.sintergica.apiv2.exceptions.token.TokenForbidden;
-import com.sintergica.apiv2.exceptions.user.PasswordConflict;
-import com.sintergica.apiv2.exceptions.user.UserConflict;
-import com.sintergica.apiv2.exceptions.user.UserForbidden;
-import com.sintergica.apiv2.exceptions.user.UserNotFound;
+import com.sintergica.apiv2.exceptions.user.*;
 import java.util.Date;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +18,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+  @ExceptionHandler(EmailWrong.class)
+  public ResponseEntity<Warnings> handleValidationException(EmailWrong ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(new Warnings(ex.getMessage(), new Date()));
+  }
 
   @ExceptionHandler(UserNotFound.class)
   public ResponseEntity<Warnings> handleUserNotFound(UserNotFound ex) {

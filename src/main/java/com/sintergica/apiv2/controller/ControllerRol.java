@@ -62,8 +62,8 @@ public class ControllerRol {
       throw new RolNotFound("Rol no encontrado");
     }
 
-    if (userFound.getRol().equals("USER") && newRolUser.equals("ADMIN")
-        || userFound.getRol().equals("OWNER")) {
+    if (("USER".equals(userFound.getRol()) && "ADMIN".equals(newRolUser))
+            || "OWNER".equals(userFound.getRol())) {
 
       userFound.setGroups(null);
     }

@@ -143,6 +143,23 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.21.0</version>
+                <configuration>
+                    <rulesets>
+                        <ruleset>rulesets/java/quickstart.xml</ruleset>
+                        <ruleset>category/java/bestpractices.xml</ruleset>
+                    </rulesets>
+                    <failOnViolation>true</failOnViolation>
+                    <printFailingErrors>true</printFailingErrors>
+                    <!-- Excluir la clase principal de Spring Boot de PMD -->
+                    <excludes>
+                        <exclude>**/Apiv2Application.java</exclude> <!-- Ruta exacta -->
+                    </excludes>
+                </configuration>
+            </plugin>
 
 
             <!-- Spring Boot Maven Plugin -->

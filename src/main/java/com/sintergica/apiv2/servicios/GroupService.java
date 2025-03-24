@@ -3,6 +3,7 @@ package com.sintergica.apiv2.servicios;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.exceptions.group.*;
 import com.sintergica.apiv2.repositorio.GroupRepository;
 import jakarta.transaction.Transactional;
 import java.util.*;
@@ -27,11 +28,10 @@ public class GroupService {
   }
 
   public Group save(Group group) {
-
     try {
       return this.groupRepository.save(group);
     } catch (Exception e) {
-      return null;
+      throw new GroupConflict("El grupo ya existe");
     }
   }
 

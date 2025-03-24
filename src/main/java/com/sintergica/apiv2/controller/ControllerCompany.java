@@ -17,9 +17,7 @@ import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.servicios.CompanyService;
 import com.sintergica.apiv2.servicios.GroupService;
 import com.sintergica.apiv2.servicios.UserService;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -71,7 +69,7 @@ public class ControllerCompany {
       throw new CompanyNotFound("El usuario no tiene una compañia asociada");
     }
 
-    if (userLogged.getCompany() != userFound.getCompany()) {
+    if (!userLogged.getCompany().equals(userFound.getCompany())) {
       throw new CompanyUserConflict(
           "Su compañia no coincide con la del usuario a elminar porque no es parte de su organización");
     }
@@ -125,6 +123,9 @@ public class ControllerCompany {
             user.isActive()));
   }
 
+  /**
+   * @deprecated
+   */
   @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
   @PostMapping("/groups/{name}")
   public ResponseEntity<GroupDTO> addGroup(@PathVariable(name = "name") String newGroupName) {
@@ -135,11 +136,15 @@ public class ControllerCompany {
       throw new CompanyNotFound("The user doesn't have a company");
     }
 
-    Company companyUserLogged = userLogged.getCompany();
-
-    Group group = new Group();
-    group.setName(newGroupName);
-    group.setCompany(companyUserLogged);
+    Group group =
+        Group.builder()
+            .name(newGroupName)
+            .user(new HashSet<>())
+            .company(userLogged.getCompany())
+            .userCreator(userLogged)
+            .creationDate(new Date())
+            .editDate(new Date())
+            .build();
 
     Group newGroup = this.groupService.save(group);
 
@@ -185,8 +190,7 @@ public class ControllerCompany {
       throw new CompanyNotFound("Usuario sin compañia asociada");
     }
 
-    Page<SearchUserDTO> userPages =
-        this.userService.getUsersByName(username, user.getCompany(), pageable);
+    Page<SearchUserDTO> userPages = this.userService.getUsersByName(username, user.getCompany(), pageable);
 
     return ResponseEntity.ok(new WrapperUserDTO<>(userPages));
   }
@@ -251,7 +255,7 @@ public class ControllerCompany {
       throw new CompanyUserConflict("El usuario o el grupo no tienen asociados la misma empresa");
     }
 
-    if (user.getRol().getName().equals("ADMIN") || user.getRol().getName().equals("OWNER")) {
+    if ("ADMIN".equals(user.getRol().getName()) || "OWNER".equals(user.getRol().getName())) {
       throw new RoleNotAllowedInGroupException("Los roles ADMIN y OWNER no pueden estar en grupos");
     }
 
@@ -293,7 +297,7 @@ public class ControllerCompany {
     Company userLoggedCompany = this.userService.getUserLogged().getCompany();
     User userFound = this.userService.findByEmail(email);
 
-    if (userLoggedCompany != userFound.getCompany()) {
+    if (!userLoggedCompany.equals(userFound.getCompany())) {
       throw new CompanyNotFound("El usuario no tiene esta compañia asociada");
     }
 

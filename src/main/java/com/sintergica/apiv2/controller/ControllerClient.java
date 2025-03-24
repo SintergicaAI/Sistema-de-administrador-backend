@@ -6,9 +6,7 @@ import com.sintergica.apiv2.dto.TokenDTO;
 import com.sintergica.apiv2.entidades.InvalidatedTokens;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.token.TokenForbidden;
-import com.sintergica.apiv2.exceptions.user.UserConflict;
-import com.sintergica.apiv2.exceptions.user.UserForbidden;
-import com.sintergica.apiv2.exceptions.user.UserNotFound;
+import com.sintergica.apiv2.exceptions.user.*;
 import com.sintergica.apiv2.repositorio.RolRepository;
 import com.sintergica.apiv2.servicios.InvalidatedTokensService;
 import com.sintergica.apiv2.servicios.UserService;
@@ -22,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,8 +40,13 @@ public class ControllerClient {
   private final PasswordEncoder passwordEncoder;
 
   @PostMapping("/register")
-  public ResponseEntity<RegisterResponseDTO> register(@Valid @RequestBody User user) {
+  public ResponseEntity<RegisterResponseDTO> register(
+      @Valid @RequestBody User user, BindingResult result) {
     User userFound = this.userService.findByEmail(user.getEmail());
+
+    if (result.hasErrors()) {
+      throw new EmailWrong(result.getFieldError().getDefaultMessage());
+    }
 
     if (userFound != null) {
       if (!userFound.isActive()) {
@@ -63,7 +67,7 @@ public class ControllerClient {
             .id(userCreated.getId())
             .email(userCreated.getEmail())
             .name(userCreated.getName())
-            .last_name(userCreated.getLastName())
+            .lastName(userCreated.getLastName())
             .role(userCreated.getRol().getName())
             .token(userService.generateSessionToken(userCreated.getEmail()))
             .refreshToken(userService.generateRefreshToken(user.getEmail()))
@@ -84,7 +88,7 @@ public class ControllerClient {
     User userFound = this.userService.login(user);
 
     if (userFound == null) {
-      throw new UserNotFound("Usuario o contraseñas incorrectos");
+      throw new PasswordConflict("Usuario o contraseñas incorrectos");
     }
 
     if (!userFound.isActive()) {
@@ -114,6 +118,12 @@ public class ControllerClient {
     if (invalidatedTokens) {
       throw new TokenForbidden(
           "El token ya ha sido invalidado imposible enviar un refresh token inicia sesion nuevamente para generar uno nuevo");
+    }
+
+    Claims hasClaims = TokenUtils.getTokenClaims(refreshToken);
+
+    if (hasClaims == null) {
+      throw new TokenForbidden("El token no es valido");
     }
 
     String type = TokenUtils.getTypeToken(refreshToken);
@@ -157,7 +167,7 @@ public class ControllerClient {
       throw new UserNotFound("Usuario sin refresh token");
     }
 
-    if (!TokenUtils.getTypeToken(refreshToken).equals(TokenUtils.REFRESH_TOKEN)) {
+    if (!TokenUtils.REFRESH_TOKEN.equals(TokenUtils.getTypeToken(refreshToken))) {
       throw new TokenForbidden("Envia un refresh token valido");
     }
 

@@ -14,9 +14,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.function.*;
+import java.util.stream.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -58,17 +60,17 @@ public class CompanyService {
 
   private List<UserDTO> parserUserToUserDTOAndGroupToList(List<User> users) {
     return users.stream()
-            .map(
-                    user ->
-                            new UserDTO(
-                                    user.getId(),
-                                    user.getName(),
-                                    user.getLastName(),
-                                    user.getEmail(),
-                                    user.getGroups().stream()
-                                            .map(group -> new GroupDTO(group.getId(), group.getName()))
-                                            .collect(Collectors.toList())))
-            .collect(Collectors.toList());
+        .map(
+            user ->
+                new UserDTO(
+                    user.getId(),
+                    user.getName(),
+                    user.getLastName(),
+                    user.getEmail(),
+                    user.getGroups().stream()
+                        .map(group -> new GroupDTO(group.getId(), group.getName()))
+                        .collect(Collectors.toList())))
+        .collect(Collectors.toList());
   }
 
   public Page<UserDTO> getUsersByCompanyAndOptionalUsername(
@@ -99,7 +101,8 @@ public class CompanyService {
       List<String> groupNames, int size, int page) {
     Company userLogCompany = userService.getUserLogged().getCompany();
 
-    Set<Group> groupsAssociateWithCompany = searchGroupsAssociateWithCompany(userLogCompany, groupNames);
+    Set<Group> groupsAssociateWithCompany =
+        searchGroupsAssociateWithCompany(userLogCompany, groupNames);
 
     List<UUID> uuidListToGroupsAssociatedWithCompany =
         groupsAssociateWithCompany.stream().map(Group::getId).collect(Collectors.toList());
@@ -115,6 +118,13 @@ public class CompanyService {
   private Set<Group> searchGroupsAssociateWithCompany(Company company, List<String> groupNames) {
     Company userLogCompany = company;
     Set<Group> groupsAssociateWithCompany = new HashSet<>();
+
+    /*
+    Function<String, Set<Group>> functionInteractiveWithDataBase = s -> groupService.findByCompanyAndGroupNameStartingWithIgnoreCase(userLogCompany, s);
+    Function<Set<Group>, Stream<Group>> flatting = groups -> groups.stream();
+    List<Group> matchersGroups = groupNames.stream().map(functionInteractiveWithDataBase).flatMap(flatting).collect(Collectors.toList());
+    */
+
     for (String groupName : groupNames) {
       Set<Group> groupsMatch =
           this.groupService.findByCompanyAndGroupNameStartingWithIgnoreCase(
@@ -129,7 +139,8 @@ public class CompanyService {
       String userName, List<String> groupNames, int size, int page) {
 
     Company userLogCompany = userService.getUserLogged().getCompany();
-    Set<Group> groupsAssociateWithCompany = searchGroupsAssociateWithCompany(userLogCompany, groupNames);
+    Set<Group> groupsAssociateWithCompany =
+        searchGroupsAssociateWithCompany(userLogCompany, groupNames);
 
     List<UUID> uuidListToGroupsAssociatedWithCompany =
         groupsAssociateWithCompany.stream().map(Group::getId).collect(Collectors.toList());
@@ -153,7 +164,9 @@ public class CompanyService {
     }
 
     Pageable pegeable =
-        (size == -1 || page == -1) ? PageRequest.of(0, resultClients.getSize()) : PageRequest.of(page, size);
+        (size == -1 || page == -1)
+            ? PageRequest.of(0, resultClients.getSize())
+            : PageRequest.of(page, size);
 
     return new PageImpl<>(resultClientsList, pegeable, resultClients.getTotalElements());
   }

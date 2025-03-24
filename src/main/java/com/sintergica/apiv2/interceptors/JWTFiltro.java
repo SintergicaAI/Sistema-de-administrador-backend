@@ -1,5 +1,8 @@
 package com.sintergica.apiv2.interceptors;
 
+import com.fasterxml.jackson.databind.*;
+import com.sintergica.apiv2.exceptions.globals.*;
+import com.sintergica.apiv2.exceptions.token.*;
 import com.sintergica.apiv2.servicios.CustomUserDetailsService;
 import com.sintergica.apiv2.utilidades.TokenUtils;
 import jakarta.servlet.FilterChain;
@@ -7,6 +10,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,6 +36,18 @@ public class JWTFiltro extends OncePerRequestFilter {
     String authHeader = request.getHeader("Authorization");
     if (authHeader != null && authHeader.startsWith("Bearer ")) {
       String token = authHeader.substring(7);
+
+      if (TokenUtils.getTokenClaims(token) == null) {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType("application/json");
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        response
+            .getWriter()
+            .write(
+                objectMapper.writeValueAsString(new Warnings("El token no es valido", new Date())));
+        return;
+      }
 
       if (TokenUtils.getTokenClaims(token) != null) {
         String correo = TokenUtils.getTokenClaims(token).getSubject();

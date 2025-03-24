@@ -1,5 +1,6 @@
 package com.sintergica.apiv2.dto;
 
+import com.sintergica.apiv2.entidades.*;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +15,7 @@ public class RegisterResponseDTO {
   private UUID id;
   private String email;
   private String name;
-  private String last_name;
+  private String lastName;
   private String token;
   private String refreshToken;
   private String role;

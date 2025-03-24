@@ -6,9 +6,7 @@ import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.repositorio.UserRepository;
 import com.sintergica.apiv2.utilidades.TokenUtils;
 import io.jsonwebtoken.Jwts;
-
 import java.util.*;
-
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -75,7 +73,6 @@ public class UserService {
           new SearchUserDTO(
               user.getEmail(), user.getName(), user.getRol(), user.getGroups().size()));
     }
-
     return new PageImpl<>(searchUserDTOs, pageable, userPage.getTotalElements());
   }
 
@@ -93,8 +90,8 @@ public class UserService {
     return this.userRepository.save(user);
   }
 
-
-  public Set<User> findByInIdsAndActiveAndCompanyList(Set<UUID> inIds, boolean isActive, Company company) {
+  public Set<User> findByInIdsAndActiveAndCompanyList(
+      Set<UUID> inIds, boolean isActive, Company company) {
     return this.userRepository.findByIdInAndIsActiveAndCompany(inIds, isActive, company);
   }
 
@@ -102,7 +99,6 @@ public class UserService {
     return this.userRepository.findByEmail(
         SecurityContextHolder.getContext().getAuthentication().getName());
   }
-
 
   public boolean hasLoggedInUserTheRole(String role) {
     Collection<? extends GrantedAuthority> authentication =
