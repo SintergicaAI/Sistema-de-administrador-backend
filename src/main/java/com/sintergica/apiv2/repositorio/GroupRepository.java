@@ -15,6 +15,8 @@ public interface GroupRepository extends JpaRepository<Group, UUID> {
 
   Group findByCompanyAndName(Company company, String name);
 
+  Set<Group> findByCompanyAndNameIn(Company company, Collection<String> names);
+
   @Query(
       "SELECT g FROM Group g "
           + "WHERE g.company = :company "

@@ -1,6 +1,5 @@
 package com.sintergica.apiv2.dto;
 
-import com.sintergica.apiv2.entidades.*;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

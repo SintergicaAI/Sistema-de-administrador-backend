@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface InvalidatedTokensRepository extends JpaRepository<InvalidatedTokens, String> {
 
-  public InvalidatedTokens findByRefreshToken(String token);
+  InvalidatedTokens findByRefreshToken(String token);
 }

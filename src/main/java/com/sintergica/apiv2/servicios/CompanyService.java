@@ -14,11 +14,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.*;
-import java.util.stream.*;
+import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -82,7 +80,7 @@ public class CompanyService {
 
       List<UserDTO> data = parserUserToUserDTOAndGroupToList(users);
 
-      int sizeList = (users.isEmpty()) ? 1 : users.size();
+      int sizeList = users.isEmpty() ? 1 : users.size();
 
       return new PageImpl<>(data, PageRequest.of(0, sizeList), sizeList);
     }
@@ -164,7 +162,7 @@ public class CompanyService {
     }
 
     Pageable pegeable =
-        (size == -1 || page == -1)
+        size == -1 || page == -1
             ? PageRequest.of(0, resultClients.getSize())
             : PageRequest.of(page, size);
 

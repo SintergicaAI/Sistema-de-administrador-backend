@@ -1,12 +1,20 @@
 package com.sintergica.apiv2.servicios;
 
+import com.sintergica.apiv2.dto.GroupDTO;
+import com.sintergica.apiv2.dto.GroupOverrideDTO;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
-import com.sintergica.apiv2.exceptions.group.*;
+import com.sintergica.apiv2.exceptions.group.GroupConflict;
 import com.sintergica.apiv2.repositorio.GroupRepository;
 import jakarta.transaction.Transactional;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,7 +39,7 @@ public class GroupService {
     try {
       return this.groupRepository.save(group);
     } catch (Exception e) {
-      throw new GroupConflict("El grupo ya existe");
+      throw new GroupConflict("El grupo ya existe "+e.getMessage());
     }
   }
 
@@ -63,6 +71,35 @@ public class GroupService {
   @Transactional
   public Group findGroupByCompanyAndName(Company company, String name) {
     return this.groupRepository.findByCompanyAndName(company, name);
+  }
+
+  public GroupOverrideDTO overrideGroupsToUser(Company company, Collection<String> names, String emailUser) {
+
+    User user = this.userService.findByEmail(emailUser);
+    Set<Group> groupsWithoutUserTarget = new HashSet<>();
+    for (Group group : user.getGroups()) {
+      group.getUser().remove(user);
+      groupsWithoutUserTarget.add(group);
+    }
+
+    this.groupRepository.saveAll(groupsWithoutUserTarget);
+
+    Set<Group> groupsMatches = this.findByCompanyAndNameIn(company, names);
+    for (Group group : groupsMatches) {
+      group.getUser().add(user);
+    }
+    this.groupRepository.saveAll(groupsMatches);
+
+    GroupOverrideDTO groupOverrideDTO = new GroupOverrideDTO(user.getEmail(), new ArrayList<>());
+    for(Group groupUserIterator : groupsMatches){
+      groupOverrideDTO.groups().add(new GroupDTO(groupUserIterator.getId(), groupUserIterator.getName()));
+    }
+
+    return groupOverrideDTO;
+  }
+
+  public Set<Group> findByCompanyAndNameIn(Company company, Collection<String> names) {
+    return this.groupRepository.findByCompanyAndNameIn(company, names);
   }
 
   public Set<Group> findByCompanyAndGroupNameStartingWithIgnoreCase(

@@ -2,6 +2,7 @@ package com.sintergica.apiv2.controller;
 
 import com.sintergica.apiv2.dto.CompanyDTO;
 import com.sintergica.apiv2.dto.GroupDTO;
+import com.sintergica.apiv2.dto.GroupOverrideDTO;
 import com.sintergica.apiv2.dto.SearchUserDTO;
 import com.sintergica.apiv2.dto.UserDTO;
 import com.sintergica.apiv2.dto.WrapperUserDTO;
@@ -17,7 +18,12 @@ import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.servicios.CompanyService;
 import com.sintergica.apiv2.servicios.GroupService;
 import com.sintergica.apiv2.servicios.UserService;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +33,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -123,9 +130,6 @@ public class ControllerCompany {
             user.isActive()));
   }
 
-  /**
-   * @deprecated
-   */
   @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
   @PostMapping("/groups/{name}")
   public ResponseEntity<GroupDTO> addGroup(@PathVariable(name = "name") String newGroupName) {
@@ -290,9 +294,28 @@ public class ControllerCompany {
   }
 
   @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
+  @PatchMapping("/users/{email}/groups")
+  public ResponseEntity<GroupOverrideDTO> userOverrideGroups(
+          @PathVariable String email,
+          @RequestParam(name="group_ids") Set<String> names){
+
+    User userFound = this.userService.findByEmail(email);
+
+    if (userFound == null) {
+      throw new UserNotFound("User not found");
+    }
+
+    return ResponseEntity.ok(
+            this.groupService.overrideGroupsToUser(
+                    this.userService.getUserLogged().getCompany(),
+                    names,
+                    email));
+  }
+
+  @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
   @GetMapping("/users/{email}/groups")
-  public ResponseEntity<List<GroupDTO>> getUserGroups(
-      @PathVariable(name = "email") String email, @RequestParam String group) {
+  public ResponseEntity<GroupOverrideDTO> getUserGroups(
+      @PathVariable(name = "email") String email) {
 
     Company userLoggedCompany = this.userService.getUserLogged().getCompany();
     User userFound = this.userService.findByEmail(email);
@@ -301,16 +324,12 @@ public class ControllerCompany {
       throw new CompanyNotFound("El usuario no tiene esta compañia asociada");
     }
 
-    List<Group> groupList =
-        this.groupService.findByCompanyAndUserEmailAndGroupNameStartingWith(
-            userLoggedCompany, email, group);
+    GroupOverrideDTO groupOverrideDTO = new GroupOverrideDTO(userFound.getEmail(), new ArrayList<>());
 
-    List<GroupDTO> groupDTOList = new ArrayList<>();
-
-    for (Group groupTemp : groupList) {
-      groupDTOList.add(new GroupDTO(groupTemp.getId(), groupTemp.getName()));
+    for (Group group : userFound.getGroups()) {
+      groupOverrideDTO.groups().add(new GroupDTO(group.getId(), group.getName()));
     }
 
-    return ResponseEntity.ok(groupDTOList);
+    return ResponseEntity.ok(groupOverrideDTO);
   }
 }
