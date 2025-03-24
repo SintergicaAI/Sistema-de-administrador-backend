@@ -474,43 +474,48 @@ paths:
                 type: array
                 description: Retorno una lista de grupos
                 items:
-                  $ref: '#/components/schemas/Group'
+                  $ref: '#/components/schemas/GroupCreatedDTO'
     post:
       tags:
         - Groups
-      description: Manda los datos en un JSON
+      description: Crear un nuevo grupo
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Group'
+              $ref: '#/components/schemas/GroupCreatedDTOPost'
       responses:
         '200':
           description: Grupo registrado
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Group'
-  '/group/{uuid}':
+                $ref: '#/components/schemas/GroupCreatedDTO'
+  '/group/{name}':
     get:
       tags:
         - Groups
       description: ' Puedes obtener estos uuid haciendo uso del endpoint get o buscando alguna compañia asociada del usuario '
-      summary: Obtienes datos de un grupo por medio de su uuid
+      summary: Obtienes datos de un grupo por medio de su nombre y la compañia del usuario logueado
       parameters:
-        - name: uuid
+        - name: name
           in: path
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         '200':
           description: Respuesta
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Group'
+                $ref: '#/components/schemas/GroupCreatedDTO'
+        '404':
+          description: Grupo no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warnings'
   '/company/group/{name}/clients/{email}':
     post:
       tags:
@@ -766,6 +771,43 @@ components:
         totalElements:
           type: integer
           example: 1
+    GroupCreatedDTO:
+      type: object
+      required:
+        - name
+        - users
+        - dateCreation
+        - dateEdit
+        - createdBy
+      properties:
+        name:
+          type: string
+        users:
+          type: array
+          items:
+            type: string
+            format: uuid
+        dateCreation:
+          type: string
+          format: date-time
+        dateEdit:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+    GroupCreatedDTOPost:
+      type: object
+      required:
+        - name
+        - users
+      properties:
+        name:
+          type: string
+        users:
+          type: array
+          items:
+            type: string
+            format: uuid
     Company:
       type: object
       properties:
