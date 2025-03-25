@@ -2,7 +2,10 @@ package com.sintergica.apiv2.entidades;
 
 import jakarta.persistence.*;
 import java.util.*;
+
+import jakarta.persistence.Table;
 import lombok.*;
+import org.hibernate.annotations.*;
 
 @Entity
 @Getter

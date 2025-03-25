@@ -62,6 +62,16 @@ public class GroupService {
     return this.groupRepository.save(group);
   }
 
+  public Group deleteGroup(String name, Company company) {
+    Group deleteGroup = this.groupRepository.findByCompanyAndName(company, name);
+
+    deleteGroup.getUser().clear();
+    this.groupRepository.save(deleteGroup);
+    this.groupRepository.delete(deleteGroup);
+
+    return deleteGroup;
+  }
+
   @Transactional
   public Group deleteUser(Group group, User user) {
     group.getUser().remove(user);

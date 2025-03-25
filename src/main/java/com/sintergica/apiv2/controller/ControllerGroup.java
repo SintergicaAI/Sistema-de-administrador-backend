@@ -1,6 +1,6 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.dto.GroupCreatedDTO;
+import com.sintergica.apiv2.dto.*;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
@@ -16,12 +16,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/group")
@@ -49,6 +44,14 @@ public class ControllerGroup {
 
     return ResponseEntity.ok(groupDTOList);
   }
+
+  @DeleteMapping("/{name}")
+  public ResponseEntity<GroupDTO> deleteGroup(@PathVariable String name) {
+    Group groupDelete = this.groupService.deleteGroup(name, this.userService.getUserLogged().getCompany());
+    return ResponseEntity.ok(new GroupDTO(groupDelete.getId(), groupDelete.getName()));
+  }
+
+
 
   @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
   @PostMapping

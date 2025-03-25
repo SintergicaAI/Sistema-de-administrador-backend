@@ -43,7 +43,6 @@ public class ControllerRol {
     return ResponseEntity.ok().body(rolService.save(newRol));
   }
 
-
   @PreAuthorize("hasRole('SUPERADMIN') or hasRole('OWNER') or hasRole('ADMIN')")
   @PatchMapping("/{name}/clients/{email}")
   public ResponseEntity<RolUserDTO> changeRolClient(
