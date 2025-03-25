@@ -376,6 +376,103 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Warnings'
+  '/company/users/{email}/groups':
+    post:
+      security:
+        - JWT: []
+      tags:
+        - Company
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            format: email
+            type: string
+      responses:
+        '200':
+          description: Exito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userEmail:
+                    type: string
+                    format: email
+                    example: Ethan@gmail.com
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          example: 49543112-4b3c-4d1b-abcd-0123456789092
+                        name:
+                          type: string
+                          example: VENTAS
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warnings'
+    patch:
+      security:
+        - JWT: []
+      tags:
+        - Company
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            format: email
+            type: string
+        - name: group_ids
+          in: query
+          required: true
+          schema:
+            format: array
+            type: string
+      responses:
+        '200':
+          description: Exito
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userEmail:
+                    type: string
+                    format: email
+                    example: Ethan@gmail.com
+                  groups:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          example: 49543112-4b3c-4d1b-abcd-0123456789092
+                        name:
+                          type: string
+                          example: VENTAS
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warnings'
   '/company/users/{email}':
     post:
       security:
