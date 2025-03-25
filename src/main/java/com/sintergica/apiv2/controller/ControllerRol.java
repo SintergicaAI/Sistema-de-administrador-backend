@@ -38,12 +38,11 @@ public class ControllerRol {
 
   @PostMapping
   public ResponseEntity<Rol> addNewRol(@RequestParam String roleName) {
-
     Rol newRol = new Rol();
     newRol.setName(roleName);
-
     return ResponseEntity.ok().body(rolService.save(newRol));
   }
+
 
   @PreAuthorize("hasRole('SUPERADMIN') or hasRole('OWNER') or hasRole('ADMIN')")
   @PatchMapping("/{name}/clients/{email}")
@@ -59,6 +58,7 @@ public class ControllerRol {
     }
 
     Rol rol = this.rolService.getRolByName(newRolUser);
+
     if (rol == null) {
       throw new RolNotFound("Rol no encontrado");
     }

@@ -79,8 +79,10 @@ public class GroupService {
     User user = this.userService.findByEmail(emailUser);
 
     Set<Group> groupsWithoutUserTarget = new HashSet<>();
+    GroupOverrideDTO oldStatus = new GroupOverrideDTO(user.getEmail(), new ArrayList<>());
 
     for (Group group : user.getGroups()) {
+      oldStatus.groups().add(new GroupDTO(group.getId(), group.getName()));
       group.getUser().remove(user);
       groupsWithoutUserTarget.add(group);
     }
@@ -102,7 +104,7 @@ public class GroupService {
           .add(new GroupDTO(groupUserIterator.getId(), groupUserIterator.getName()));
     }
 
-    return groupOverrideDTO;
+    return oldStatus;
   }
 
   public Set<Group> findByCompanyAndNameIn(Company company, Collection<String> names) {

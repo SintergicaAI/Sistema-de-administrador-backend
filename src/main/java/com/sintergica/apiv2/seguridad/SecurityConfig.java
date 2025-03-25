@@ -38,7 +38,7 @@ public class SecurityConfig {
                   .permitAll()
                   .requestMatchers("/users/register")
                   .permitAll()
-                  .requestMatchers("/users/logout")
+                      .requestMatchers("/users/logout")
                   .permitAll()
                   .requestMatchers("/users/refreshToken")
                   .permitAll()

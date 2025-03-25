@@ -1,11 +1,6 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.dto.CompanyDTO;
-import com.sintergica.apiv2.dto.GroupDTO;
-import com.sintergica.apiv2.dto.GroupOverrideDTO;
-import com.sintergica.apiv2.dto.SearchUserDTO;
-import com.sintergica.apiv2.dto.UserDTO;
-import com.sintergica.apiv2.dto.WrapperUserDTO;
+import com.sintergica.apiv2.dto.*;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
@@ -297,7 +292,7 @@ public class ControllerCompany {
   @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
   @PatchMapping("/users/{email}/groups")
   public ResponseEntity<GroupOverrideDTO> userOverrideGroups(
-      @PathVariable String email, @RequestParam(name = "group_ids") Set<String> names) {
+      @PathVariable String email, @RequestBody GroupOverrideListDTO group_ids) {
 
     User userFound = this.userService.findByEmail(email);
 
@@ -307,7 +302,8 @@ public class ControllerCompany {
 
     return ResponseEntity.ok(
         this.groupService.overrideGroupsToUser(
-            this.userService.getUserLogged().getCompany(), names, email));
+            this.userService.getUserLogged().getCompany(), group_ids.group_ids(), email));
+
   }
 
   @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
