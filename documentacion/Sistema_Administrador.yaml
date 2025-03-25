@@ -394,7 +394,7 @@ paths:
                 $ref: "#/components/schemas/Warnings"
 
   /company/users/{email}/groups:
-    post:
+    get:
       security:
         - JWT : []
       tags:
