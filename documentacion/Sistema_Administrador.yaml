@@ -451,12 +451,25 @@ paths:
           schema:
             format: email
             type: string
-        - name: group_ids
-          in: query
-          required: true
-          schema:
-            format: array
-            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - group_ids
+              properties:
+                group_ids:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - VENTAS
+                    - CONTADORES
+                    - IT
+                    - test
+
       responses:
         200:
           description: "Exito"
