@@ -89,18 +89,21 @@ public class ControllerGroup {
   }
 
   @GetMapping("/{name}")
-  public ResponseEntity<GroupCreatedDTO> getGroupByUUID(@PathVariable(name = "name") String nameGroup) {
-    Group groupFound = groupService.findGroupByCompanyAndName(this.userService.getUserLogged().getCompany(), nameGroup);
+  public ResponseEntity<GroupCreatedDTO> getGroupByUUID(
+      @PathVariable(name = "name") String nameGroup) {
+    Group groupFound =
+        groupService.findGroupByCompanyAndName(
+            this.userService.getUserLogged().getCompany(), nameGroup);
     if (groupFound == null) {
       throw new GroupNotFound("Grupo no encontrado");
     }
 
     return ResponseEntity.ok(
-            new GroupCreatedDTO(
-                    groupFound.getName(),
-                    groupFound.getUser().stream().map(User::getId).collect(Collectors.toSet()),
-                    groupFound.getCreationDate(),
-                    groupFound.getEditDate(),
-                    groupFound.getName()));
+        new GroupCreatedDTO(
+            groupFound.getName(),
+            groupFound.getUser().stream().map(User::getId).collect(Collectors.toSet()),
+            groupFound.getCreationDate(),
+            groupFound.getEditDate(),
+            groupFound.getName()));
   }
 }

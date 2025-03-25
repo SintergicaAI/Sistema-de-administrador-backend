@@ -194,7 +194,8 @@ public class ControllerCompany {
       throw new CompanyNotFound("Usuario sin compañia asociada");
     }
 
-    Page<SearchUserDTO> userPages = this.userService.getUsersByName(username, user.getCompany(), pageable);
+    Page<SearchUserDTO> userPages =
+        this.userService.getUsersByName(username, user.getCompany(), pageable);
 
     return ResponseEntity.ok(new WrapperUserDTO<>(userPages));
   }
@@ -296,8 +297,7 @@ public class ControllerCompany {
   @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
   @PatchMapping("/users/{email}/groups")
   public ResponseEntity<GroupOverrideDTO> userOverrideGroups(
-          @PathVariable String email,
-          @RequestParam(name="group_ids") Set<String> names){
+      @PathVariable String email, @RequestParam(name = "group_ids") Set<String> names) {
 
     User userFound = this.userService.findByEmail(email);
 
@@ -306,10 +306,8 @@ public class ControllerCompany {
     }
 
     return ResponseEntity.ok(
-            this.groupService.overrideGroupsToUser(
-                    this.userService.getUserLogged().getCompany(),
-                    names,
-                    email));
+        this.groupService.overrideGroupsToUser(
+            this.userService.getUserLogged().getCompany(), names, email));
   }
 
   @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
@@ -320,11 +318,16 @@ public class ControllerCompany {
     Company userLoggedCompany = this.userService.getUserLogged().getCompany();
     User userFound = this.userService.findByEmail(email);
 
+    if (userFound == null) {
+      throw new UserNotFound("User not found");
+    }
+
     if (!userLoggedCompany.equals(userFound.getCompany())) {
       throw new CompanyNotFound("El usuario no tiene esta compañia asociada");
     }
 
-    GroupOverrideDTO groupOverrideDTO = new GroupOverrideDTO(userFound.getEmail(), new ArrayList<>());
+    GroupOverrideDTO groupOverrideDTO =
+        new GroupOverrideDTO(userFound.getEmail(), new ArrayList<>());
 
     for (Group group : userFound.getGroups()) {
       groupOverrideDTO.groups().add(new GroupDTO(group.getId(), group.getName()));

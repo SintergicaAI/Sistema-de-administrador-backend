@@ -53,6 +53,7 @@ public class ControllerRol {
     User userLog = this.userService.getUserLogged();
 
     User userFound = userService.findByEmail(email);
+
     if (userFound == null) {
       throw new UserNotFound("Usuario no encontrado");
     }
@@ -63,11 +64,11 @@ public class ControllerRol {
     }
 
     if ("USER".equals(userFound.getRol()) && "ADMIN".equals(newRolUser)
-            || "OWNER".equals(userFound.getRol())) {
+        || "OWNER".equals(userFound.getRol())) {
       userFound.setGroups(null);
     }
 
-    if("OWNER".equals(userFound.getRol()))  {
+    if ("OWNER".equals(userFound.getRol())) {
 
       if (userLog.getCompany() == null || userFound.getCompany() == null) {
         throw new CompanyNotFound("El usuario o el administrador no tienen compañia asociada");

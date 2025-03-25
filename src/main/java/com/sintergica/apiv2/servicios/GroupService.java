@@ -39,7 +39,7 @@ public class GroupService {
     try {
       return this.groupRepository.save(group);
     } catch (Exception e) {
-      throw new GroupConflict("El grupo ya existe "+e.getMessage());
+      throw new GroupConflict("El grupo ya existe " + e.getMessage());
     }
   }
 
@@ -73,10 +73,13 @@ public class GroupService {
     return this.groupRepository.findByCompanyAndName(company, name);
   }
 
-  public GroupOverrideDTO overrideGroupsToUser(Company company, Collection<String> names, String emailUser) {
+  public GroupOverrideDTO overrideGroupsToUser(
+      Company company, Collection<String> names, String emailUser) {
 
     User user = this.userService.findByEmail(emailUser);
+
     Set<Group> groupsWithoutUserTarget = new HashSet<>();
+
     for (Group group : user.getGroups()) {
       group.getUser().remove(user);
       groupsWithoutUserTarget.add(group);
@@ -85,14 +88,18 @@ public class GroupService {
     this.groupRepository.saveAll(groupsWithoutUserTarget);
 
     Set<Group> groupsMatches = this.findByCompanyAndNameIn(company, names);
+
     for (Group group : groupsMatches) {
       group.getUser().add(user);
     }
+
     this.groupRepository.saveAll(groupsMatches);
 
     GroupOverrideDTO groupOverrideDTO = new GroupOverrideDTO(user.getEmail(), new ArrayList<>());
-    for(Group groupUserIterator : groupsMatches){
-      groupOverrideDTO.groups().add(new GroupDTO(groupUserIterator.getId(), groupUserIterator.getName()));
+    for (Group groupUserIterator : groupsMatches) {
+      groupOverrideDTO
+          .groups()
+          .add(new GroupDTO(groupUserIterator.getId(), groupUserIterator.getName()));
     }
 
     return groupOverrideDTO;
