@@ -65,6 +65,7 @@ public class CompanyService {
                     user.getName(),
                     user.getLastName(),
                     user.getEmail(),
+                    user.getRol(),
                     user.getGroups().stream()
                         .map(group -> new GroupDTO(group.getId(), group.getName()))
                         .collect(Collectors.toList())))

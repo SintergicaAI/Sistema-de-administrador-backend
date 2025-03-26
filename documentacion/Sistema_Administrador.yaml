@@ -801,6 +801,9 @@ components:
           type: integer
         name:
           type: string
+      example:
+        id: "1237d4bc-5ea4-4967-8971-8f6f96d84167"
+        name: "USER"
 
     User:
       type: object
@@ -847,6 +850,14 @@ components:
         email:
           type: string
           format: email
+        role:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
         groups:
           type: array
           items:
@@ -864,7 +875,7 @@ components:
     WrapperUserDTO:
       type: object
       properties:
-        userDTOPage:
+        data:
           type: array
           description: Lista paginada de usuarios
           items:
