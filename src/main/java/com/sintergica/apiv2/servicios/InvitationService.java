@@ -10,6 +10,7 @@ import com.sintergica.apiv2.utilidades.InvitationStates;
 import com.sintergica.apiv2.utilidades.InvitationTokenUtils;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -80,6 +81,10 @@ public class InvitationService {
     return invitation.isPresent();
   }
 
+
+  public List<Invitation> invitationList() {
+    return invitationRepository.findAll();
+  }
   /**
    * Sends a invitation token via email
    *

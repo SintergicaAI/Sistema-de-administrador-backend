@@ -2,9 +2,12 @@ package com.sintergica.apiv2.controller;
 
 import com.sintergica.apiv2.configuration.MessagesConfig;
 import com.sintergica.apiv2.dto.InvitationDTO;
+import com.sintergica.apiv2.entidades.Invitation;
 import com.sintergica.apiv2.servicios.InvitationService;
 import com.sintergica.apiv2.utilidades.Email;
 import java.util.HashMap;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +28,8 @@ public class InvitationController {
   private final InvitationService invitationService;
 
   @GetMapping
-  public String hello() {
-    return messagesConfig.getMessages().get("testMesssage");
+  public List<Invitation> getAllInvitations() {
+    return invitationService.invitationList();
   }
 
   @PostMapping("/send")

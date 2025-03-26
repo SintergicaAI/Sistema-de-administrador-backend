@@ -1,9 +1,7 @@
 package com.sintergica.apiv2.entidades;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Data;
@@ -22,4 +20,8 @@ public class Invitation {
 
   @Column(name = "expireDate")
   private LocalDateTime expireDate;
+
+  @ManyToOne
+  @JoinColumn(name = "groupId")
+  private Group group;
 }
