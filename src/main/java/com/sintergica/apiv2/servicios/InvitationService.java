@@ -4,10 +4,10 @@ import com.sintergica.apiv2.configuration.EmailConfig;
 import com.sintergica.apiv2.configuration.MessagesConfig;
 import com.sintergica.apiv2.entidades.Invitation;
 import com.sintergica.apiv2.repositorio.InvitationRepository;
-import com.sintergica.apiv2.utilidades.Email.Email;
-import com.sintergica.apiv2.utilidades.Email.EmailUtils;
 import com.sintergica.apiv2.utilidades.InvitationStates;
 import com.sintergica.apiv2.utilidades.InvitationTokenUtils;
+import com.sintergica.apiv2.utilidades.email.Email;
+import com.sintergica.apiv2.utilidades.email.EmailUtils;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -82,7 +82,6 @@ public class InvitationService {
   }
 
   /**
-   *
    * @return {@code List<Invitation>} with all invitations
    */
   public List<Invitation> invitationList() {

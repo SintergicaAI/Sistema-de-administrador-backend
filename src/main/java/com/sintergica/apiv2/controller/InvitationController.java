@@ -5,11 +5,10 @@ import com.sintergica.apiv2.dto.EmailDTO;
 import com.sintergica.apiv2.dto.InvitationDTO;
 import com.sintergica.apiv2.entidades.Invitation;
 import com.sintergica.apiv2.servicios.InvitationService;
-import com.sintergica.apiv2.utilidades.Email.Email;
-import com.sintergica.apiv2.utilidades.Email.Message;
+import com.sintergica.apiv2.utilidades.email.Email;
+import com.sintergica.apiv2.utilidades.email.Message;
 import java.util.HashMap;
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,16 +38,13 @@ public class InvitationController {
       @RequestBody EmailDTO emailObject) {
     HashMap<String, Object> response = new HashMap<>();
 
-    Email email = new Email(
+    Email email =
+        new Email(
             emailObject.getFromEmail(),
             emailObject.getEmailPassword(),
             emailObject.getToken(),
             new Message(
-                    emailObject.getSubject(),
-                    emailObject.getBody(),
-                    emailObject.getRecipients()
-            )
-    );
+                emailObject.getSubject(), emailObject.getBody(), emailObject.getRecipients()));
 
     if (!invitationService.sendNewToken(email)) {
       response.put("message", messagesConfig.getMessages().get("emailSendError"));

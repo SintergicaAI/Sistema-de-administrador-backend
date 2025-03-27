@@ -1,4 +1,4 @@
-package com.sintergica.apiv2.utilidades.Email;
+package com.sintergica.apiv2.utilidades.email;
 
 import java.util.UUID;
 import lombok.Data;

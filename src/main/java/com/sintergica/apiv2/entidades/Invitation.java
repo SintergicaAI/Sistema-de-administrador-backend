@@ -1,7 +1,6 @@
 package com.sintergica.apiv2.entidades;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Data;
