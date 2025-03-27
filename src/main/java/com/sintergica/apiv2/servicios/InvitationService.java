@@ -4,8 +4,8 @@ import com.sintergica.apiv2.configuration.EmailConfig;
 import com.sintergica.apiv2.configuration.MessagesConfig;
 import com.sintergica.apiv2.entidades.Invitation;
 import com.sintergica.apiv2.repositorio.InvitationRepository;
-import com.sintergica.apiv2.utilidades.Email;
-import com.sintergica.apiv2.utilidades.EmailUtils;
+import com.sintergica.apiv2.utilidades.Email.Email;
+import com.sintergica.apiv2.utilidades.Email.EmailUtils;
 import com.sintergica.apiv2.utilidades.InvitationStates;
 import com.sintergica.apiv2.utilidades.InvitationTokenUtils;
 import java.time.LocalDateTime;
@@ -81,10 +81,14 @@ public class InvitationService {
     return invitation.isPresent();
   }
 
-
+  /**
+   *
+   * @return {@code List<Invitation>} with all invitations
+   */
   public List<Invitation> invitationList() {
     return invitationRepository.findAll();
   }
+
   /**
    * Sends a invitation token via email
    *

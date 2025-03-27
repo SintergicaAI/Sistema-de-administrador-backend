@@ -1,4 +1,4 @@
-package com.sintergica.apiv2.utilidades;
+package com.sintergica.apiv2.utilidades.Email;
 
 import com.sintergica.apiv2.configuration.EmailConfig;
 import java.util.Date;
@@ -11,6 +11,7 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

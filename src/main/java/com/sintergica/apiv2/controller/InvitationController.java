@@ -1,10 +1,12 @@
 package com.sintergica.apiv2.controller;
 
 import com.sintergica.apiv2.configuration.MessagesConfig;
+import com.sintergica.apiv2.dto.EmailDTO;
 import com.sintergica.apiv2.dto.InvitationDTO;
 import com.sintergica.apiv2.entidades.Invitation;
 import com.sintergica.apiv2.servicios.InvitationService;
-import com.sintergica.apiv2.utilidades.Email;
+import com.sintergica.apiv2.utilidades.Email.Email;
+import com.sintergica.apiv2.utilidades.Email.Message;
 import java.util.HashMap;
 import java.util.List;
 
@@ -34,10 +36,21 @@ public class InvitationController {
 
   @PostMapping("/send")
   public ResponseEntity<HashMap<String, Object>> sendInvitationEmail(
-      @RequestBody Email emailObject) {
+      @RequestBody EmailDTO emailObject) {
     HashMap<String, Object> response = new HashMap<>();
 
-    if (!invitationService.sendNewToken(emailObject)) {
+    Email email = new Email(
+            emailObject.getFromEmail(),
+            emailObject.getEmailPassword(),
+            emailObject.getToken(),
+            new Message(
+                    emailObject.getSubject(),
+                    emailObject.getBody(),
+                    emailObject.getRecipients()
+            )
+    );
+
+    if (!invitationService.sendNewToken(email)) {
       response.put("message", messagesConfig.getMessages().get("emailSendError"));
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }

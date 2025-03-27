@@ -13,4 +13,6 @@ public class InvitationDTO {
   private boolean isActive;
 
   private LocalDateTime expireDate;
+
+  private UUID groupId;
 }
