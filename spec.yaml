@@ -134,7 +134,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Warnings'
-  '/{email}/rol':
+  '/users/{email}/rol':
     patch:
       tags:
         - users
