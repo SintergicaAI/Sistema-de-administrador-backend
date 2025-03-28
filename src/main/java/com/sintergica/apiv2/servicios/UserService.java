@@ -1,8 +1,7 @@
 package com.sintergica.apiv2.servicios;
 
 import com.sintergica.apiv2.dto.SearchUserDTO;
-import com.sintergica.apiv2.entidades.Company;
-import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.entidades.*;
 import com.sintergica.apiv2.repositorio.UserRepository;
 import com.sintergica.apiv2.utilidades.TokenUtils;
 import io.jsonwebtoken.Jwts;
@@ -100,11 +99,14 @@ public class UserService {
         SecurityContextHolder.getContext().getAuthentication().getName());
   }
 
-  public boolean hasLoggedInUserTheRole(String role) {
-    Collection<? extends GrantedAuthority> authentication =
-        SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-
-    return authentication.stream()
-        .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(role));
+  public boolean canChangeRole(int weightUserLogged, int weightUserTarget) {
+    return weightUserLogged <= weightUserTarget;
   }
+
+
+  public User changeRol(User userTarget, Rol newRol) {
+    userTarget.setRol(newRol);
+    return this.userRepository.save(userTarget);
+  }
+
 }

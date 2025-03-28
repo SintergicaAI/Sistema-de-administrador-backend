@@ -3,13 +3,14 @@ package com.sintergica.apiv2.interceptors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sintergica.apiv2.exceptions.globals.Warnings;
 import com.sintergica.apiv2.servicios.CustomUserDetailsService;
-import com.sintergica.apiv2.utilidades.TokenUtils;
+import com.sintergica.apiv2.utilidades.*;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Date;
+import java.util.*;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,6 +34,22 @@ public class JWTFiltro extends OncePerRequestFilter {
       throws ServletException, IOException {
 
     String authHeader = request.getHeader("Authorization");
+
+    boolean isNotPublicEndpoint = Arrays.stream(PublicEndpoints.publicEndpoints)
+            .noneMatch(endpoint -> request.getRequestURI().equals(endpoint));
+
+    if (isNotPublicEndpoint && authHeader == null) {
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      response.setContentType("application/json");
+
+      ObjectMapper objectMapper = new ObjectMapper();
+      response
+              .getWriter()
+              .write(
+                      objectMapper.writeValueAsString(new Warnings("Send a token", new Date())));
+      return;
+    }
+
     if (authHeader != null && authHeader.startsWith("Bearer ")) {
       String token = authHeader.substring(7);
 
@@ -44,7 +61,7 @@ public class JWTFiltro extends OncePerRequestFilter {
         response
             .getWriter()
             .write(
-                objectMapper.writeValueAsString(new Warnings("El token no es valido", new Date())));
+                objectMapper.writeValueAsString(new Warnings("invalid token", new Date())));
         return;
       }
 

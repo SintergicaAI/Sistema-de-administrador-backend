@@ -140,6 +140,33 @@ paths:
                 $ref: "#/components/schemas/Warnings"
 
 
+  /{email}/rol:
+    patch:
+      tags:
+        - users
+      summary: Modificar el rol de un usuario del sistema
+      security:
+        - JWT: []
+      parameters:
+        - name: email
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RolRequestBodyDTO"
+
+      responses:
+        200:
+          description: "Cambio de rol exitoso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RolUserDTO"
+
   /users/refreshToken:
     post:
       tags:
@@ -291,6 +318,8 @@ paths:
     get:
       tags:
         - Company
+      security:
+        - JWT: []
       description: Te retorna toda la lista de empresas
       responses:
         200:
@@ -305,6 +334,8 @@ paths:
       tags:
         - Company
       description: "Manda los datos en un JSON"
+      security:
+        - JWT: []
       requestBody:
         content:
           application/json:
@@ -430,6 +461,9 @@ paths:
                           type: string
                           format: uuid
                           example: 49543112-4b3c-4d1b-abcd-0123456789092
+                        compositeKey:
+                          type: string
+                          format: string
                         name:
                           type: string
                           example: VENTAS
@@ -465,10 +499,10 @@ paths:
                   items:
                     type: string
                   example:
-                    - VENTAS
-                    - CONTADORES
-                    - IT
-                    - test
+                    - VENTAS-SINTERGICA
+                    - CONTADORES-SINTERGICA
+                    - IT-SINTERGICA
+                    - test-SINTERGICA
 
       responses:
         200:
@@ -545,7 +579,7 @@ paths:
       security:
         - JWT : []
       description: "Añade un nuevo cliente a la compañia"
-      summary: "Agrega un cliente nuevo a una compañia y esta se obtiene del usuario que ha iniciado sesión"
+      summary: "Elimina un cliente nuevo a una compañia y esta se obtiene del usuario que ha iniciado sesión"
       tags:
         - Company
       parameters:
@@ -597,6 +631,8 @@ paths:
       tags:
         - Groups
       description: Te retorna toda la lista de grupos
+      security:
+        - JWT: []
       responses:
         200:
           description: "Exito"
@@ -611,6 +647,8 @@ paths:
       tags:
         - Groups
       description: "Crear un nuevo grupo"
+      security:
+        - JWT: []
       requestBody:
         content:
           application/json:
@@ -630,6 +668,8 @@ paths:
         - Groups
       description: " Puedes obtener estos uuid haciendo uso del endpoint get o buscando alguna compañia asociada del usuario "
       summary: "Obtienes datos de un grupo por medio de su nombre y la compañia del usuario logueado"
+      security:
+        - JWT: []
       parameters:
         - name: name
           in: path
@@ -650,9 +690,34 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Warnings"
+    delete:
+      tags:
+        - Groups
+      security:
+        - JWT: []
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+            format: composite key
+      responses:
+        200:
+          description: "Respuesta"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupDTO"
+        "404":
+          description: Grupo no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Warnings"
 
 
-  /company/group/{name}/clients/{email}:
+  /company/groups/{name}/clients/{email}:
     post:
       tags:
         - Company
@@ -690,7 +755,7 @@ paths:
     delete:
       tags:
         - Company
-      summary: Eliminar cliente de un grupo
+      summary: Send composite Group's Key in the name path
       security:
         - JWT: []
       parameters:
@@ -699,7 +764,7 @@ paths:
           required: true
           schema:
             type: string
-            format: name
+            format: composite key
         - name: email
           in: path
           required: true
@@ -720,6 +785,11 @@ paths:
                 $ref: "#/components/schemas/Warnings"
         "403":
           description: Usuario sin permisos suficientes (si no tiene rol 'ADMIN')
+
+
+
+
+
 
 components:
 
@@ -869,6 +939,9 @@ components:
         id:
           type: string
           format: uuid
+        compositeKey:
+          type: string
+          format: string
         name:
           type: string
 
@@ -958,6 +1031,13 @@ components:
           type: string
 
 
+    RolRequestBodyDTO:
+      type: object
+      properties:
+        name:
+          type: string
+
+
     GroupCreatedDTOPost:
       type: object
       required:
@@ -971,6 +1051,18 @@ components:
           items:
             type: string
             format: uuid
+
+    RolUserDTO:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        lastName:
+          type: string
+        rol:
+          $ref: '#/components/schemas/Rol'
 
     Company:
       type: object

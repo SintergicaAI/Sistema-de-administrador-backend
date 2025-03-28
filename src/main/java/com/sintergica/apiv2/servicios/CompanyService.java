@@ -67,7 +67,7 @@ public class CompanyService {
                     user.getEmail(),
                     user.getRol(),
                     user.getGroups().stream()
-                        .map(group -> new GroupDTO(group.getId(), group.getName()))
+                        .map(group -> new GroupDTO(group.getId(),group.getName()+"-"+group.getCompany().getName(), group.getName()))
                         .collect(Collectors.toList())))
         .collect(Collectors.toList());
   }

@@ -1,15 +1,12 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.dto.LoginAndRegisterDTO;
-import com.sintergica.apiv2.dto.RegisterResponseDTO;
-import com.sintergica.apiv2.dto.TokenDTO;
-import com.sintergica.apiv2.entidades.InvalidatedTokens;
-import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.dto.*;
+import com.sintergica.apiv2.entidades.*;
+import com.sintergica.apiv2.exceptions.role.*;
 import com.sintergica.apiv2.exceptions.token.TokenForbidden;
 import com.sintergica.apiv2.exceptions.user.*;
 import com.sintergica.apiv2.repositorio.RolRepository;
-import com.sintergica.apiv2.servicios.InvalidatedTokensService;
-import com.sintergica.apiv2.servicios.UserService;
+import com.sintergica.apiv2.servicios.*;
 import com.sintergica.apiv2.utilidades.TokenUtils;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,13 +16,10 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -38,6 +32,7 @@ public class ControllerClient {
   private final InvalidatedTokensService invalidatedTokensService;
   private final RolRepository rolRepository;
   private final PasswordEncoder passwordEncoder;
+  private final RolService rolService;
 
   @PostMapping("/register")
   public ResponseEntity<RegisterResponseDTO> register(
@@ -188,4 +183,34 @@ public class ControllerClient {
     return ResponseEntity.ok(
         new TokenDTO(invalidatedTokens.getRefreshToken(), refreshClaims.getSubject()));
   }
+
+
+  @PreAuthorize("hasRole('SUPERADMIN') or hasRole('OWNER') or hasRole('ADMIN')")
+  @PatchMapping("/{email}/rol")
+  public ResponseEntity<RolUserDTO> changeRolClient(
+          @PathVariable(name = "email") String email,
+          @RequestBody RolRequestBodyDTO rol)
+  {
+
+    User userLogged = this.userService.getUserLogged();
+    User userTarget = this.userService.findByEmail(email);
+
+    Rol newRol = rolService.getRolByName(rol.name());
+    Rol roleUserLogged = userLogged.getRol();
+    Rol roleUserTarget = userTarget.getRol();
+
+    int weightRoleUserLogged = roleUserLogged.getWeight();
+    int weightRoleUserTarget = roleUserTarget.getWeight();
+
+    if(this.userService.canChangeRole(weightRoleUserLogged, weightRoleUserTarget)){
+
+      User user = this.userService.changeRol(userTarget, newRol);
+
+      return ResponseEntity.ok(
+              new RolUserDTO(user.getEmail(), user.getName(), user.getLastName(), user.getRol()));
+    }
+
+    throw new RolForbiddenException("You cannot modify a user with a higher role than yours.");
+  }
+
 }

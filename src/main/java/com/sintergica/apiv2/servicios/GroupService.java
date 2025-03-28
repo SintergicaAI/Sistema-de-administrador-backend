@@ -5,6 +5,7 @@ import com.sintergica.apiv2.dto.GroupOverrideDTO;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.entidades.views.*;
 import com.sintergica.apiv2.exceptions.group.GroupConflict;
 import com.sintergica.apiv2.repositorio.GroupRepository;
 import jakarta.transaction.Transactional;
@@ -15,6 +16,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.*;
+import java.util.stream.*;
+
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +30,7 @@ public class GroupService {
 
   private final GroupRepository groupRepository;
   private final UserService userService;
+  private final CompanyGroupsViewService companyGroupsViewService;
 
   public List<Group> findAll() {
     return groupRepository.findAll();
@@ -33,6 +38,10 @@ public class GroupService {
 
   public List<Group> findGroupsByNameContainingIgnoreCase(String name) {
     return this.groupRepository.findAllByNameContainingIgnoreCase(name);
+  }
+
+  public List<Group> saveAll(List<Group> groups) {
+    return groupRepository.saveAll(groups);
   }
 
   public Group save(Group group) {
@@ -92,14 +101,18 @@ public class GroupService {
     GroupOverrideDTO oldStatus = new GroupOverrideDTO(user.getEmail(), new ArrayList<>());
 
     for (Group group : user.getGroups()) {
-      oldStatus.groups().add(new GroupDTO(group.getId(), group.getName()));
+      oldStatus.groups().add(new GroupDTO(group.getId(),group.getName()+"-"+group.getCompany().getName(), group.getName()));
       group.getUser().remove(user);
       groupsWithoutUserTarget.add(group);
     }
 
     this.groupRepository.saveAll(groupsWithoutUserTarget);
 
-    Set<Group> groupsMatches = this.findByCompanyAndNameIn(company, names);
+
+    List<CompanyGroupsView> listOfGroups = companyGroupsViewService.findByIdCompanyAndCombinedNameIn(this.userService.getUserLogged().getCompany().getId(), names);
+    Set<String> namesGroups = listOfGroups.stream().map(companyGroupsView -> companyGroupsView.getOriginalName()).collect(Collectors.toSet());
+
+    Set<Group> groupsMatches = this.findByCompanyAndNameIn(company, namesGroups);
 
     for (Group group : groupsMatches) {
       group.getUser().add(user);
@@ -111,7 +124,7 @@ public class GroupService {
     for (Group groupUserIterator : groupsMatches) {
       groupOverrideDTO
           .groups()
-          .add(new GroupDTO(groupUserIterator.getId(), groupUserIterator.getName()));
+          .add(new GroupDTO(groupUserIterator.getId(),groupUserIterator.getName()+"-"+groupUserIterator.getCompany().getName(), groupUserIterator.getName()));
     }
 
     return oldStatus;

@@ -3,6 +3,7 @@ package com.sintergica.apiv2.seguridad;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sintergica.apiv2.exceptions.globals.Warnings;
 import com.sintergica.apiv2.interceptors.JWTFiltro;
+import com.sintergica.apiv2.utilidades.*;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Date;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +25,7 @@ public class SecurityConfig {
 
   private final JWTFiltro jwtFiltro;
 
+
   public SecurityConfig(JWTFiltro jwtFiltro) {
     this.jwtFiltro = jwtFiltro;
   }
@@ -34,15 +36,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             authorizeRequests -> {
               authorizeRequests
-                  .requestMatchers("/users/login")
-                  .permitAll()
-                  .requestMatchers("/users/register")
-                  .permitAll()
-                      .requestMatchers("/users/logout")
-                  .permitAll()
-                  .requestMatchers("/users/refreshToken")
-                  .permitAll()
-                  .requestMatchers("/users/updateTokens")
+                  .requestMatchers(PublicEndpoints.publicEndpoints)
                   .permitAll()
                   .anyRequest()
                   .authenticated();

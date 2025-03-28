@@ -45,12 +45,4 @@ public class RolService {
     return this.rolRepository.save(role);
   }
 
-
-  public boolean CanIChageRol(String emailUserLog, Rol actuallyRolUserLog, String emailUserTarget, Rol newRolUser){
-
-
-
-    return true;
-  }
-
 }

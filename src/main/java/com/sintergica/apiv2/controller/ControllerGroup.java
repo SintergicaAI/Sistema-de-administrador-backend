@@ -3,10 +3,11 @@ package com.sintergica.apiv2.controller;
 import com.sintergica.apiv2.dto.*;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.entidades.views.*;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
-import com.sintergica.apiv2.servicios.GroupService;
-import com.sintergica.apiv2.servicios.UserService;
+import com.sintergica.apiv2.servicios.*;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ public class ControllerGroup {
 
   private final GroupService groupService;
   private final UserService userService;
+  private final CompanyGroupsViewService companyGroupsViewService;
 
   @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
   @GetMapping
@@ -47,11 +49,12 @@ public class ControllerGroup {
 
   @DeleteMapping("/{name}")
   public ResponseEntity<GroupDTO> deleteGroup(@PathVariable String name) {
-    Group groupDelete = this.groupService.deleteGroup(name, this.userService.getUserLogged().getCompany());
-    return ResponseEntity.ok(new GroupDTO(groupDelete.getId(), groupDelete.getName()));
+
+    CompanyGroupsView companyGroupsView = companyGroupsViewService.findByIdCompanyAndCombinedName(this.userService.getUserLogged().getCompany().getId(), name);
+
+    Group groupDelete = this.groupService.deleteGroup(companyGroupsView.getOriginalName(), this.userService.getUserLogged().getCompany());
+    return ResponseEntity.ok(new GroupDTO(groupDelete.getId(),groupDelete.getName()+"-"+groupDelete.getCompany().getName(), groupDelete.getName()));
   }
-
-
 
   @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
   @PostMapping

@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(RolForbiddenException.class)
-  public ResponseEntity<Warnings> handleRolForbiddenException(RolNotFound ex) {
+  public ResponseEntity<Warnings> handleRolForbiddenException(RolForbiddenException ex) {
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
         .body(new Warnings(ex.getMessage(), new Date()));
   }
