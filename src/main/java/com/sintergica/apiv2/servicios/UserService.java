@@ -45,13 +45,13 @@ public class UserService {
   }
 
   public Page<User> findAllByCompanyAndIsActive(
-      Company company, boolean isActive, String username, List<UUID> groups, Pageable pageable) {
+      Company company, boolean isActive, String username, List<String> groups, Pageable pageable) {
     return this.userRepository.findAllByCompanyAndIsActive(
         company, isActive, username, groups, pageable);
   }
 
   public List<User> findAllByCompanyAndIsActiveNotPageable(
-      Company company, boolean isActive, String username, List<UUID> groups) {
+      Company company, boolean isActive, String username, List<String> groups) {
     return this.userRepository.findAllByCompanyAndIsActiveNotPageable(
         company, isActive, username, groups);
   }

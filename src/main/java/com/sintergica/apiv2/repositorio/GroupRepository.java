@@ -15,7 +15,9 @@ public interface GroupRepository extends JpaRepository<Group, UUID> {
 
   Group findByCompanyAndName(Company company, String name);
 
-  Set<Group> findByCompanyAndNameIn(Company company, Collection<String> names);
+  Group findByCompanyAndCompositeKey(Company company, String compositeKey);
+
+  Set<Group> findByCompanyAndCompositeKeyIn(Company company, Collection<String> names);
 
   @Query(
       "SELECT g FROM Group g "
@@ -30,6 +32,8 @@ public interface GroupRepository extends JpaRepository<Group, UUID> {
       @Param("company") Company company,
       @Param("email") String email,
       @Param("groupName") String groupName);
+
+  boolean existsByCompositeKey(String compositeKey);
 
   @Query(
       "SELECT g FROM Group g JOIN g.user u JOIN u.company c WHERE g.name IN :groups AND c =:company")

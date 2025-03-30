@@ -25,9 +25,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
           + "WHERE u.company = :company "
           + "AND u.isActive = :isActive "
           + "AND (:name IS NULL OR CONCAT(u.name, ' ', u.lastName) ILIKE %:name%) "
-          + "AND (:groupIds IS NULL OR g.id IN :groupIds)")
+          + "AND (:groupIds IS NULL OR g.compositeKey IN :groupIds)")
   Page<User> findAllByCompanyAndIsActive(
-      Company company, boolean isActive, String name, List<UUID> groupIds, Pageable pageable);
+      Company company, boolean isActive, String name, List<String> groupIds, Pageable pageable);
 
   @Query(
       "SELECT DISTINCT u FROM User u "
@@ -35,9 +35,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
           + "WHERE u.company = :company "
           + "AND u.isActive = :isActive "
           + "AND (:name IS NULL OR CONCAT(u.name, ' ', u.lastName) ILIKE %:name%) "
-          + "AND (:groupIds IS NULL OR g.id IN :groupIds)")
+          + "AND (:groupIds IS NULL OR g.compositeKey IN :groupIds)")
   List<User> findAllByCompanyAndIsActiveNotPageable(
-      Company company, boolean isActive, String name, List<UUID> groupIds);
+      Company company, boolean isActive, String name, List<String> groupIds);
 
   @Query(
       "SELECT u FROM User u WHERE u.company = :company AND CONCAT(u.name, ' ', u.lastName) LIKE %:nameLastName%")

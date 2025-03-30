@@ -18,9 +18,9 @@ import org.hibernate.annotations.*;
 @NoArgsConstructor
 public class Group {
 
-  @Id
+  /*@Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  private UUID id;
+  private UUID id;*/
 
   @Column(name = "name")
   private String name;
@@ -38,6 +38,10 @@ public class Group {
 
   @Column(name = "editDate")
   private Date editDate;
+
+  @Id
+  @Column(name="composite_key")
+  private String compositeKey;
 
   @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(

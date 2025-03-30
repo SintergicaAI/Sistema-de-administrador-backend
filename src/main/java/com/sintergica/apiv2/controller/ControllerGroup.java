@@ -1,12 +1,12 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.dto.*;
+import com.sintergica.apiv2.dto.GroupCreatedDTO;
+import com.sintergica.apiv2.dto.GroupDTO;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
-import com.sintergica.apiv2.entidades.views.*;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
+import com.sintergica.apiv2.exceptions.group.GroupConflict;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
-import com.sintergica.apiv2.servicios.*;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,6 +14,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.sintergica.apiv2.servicios.GroupService;
+import com.sintergica.apiv2.servicios.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,7 +29,6 @@ public class ControllerGroup {
 
   private final GroupService groupService;
   private final UserService userService;
-  private final CompanyGroupsViewService companyGroupsViewService;
 
   @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
   @GetMapping
@@ -38,6 +40,7 @@ public class ControllerGroup {
         group ->
             groupDTOList.add(
                 new GroupCreatedDTO(
+                        group.getCompositeKey(),
                     group.getName(),
                     group.getUser().stream().map(User::getId).collect(Collectors.toSet()),
                     group.getCreationDate(),
@@ -47,13 +50,12 @@ public class ControllerGroup {
     return ResponseEntity.ok(groupDTOList);
   }
 
-  @DeleteMapping("/{name}")
-  public ResponseEntity<GroupDTO> deleteGroup(@PathVariable String name) {
+  @DeleteMapping("/{groupIDs}")
+  public ResponseEntity<GroupDTO> deleteGroup(@PathVariable(name = "groupIDs") String name) {
 
-    CompanyGroupsView companyGroupsView = companyGroupsViewService.findByIdCompanyAndCombinedName(this.userService.getUserLogged().getCompany().getId(), name);
 
-    Group groupDelete = this.groupService.deleteGroup(companyGroupsView.getOriginalName(), this.userService.getUserLogged().getCompany());
-    return ResponseEntity.ok(new GroupDTO(groupDelete.getId(),groupDelete.getName()+"-"+groupDelete.getCompany().getName(), groupDelete.getName()));
+    Group groupDelete = this.groupService.deleteGroup(name, this.userService.getUserLogged().getCompany());
+    return ResponseEntity.ok(new GroupDTO(groupDelete.getCompositeKey(),groupDelete.getName()));
   }
 
   @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
@@ -63,30 +65,40 @@ public class ControllerGroup {
     User userLogged = this.userService.getUserLogged();
 
     if (userLogged.getCompany() == null) {
-      throw new CompanyNotFound("El usuario que ha iniciado sesion no tiene compañia asociada");
+      throw new CompanyNotFound("User has no company");
     }
 
     Group group =
-        Group.builder()
-            .name(groupDTO.name())
-            .user(new HashSet<>())
-            .company(userLogged.getCompany())
-            .userCreator(userLogged)
-            .creationDate(new Date())
-            .editDate(new Date())
-            .build();
+            Group.builder().compositeKey(groupDTO.groupKey())
+                    .name(groupDTO.name())
+                    .user(new HashSet<>())
+                    .company(userLogged.getCompany())
+                    .userCreator(userLogged)
+                    .creationDate(new Date())
+                    .editDate(new Date())
+                    .build();
 
     if (groupDTO.users() != null) {
       Set<User> usersFound =
-          this.userService.findByInIdsAndActiveAndCompanyList(
-              groupDTO.users(), true, userLogged.getCompany());
+              this.userService.findByInIdsAndActiveAndCompanyList(
+                      groupDTO.users(), true, userLogged.getCompany());
       group.getUser().addAll(usersFound);
     }
 
-    Group groupCreated = groupService.save(group);
+    Group groupCreated = null;
+
+    if(this.groupService.findGroupByCompanyAndName(this.userService.getUserLogged().getCompany(), group.getName()) != null){
+      throw new GroupConflict("Groups's name already exists and could not be added");
+    }
+
+    if(this.groupService.existsByCompositeKey(groupDTO.groupKey())){
+      groupCreated = this.groupService.addGroupWithUniqueKey(group);
+    }else{
+       groupCreated = groupService.save(group);
+    }
 
     return ResponseEntity.ok(
-        new GroupCreatedDTO(
+        new GroupCreatedDTO(groupCreated.getCompositeKey(),
             groupCreated.getName(),
             groupCreated.getUser().stream().map(User::getId).collect(Collectors.toSet()),
             groupCreated.getCreationDate(),
@@ -106,6 +118,7 @@ public class ControllerGroup {
 
     return ResponseEntity.ok(
         new GroupCreatedDTO(
+                groupFound.getCompositeKey(),
             groupFound.getName(),
             groupFound.getUser().stream().map(User::getId).collect(Collectors.toSet()),
             groupFound.getCreationDate(),

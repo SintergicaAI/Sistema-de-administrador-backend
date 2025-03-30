@@ -8,13 +8,11 @@ import lombok.Data;
 @JsonTypeName("group")
 public class GroupDTO {
 
-  private UUID  id;
-  private String compositeKey;
+  private String group_id;
   private String name;
 
-  public GroupDTO(UUID id, String compositeKey,String name) {
-    this.id = id;
-    this.compositeKey = compositeKey;
+  public GroupDTO(String group_id, String name) {
+    this.group_id = group_id;
     this.name = name;
   }
 }

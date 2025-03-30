@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Sintergica API v2
   description: API para gestión de usuarios, grupos y roles recuerda enviar el token de acceso en el header
-  version: 2.0.0
+  version: 2.0.1
 servers:
   - url: http://3.144.151.147:80
     description: Entorno de desarrollo en la nube
@@ -454,16 +454,13 @@ paths:
                     items:
                       type: object
                       required:
-                        - id
+                        - group_id
                         - name
                       properties:
-                        id:
-                          type: string
-                          format: uuid
-                          example: 49543112-4b3c-4d1b-abcd-0123456789092
-                        compositeKey:
+                        group_id:
                           type: string
                           format: string
+                          example: Ventas-Sintergicaxbzsa23
                         name:
                           type: string
                           example: VENTAS
@@ -521,13 +518,13 @@ paths:
                     items:
                       type: object
                       required:
-                        - id
+                        - group_id
                         - name
                       properties:
-                        id:
+                        group_id:
                           type: string
-                          format: uuid
-                          example: 49543112-4b3c-4d1b-abcd-0123456789092
+                          format: string
+                          example: Ventas-Sintergicaxbzsa23
                         name:
                           type: string
                           example: VENTAS
@@ -662,7 +659,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/GroupCreatedDTO"
 
-  /group/{name}:
+  /group/{groupIDs}:
     get:
       tags:
         - Groups
@@ -671,7 +668,7 @@ paths:
       security:
         - JWT: []
       parameters:
-        - name: name
+        - name: groupIDs
           in: path
           required: true
           schema:
@@ -696,7 +693,7 @@ paths:
       security:
         - JWT: []
       parameters:
-        - name: name
+        - name: groupIDs
           in: path
           required: true
           schema:
@@ -717,7 +714,7 @@ paths:
                 $ref: "#/components/schemas/Warnings"
 
 
-  /company/groups/{name}/clients/{email}:
+  /company/groups/{groupIDs}/member/{email}:
     post:
       tags:
         - Company
@@ -725,7 +722,7 @@ paths:
       security:
         - JWT: []
       parameters:
-        - name: name
+        - name: groupIDs
           in: path
           required: true
           schema:
@@ -759,7 +756,7 @@ paths:
       security:
         - JWT: []
       parameters:
-        - name: name
+        - name: groupIDs
           in: path
           required: true
           schema:
@@ -936,10 +933,7 @@ components:
     GroupDTO:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-        compositeKey:
+        group_id:
           type: string
           format: string
         name:
@@ -1041,9 +1035,12 @@ components:
     GroupCreatedDTOPost:
       type: object
       required:
+        - groupKey
         - name
         - users
       properties:
+        groupKey:
+          type: string
         name:
           type: string
         users:
@@ -1072,6 +1069,3 @@ components:
           format: uuid
         name:
           type: string
-
-
-

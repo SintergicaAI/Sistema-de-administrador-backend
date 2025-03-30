@@ -67,17 +67,17 @@ public class CompanyService {
                     user.getEmail(),
                     user.getRol(),
                     user.getGroups().stream()
-                        .map(group -> new GroupDTO(group.getId(),group.getName()+"-"+group.getCompany().getName(), group.getName()))
+                        .map(group -> new GroupDTO(group.getCompositeKey(), group.getName()))
                         .collect(Collectors.toList())))
         .collect(Collectors.toList());
   }
 
   public Page<UserDTO> getUsersByCompanyAndOptionalUsername(
-      Company company, String username, List<UUID> groups, int size, int page) {
+      Company company, String username, List<String> groupsIDs, int size, int page) {
 
     if (size == -1 || page == -1) {
       List<User> users =
-          this.userService.findAllByCompanyAndIsActiveNotPageable(company, true, username, groups);
+          this.userService.findAllByCompanyAndIsActiveNotPageable(company, true, username, groupsIDs);
 
       List<UserDTO> data = parserUserToUserDTOAndGroupToList(users);
 
@@ -89,7 +89,7 @@ public class CompanyService {
     Pageable pageable = PageRequest.of(page, size);
 
     Page<User> users =
-        this.userService.findAllByCompanyAndIsActive(company, true, username, groups, pageable);
+        this.userService.findAllByCompanyAndIsActive(company, true, username, groupsIDs, pageable);
 
     List<UserDTO> data = parserUserToUserDTOAndGroupToList(users.getContent());
 
@@ -103,8 +103,8 @@ public class CompanyService {
     Set<Group> groupsAssociateWithCompany =
         searchGroupsAssociateWithCompany(userLogCompany, groupNames);
 
-    List<UUID> uuidListToGroupsAssociatedWithCompany =
-        groupsAssociateWithCompany.stream().map(Group::getId).collect(Collectors.toList());
+    List<String> uuidListToGroupsAssociatedWithCompany =
+        groupsAssociateWithCompany.stream().map(Group::getCompositeKey).collect(Collectors.toList());
 
     return this.getUsersByCompanyAndOptionalUsername(
         this.userService.getUserLogged().getCompany(),
@@ -117,12 +117,6 @@ public class CompanyService {
   private Set<Group> searchGroupsAssociateWithCompany(Company company, List<String> groupNames) {
     Company userLogCompany = company;
     Set<Group> groupsAssociateWithCompany = new HashSet<>();
-
-    /*
-    Function<String, Set<Group>> functionInteractiveWithDataBase = s -> groupService.findByCompanyAndGroupNameStartingWithIgnoreCase(userLogCompany, s);
-    Function<Set<Group>, Stream<Group>> flatting = groups -> groups.stream();
-    List<Group> matchersGroups = groupNames.stream().map(functionInteractiveWithDataBase).flatMap(flatting).collect(Collectors.toList());
-    */
 
     for (String groupName : groupNames) {
       Set<Group> groupsMatch =
@@ -138,11 +132,12 @@ public class CompanyService {
       String userName, List<String> groupNames, int size, int page) {
 
     Company userLogCompany = userService.getUserLogged().getCompany();
+
     Set<Group> groupsAssociateWithCompany =
         searchGroupsAssociateWithCompany(userLogCompany, groupNames);
 
-    List<UUID> uuidListToGroupsAssociatedWithCompany =
-        groupsAssociateWithCompany.stream().map(Group::getId).collect(Collectors.toList());
+    List<String> uuidListToGroupsAssociatedWithCompany =
+        groupsAssociateWithCompany.stream().map(Group::getCompositeKey).collect(Collectors.toList());
 
     Page<UserDTO> resultClients =
         this.getUsersByCompanyAndOptionalUsername(
@@ -157,9 +152,10 @@ public class CompanyService {
 
     while (iterator.hasNext()) {
       UserDTO user = iterator.next();
-      Set<UUID> uuidValidList =
-          groupsAssociateWithCompany.stream().map(Group::getId).collect(Collectors.toSet());
-      user.getGroups().removeIf(groupDTO -> !uuidValidList.contains(groupDTO.getId()));
+      Set<String> uuidValidList =
+          groupsAssociateWithCompany.stream().map(Group::getCompositeKey).collect(Collectors.toSet());
+
+      user.getGroups().removeIf(groupDTO -> !uuidValidList.contains(groupDTO.getGroup_id()));
     }
 
     Pageable pegeable =

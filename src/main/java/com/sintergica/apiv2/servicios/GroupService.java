@@ -5,9 +5,9 @@ import com.sintergica.apiv2.dto.GroupOverrideDTO;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
-import com.sintergica.apiv2.entidades.views.*;
 import com.sintergica.apiv2.exceptions.group.GroupConflict;
 import com.sintergica.apiv2.repositorio.GroupRepository;
+import com.sintergica.apiv2.utilidades.*;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +30,6 @@ public class GroupService {
 
   private final GroupRepository groupRepository;
   private final UserService userService;
-  private final CompanyGroupsViewService companyGroupsViewService;
 
   public List<Group> findAll() {
     return groupRepository.findAll();
@@ -52,6 +51,26 @@ public class GroupService {
     }
   }
 
+  public boolean existsByCompositeKey(String compositeKey) {
+    return this.groupRepository.existsByCompositeKey(compositeKey);
+  }
+
+  public Group addGroupWithUniqueKey(Group group) {
+    String key;
+    int trys = 0;
+
+    do {
+      if (trys++ > 5) {
+        throw new RuntimeException("No se pudo generar clave única");
+      }
+      String keyGroup = group.getCompositeKey();
+      key = keyGroup+KeyGenerator.generateShortId();
+    } while (existsByCompositeKey(key));
+
+    group.setCompositeKey(key);
+    return groupRepository.save(group);
+  }
+
   public Group findGroupById(UUID uuidGroup) {
     return groupRepository.findById(uuidGroup).get();
   }
@@ -71,8 +90,8 @@ public class GroupService {
     return this.groupRepository.save(group);
   }
 
-  public Group deleteGroup(String name, Company company) {
-    Group deleteGroup = this.groupRepository.findByCompanyAndName(company, name);
+  public Group deleteGroup(String keyComposite, Company company) {
+    Group deleteGroup = this.groupRepository.findByCompanyAndCompositeKey(company, keyComposite);
 
     deleteGroup.getUser().clear();
     this.groupRepository.save(deleteGroup);
@@ -92,8 +111,12 @@ public class GroupService {
     return this.groupRepository.findByCompanyAndName(company, name);
   }
 
+  public Group findByCompanyAndCompositeKey(Company company, String compositeKey) {
+    return this.groupRepository.findByCompanyAndCompositeKey(company, compositeKey);
+  }
+
   public GroupOverrideDTO overrideGroupsToUser(
-      Company company, Collection<String> names, String emailUser) {
+      Company company, Collection<String> compositeKeys, String emailUser) {
 
     User user = this.userService.findByEmail(emailUser);
 
@@ -101,18 +124,14 @@ public class GroupService {
     GroupOverrideDTO oldStatus = new GroupOverrideDTO(user.getEmail(), new ArrayList<>());
 
     for (Group group : user.getGroups()) {
-      oldStatus.groups().add(new GroupDTO(group.getId(),group.getName()+"-"+group.getCompany().getName(), group.getName()));
+      oldStatus.groups().add(new GroupDTO(group.getCompositeKey(),group.getName()));
       group.getUser().remove(user);
       groupsWithoutUserTarget.add(group);
     }
 
     this.groupRepository.saveAll(groupsWithoutUserTarget);
 
-
-    List<CompanyGroupsView> listOfGroups = companyGroupsViewService.findByIdCompanyAndCombinedNameIn(this.userService.getUserLogged().getCompany().getId(), names);
-    Set<String> namesGroups = listOfGroups.stream().map(companyGroupsView -> companyGroupsView.getOriginalName()).collect(Collectors.toSet());
-
-    Set<Group> groupsMatches = this.findByCompanyAndNameIn(company, namesGroups);
+    Set<Group> groupsMatches = this.findByCompanyAndCompositeKeyIn(company, compositeKeys);
 
     for (Group group : groupsMatches) {
       group.getUser().add(user);
@@ -124,14 +143,14 @@ public class GroupService {
     for (Group groupUserIterator : groupsMatches) {
       groupOverrideDTO
           .groups()
-          .add(new GroupDTO(groupUserIterator.getId(),groupUserIterator.getName()+"-"+groupUserIterator.getCompany().getName(), groupUserIterator.getName()));
+          .add(new GroupDTO(groupUserIterator.getCompositeKey(), groupUserIterator.getName()));
     }
 
     return oldStatus;
   }
 
-  public Set<Group> findByCompanyAndNameIn(Company company, Collection<String> names) {
-    return this.groupRepository.findByCompanyAndNameIn(company, names);
+  public Set<Group> findByCompanyAndCompositeKeyIn(Company company, Collection<String> names) {
+    return this.groupRepository.findByCompanyAndCompositeKeyIn(company, names);
   }
 
   public Set<Group> findByCompanyAndGroupNameStartingWithIgnoreCase(
