@@ -195,9 +195,17 @@ public class ControllerClient {
     User userLogged = this.userService.getUserLogged();
     User userTarget = this.userService.findByEmail(email);
 
+    if(userTarget == null) {
+      throw new UserNotFound("Usuario not found");
+    }
+
     Rol newRol = rolService.getRolByName(rol.name());
     Rol roleUserLogged = userLogged.getRol();
     Rol roleUserTarget = userTarget.getRol();
+    
+    if(newRol == null){
+      throw new RolForbiddenException("The role is not valid");
+    }
 
     int weightRoleUserLogged = roleUserLogged.getWeight();
     int weightRoleUserTarget = roleUserTarget.getWeight();

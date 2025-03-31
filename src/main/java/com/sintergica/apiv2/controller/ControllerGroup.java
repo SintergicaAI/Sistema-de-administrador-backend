@@ -77,7 +77,7 @@ public class ControllerGroup {
                     .creationDate(new Date())
                     .editDate(new Date())
                     .build();
-
+    
     if (groupDTO.users() != null) {
       Set<User> usersFound =
               this.userService.findByInIdsAndActiveAndCompanyList(
