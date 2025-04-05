@@ -44,5 +44,4 @@ public class RolService {
   public Rol save(Rol role) {
     return this.rolRepository.save(role);
   }
-
 }

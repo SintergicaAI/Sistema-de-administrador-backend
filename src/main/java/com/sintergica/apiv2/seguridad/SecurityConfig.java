@@ -25,7 +25,6 @@ public class SecurityConfig {
 
   private final JWTFiltro jwtFiltro;
 
-
   public SecurityConfig(JWTFiltro jwtFiltro) {
     this.jwtFiltro = jwtFiltro;
   }

@@ -117,7 +117,6 @@ public class ControllerClient {
 
     Claims hasClaims = TokenUtils.getTokenClaims(refreshToken);
 
-
     if (hasClaims == null) {
       throw new TokenForbidden("El token no es valido");
     }
@@ -185,18 +184,15 @@ public class ControllerClient {
         new TokenDTO(invalidatedTokens.getRefreshToken(), refreshClaims.getSubject()));
   }
 
-
   @PreAuthorize("hasRole('SUPERADMIN') or hasRole('OWNER') or hasRole('ADMIN')")
   @PatchMapping("/{email}/rol")
   public ResponseEntity<RolUserDTO> changeRolClient(
-          @PathVariable(name = "email") String email,
-          @RequestBody RolRequestBodyDTO rol)
-  {
+      @PathVariable(name = "email") String email, @RequestBody RolRequestBodyDTO rol) {
 
     User userLogged = this.userService.getUserLogged();
     User userTarget = this.userService.findByEmail(email);
 
-    if(userTarget == null) {
+    if (userTarget == null) {
       throw new UserNotFound("Usuario not found");
     }
 
@@ -204,22 +200,21 @@ public class ControllerClient {
     Rol roleUserLogged = userLogged.getRol();
     Rol roleUserTarget = userTarget.getRol();
 
-    if(newRol == null){
+    if (newRol == null) {
       throw new RolForbiddenException("The role is not valid");
     }
 
     int weightRoleUserLogged = roleUserLogged.getWeight();
     int weightRoleUserTarget = roleUserTarget.getWeight();
 
-    if(this.userService.canChangeRole(weightRoleUserLogged, weightRoleUserTarget)){
+    if (this.userService.canChangeRole(weightRoleUserLogged, weightRoleUserTarget)) {
 
       User user = this.userService.changeRol(userTarget, newRol);
 
       return ResponseEntity.ok(
-              new RolUserDTO(user.getEmail(), user.getName(), user.getLastName(), user.getRol()));
+          new RolUserDTO(user.getEmail(), user.getName(), user.getLastName(), user.getRol()));
     }
 
     throw new RolForbiddenException("You cannot modify a user with a higher role than yours.");
   }
-
 }

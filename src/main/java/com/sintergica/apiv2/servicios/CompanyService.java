@@ -77,7 +77,8 @@ public class CompanyService {
 
     if (size == -1 || page == -1) {
       List<User> users =
-          this.userService.findAllByCompanyAndIsActiveNotPageable(company, true, username, groupsIDs);
+          this.userService.findAllByCompanyAndIsActiveNotPageable(
+              company, true, username, groupsIDs);
 
       List<UserDTO> data = parserUserToUserDTOAndGroupToList(users);
 
@@ -104,7 +105,9 @@ public class CompanyService {
         searchGroupsAssociateWithCompany(userLogCompany, groupNames);
 
     List<String> uuidListToGroupsAssociatedWithCompany =
-        groupsAssociateWithCompany.stream().map(Group::getCompositeKey).collect(Collectors.toList());
+        groupsAssociateWithCompany.stream()
+            .map(Group::getCompositeKey)
+            .collect(Collectors.toList());
 
     return this.getUsersByCompanyAndOptionalUsername(
         this.userService.getUserLogged().getCompany(),
@@ -137,7 +140,9 @@ public class CompanyService {
         searchGroupsAssociateWithCompany(userLogCompany, groupNames);
 
     List<String> uuidListToGroupsAssociatedWithCompany =
-        groupsAssociateWithCompany.stream().map(Group::getCompositeKey).collect(Collectors.toList());
+        groupsAssociateWithCompany.stream()
+            .map(Group::getCompositeKey)
+            .collect(Collectors.toList());
 
     Page<UserDTO> resultClients =
         this.getUsersByCompanyAndOptionalUsername(
@@ -153,7 +158,9 @@ public class CompanyService {
     while (iterator.hasNext()) {
       UserDTO user = iterator.next();
       Set<String> uuidValidList =
-          groupsAssociateWithCompany.stream().map(Group::getCompositeKey).collect(Collectors.toSet());
+          groupsAssociateWithCompany.stream()
+              .map(Group::getCompositeKey)
+              .collect(Collectors.toSet());
 
       user.getGroups().removeIf(groupDTO -> !uuidValidList.contains(groupDTO.getGroup_id()));
     }

@@ -1,23 +1,14 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.dto.RolUserDTO;
-import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.Rol;
-import com.sintergica.apiv2.entidades.User;
-
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.sintergica.apiv2.servicios.GroupService;
 import com.sintergica.apiv2.servicios.RolService;
 import com.sintergica.apiv2.servicios.UserService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,6 +35,4 @@ public class ControllerRol {
     newRol.setName(roleName);
     return ResponseEntity.ok().body(rolService.save(newRol));
   }
-
-
 }

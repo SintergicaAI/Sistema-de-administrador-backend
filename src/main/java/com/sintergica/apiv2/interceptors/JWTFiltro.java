@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
-
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,7 +34,8 @@ public class JWTFiltro extends OncePerRequestFilter {
 
     String authHeader = request.getHeader("Authorization");
 
-    boolean isNotPublicEndpoint = Arrays.stream(PublicEndpoints.publicEndpoints)
+    boolean isNotPublicEndpoint =
+        Arrays.stream(PublicEndpoints.publicEndpoints)
             .noneMatch(endpoint -> request.getRequestURI().equals(endpoint));
 
     if (isNotPublicEndpoint && authHeader == null) {
@@ -44,9 +44,8 @@ public class JWTFiltro extends OncePerRequestFilter {
 
       ObjectMapper objectMapper = new ObjectMapper();
       response
-              .getWriter()
-              .write(
-                      objectMapper.writeValueAsString(new Warnings("Send a token", new Date())));
+          .getWriter()
+          .write(objectMapper.writeValueAsString(new Warnings("Send a token", new Date())));
       return;
     }
 
@@ -60,8 +59,7 @@ public class JWTFiltro extends OncePerRequestFilter {
         ObjectMapper objectMapper = new ObjectMapper();
         response
             .getWriter()
-            .write(
-                objectMapper.writeValueAsString(new Warnings("invalid token", new Date())));
+            .write(objectMapper.writeValueAsString(new Warnings("invalid token", new Date())));
         return;
       }
 

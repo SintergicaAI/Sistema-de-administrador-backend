@@ -23,7 +23,6 @@ public class Rol {
   private String name;
 
   @JsonIgnore
-  @Column(name="weight")
+  @Column(name = "weight")
   private int weight;
-
 }

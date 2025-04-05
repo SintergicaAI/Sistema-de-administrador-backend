@@ -1,7 +1,6 @@
 package com.sintergica.apiv2.dto;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import java.util.UUID;
 import lombok.Data;
 
 @Data

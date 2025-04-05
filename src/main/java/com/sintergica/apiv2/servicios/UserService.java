@@ -12,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -103,10 +102,8 @@ public class UserService {
     return weightUserLogged <= weightUserTarget;
   }
 
-
   public User changeRol(User userTarget, Rol newRol) {
     userTarget.setRol(newRol);
     return this.userRepository.save(userTarget);
   }
-
 }

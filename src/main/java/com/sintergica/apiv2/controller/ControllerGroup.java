@@ -7,16 +7,14 @@ import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.group.GroupConflict;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
-
+import com.sintergica.apiv2.servicios.GroupService;
+import com.sintergica.apiv2.servicios.UserService;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.sintergica.apiv2.servicios.GroupService;
-import com.sintergica.apiv2.servicios.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,7 +38,7 @@ public class ControllerGroup {
         group ->
             groupDTOList.add(
                 new GroupCreatedDTO(
-                        group.getCompositeKey(),
+                    group.getCompositeKey(),
                     group.getName(),
                     group.getUser().stream().map(User::getId).collect(Collectors.toSet()),
                     group.getCreationDate(),
@@ -53,9 +51,9 @@ public class ControllerGroup {
   @DeleteMapping("/{groupIDs}")
   public ResponseEntity<GroupDTO> deleteGroup(@PathVariable(name = "groupIDs") String name) {
 
-
-    Group groupDelete = this.groupService.deleteGroup(name, this.userService.getUserLogged().getCompany());
-    return ResponseEntity.ok(new GroupDTO(groupDelete.getCompositeKey(),groupDelete.getName()));
+    Group groupDelete =
+        this.groupService.deleteGroup(name, this.userService.getUserLogged().getCompany());
+    return ResponseEntity.ok(new GroupDTO(groupDelete.getCompositeKey(), groupDelete.getName()));
   }
 
   @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
@@ -69,36 +67,40 @@ public class ControllerGroup {
     }
 
     Group group =
-            Group.builder().compositeKey(groupDTO.groupKey())
-                    .name(groupDTO.name())
-                    .user(new HashSet<>())
-                    .company(userLogged.getCompany())
-                    .userCreator(userLogged)
-                    .creationDate(new Date())
-                    .editDate(new Date())
-                    .build();
-    
+        Group.builder()
+            .compositeKey(groupDTO.groupKey())
+            .name(groupDTO.name())
+            .user(new HashSet<>())
+            .company(userLogged.getCompany())
+            .userCreator(userLogged)
+            .creationDate(new Date())
+            .editDate(new Date())
+            .build();
+
     if (groupDTO.users() != null) {
       Set<User> usersFound =
-              this.userService.findByInIdsAndActiveAndCompanyList(
-                      groupDTO.users(), true, userLogged.getCompany());
+          this.userService.findByInIdsAndActiveAndCompanyList(
+              groupDTO.users(), true, userLogged.getCompany());
       group.getUser().addAll(usersFound);
     }
 
-    Group groupCreated = null;
+    Group groupCreated;
 
-    if(this.groupService.findGroupByCompanyAndName(this.userService.getUserLogged().getCompany(), group.getName()) != null){
+    if (this.groupService.findGroupByCompanyAndName(
+            this.userService.getUserLogged().getCompany(), group.getName())
+        != null) {
       throw new GroupConflict("Groups's name already exists and could not be added");
     }
 
-    if(this.groupService.existsByCompositeKey(groupDTO.groupKey())){
+    if (this.groupService.existsByCompositeKey(groupDTO.groupKey())) {
       groupCreated = this.groupService.addGroupWithUniqueKey(group);
-    }else{
-       groupCreated = groupService.save(group);
+    } else {
+      groupCreated = groupService.save(group);
     }
 
     return ResponseEntity.ok(
-        new GroupCreatedDTO(groupCreated.getCompositeKey(),
+        new GroupCreatedDTO(
+            groupCreated.getCompositeKey(),
             groupCreated.getName(),
             groupCreated.getUser().stream().map(User::getId).collect(Collectors.toSet()),
             groupCreated.getCreationDate(),
@@ -118,7 +120,7 @@ public class ControllerGroup {
 
     return ResponseEntity.ok(
         new GroupCreatedDTO(
-                groupFound.getCompositeKey(),
+            groupFound.getCompositeKey(),
             groupFound.getName(),
             groupFound.getUser().stream().map(User::getId).collect(Collectors.toSet()),
             groupFound.getCreationDate(),
