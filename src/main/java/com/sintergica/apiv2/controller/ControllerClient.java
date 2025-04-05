@@ -117,6 +117,7 @@ public class ControllerClient {
 
     Claims hasClaims = TokenUtils.getTokenClaims(refreshToken);
 
+
     if (hasClaims == null) {
       throw new TokenForbidden("El token no es valido");
     }
@@ -202,7 +203,7 @@ public class ControllerClient {
     Rol newRol = rolService.getRolByName(rol.name());
     Rol roleUserLogged = userLogged.getRol();
     Rol roleUserTarget = userTarget.getRol();
-    
+
     if(newRol == null){
       throw new RolForbiddenException("The role is not valid");
     }
