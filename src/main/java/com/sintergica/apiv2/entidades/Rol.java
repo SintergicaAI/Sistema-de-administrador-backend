@@ -1,5 +1,6 @@
 package com.sintergica.apiv2.entidades;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -20,4 +21,8 @@ public class Rol {
 
   @Column(name = "name")
   private String name;
+
+  @JsonIgnore
+  @Column(name = "weight")
+  private int weight;
 }

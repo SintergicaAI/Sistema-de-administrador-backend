@@ -10,8 +10,12 @@ import java.util.HashMap;
 public final class TokenUtils {
 
   private static final String ACCESS_TOKEN_SECRET = System.getenv("DATASOURCE_SEED");
-  private static final Long TOKEN_LIFETIME_MILLS =
-      30L * 24 * 60 * 60 * 1000 /*60L * 60 * 1000*/ /*60L * 1000*/;
+  private static final Long TOKEN_LIFETIME_MILLS = 60L * 60 * 1000;
+  private static final Long REFRESH_TOKEN_LIFETIME_MILLS = 7L * 24 * 60 * 60 * 1000;
+
+  public static final String SESSION_TOKEN = "session_token";
+  public static final String REFRESH_TOKEN = "session_refresh_token";
+  public static final String SUFFIX = "type";
 
   private TokenUtils() {
     throw new UnsupportedOperationException(
@@ -44,6 +48,16 @@ public final class TokenUtils {
         .compact();
   }
 
+  public static String createRefreshToken(Claims claims) {
+    Date expirationDate = new Date(System.currentTimeMillis() + REFRESH_TOKEN_LIFETIME_MILLS);
+    return Jwts.builder()
+        .subject(claims.getSubject())
+        .expiration(expirationDate)
+        .claims(claims)
+        .signWith(Keys.hmacShaKeyFor(ACCESS_TOKEN_SECRET.getBytes()))
+        .compact();
+  }
+
   public static Claims getTokenClaims(String token) {
     try {
       Claims claims =
@@ -59,6 +73,18 @@ public final class TokenUtils {
     } catch (JwtException | IllegalArgumentException e) {
       return null;
     }
+  }
+
+  public static String extractToken(String bearer) {
+    if (bearer != null && bearer.startsWith("Bearer ")) {
+      String token = bearer.substring(7);
+      return token;
+    }
+    return null;
+  }
+
+  public static String getTypeToken(String token) {
+    return (String) TokenUtils.getTokenClaims(token).get(TokenUtils.SUFFIX);
   }
 
   public static boolean isExpired(String token) {

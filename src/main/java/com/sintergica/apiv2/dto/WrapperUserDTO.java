@@ -5,17 +5,17 @@ import lombok.Data;
 import org.springframework.data.domain.Page;
 
 @Data
-public class WrapperUserDTO {
+public class WrapperUserDTO<T> {
 
-  private List<UserDTO> userDTOPage;
+  private List<T> data;
   private int currentPage;
   private int totalPages;
   private long totalElements;
 
-  public WrapperUserDTO(Page<UserDTO> userDTOPage) {
-    this.userDTOPage = userDTOPage.getContent();
-    this.currentPage = userDTOPage.getNumber();
-    this.totalPages = userDTOPage.getTotalPages();
-    this.totalElements = userDTOPage.getTotalElements();
+  public WrapperUserDTO(Page<T> data) {
+    this.data = data.getContent();
+    this.currentPage = data.getNumber();
+    this.totalPages = data.getTotalPages();
+    this.totalElements = data.getTotalElements();
   }
 }

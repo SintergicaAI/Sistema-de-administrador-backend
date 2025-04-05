@@ -1,6 +1,11 @@
 package com.sintergica.apiv2.seguridad;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sintergica.apiv2.exceptions.globals.Warnings;
 import com.sintergica.apiv2.interceptors.JWTFiltro;
+import com.sintergica.apiv2.utilidades.*;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.Date;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -30,9 +35,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             authorizeRequests -> {
               authorizeRequests
-                  .requestMatchers("/clients/login")
-                  .permitAll()
-                  .requestMatchers("/clients/register")
+                  .requestMatchers(PublicEndpoints.publicEndpoints)
                   .permitAll()
                   .anyRequest()
                   .authenticated();
@@ -42,6 +45,22 @@ public class SecurityConfig {
               httpSecuritySessionManagementConfigurer.sessionCreationPolicy(
                   SessionCreationPolicy.STATELESS);
             })
+        .exceptionHandling(
+            httpSecurityExceptionHandlingConfigurer ->
+                httpSecurityExceptionHandlingConfigurer.accessDeniedHandler(
+                    (request, response, accessDeniedException) -> {
+                      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                      response.setContentType("application/json");
+
+                      ObjectMapper objectMapper = new ObjectMapper();
+                      response
+                          .getWriter()
+                          .write(
+                              objectMapper.writeValueAsString(
+                                  new Warnings(
+                                      "Falta de permisos para acceder a este recurso",
+                                      new Date())));
+                    }))
         .addFilterBefore(jwtFiltro, UsernamePasswordAuthenticationFilter.class)
         .build();
   }

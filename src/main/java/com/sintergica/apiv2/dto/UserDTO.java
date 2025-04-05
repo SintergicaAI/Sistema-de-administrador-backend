@@ -2,6 +2,7 @@ package com.sintergica.apiv2.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.sintergica.apiv2.entidades.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
@@ -17,7 +18,8 @@ public class UserDTO {
   private String name;
   private String lastName;
   private String email;
-  private List<GroupDTO> groupDTOList;
+  private Rol role;
+  private List<GroupDTO> groups;
 
   public UserDTO(
       UUID id,
@@ -25,11 +27,13 @@ public class UserDTO {
       String lastName,
       @Email(message = "Correo no valido") @NotBlank(message = "Correo no puede estar vacio")
           String email,
-      List<GroupDTO> groupDTOList) {
+      Rol role,
+      List<GroupDTO> groups) {
     this.id = id;
     this.name = name;
     this.lastName = lastName;
     this.email = email;
-    this.groupDTOList = groupDTOList;
+    this.role = role;
+    this.groups = groups;
   }
 }

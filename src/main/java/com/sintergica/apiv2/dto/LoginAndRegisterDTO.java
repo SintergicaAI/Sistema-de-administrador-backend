@@ -1,3 +1,13 @@
 package com.sintergica.apiv2.dto;
 
-public record LoginAndRegisterDTO(String email, String name, String lastName, String token) {}
+import com.sintergica.apiv2.entidades.Rol;
+import java.util.UUID;
+
+public record LoginAndRegisterDTO(
+    UUID uuid,
+    String email,
+    String name,
+    String lastName,
+    String token,
+    String refreshToken,
+    Rol rol) {}

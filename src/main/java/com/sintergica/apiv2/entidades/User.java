@@ -24,7 +24,7 @@ import lombok.Data;
 public class User {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
   @Email(message = "Correo no valido")
@@ -40,6 +40,9 @@ public class User {
 
   @Column(name = "lastName")
   private String lastName;
+
+  @Column(name = "isActive")
+  private boolean isActive;
 
   @ManyToOne
   @JoinColumn(name = "rolId")
