@@ -633,7 +633,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GroupCreatedDTO'
-  '/group/{groupIDs}':
+  '/group/{groupID}':
     get:
       tags:
         - Groups
@@ -642,7 +642,7 @@ paths:
       security:
         - JWT: []
       parameters:
-        - name: groupIDs
+        - name: groupID
           in: path
           required: true
           schema:
@@ -685,7 +685,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Warnings'
-  '/company/groups/{groupIDs}/member/{email}':
+  '/company/groups/{groupID}/member/{email}':
     post:
       tags:
         - Company
@@ -693,7 +693,7 @@ paths:
       security:
         - JWT: []
       parameters:
-        - name: groupIDs
+        - name: groupID
           in: path
           required: true
           schema:
