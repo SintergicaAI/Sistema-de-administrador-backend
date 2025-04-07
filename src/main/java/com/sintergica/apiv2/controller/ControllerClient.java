@@ -17,17 +17,16 @@ import com.sintergica.apiv2.exceptions.user.UserForbidden;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.repositorio.RolRepository;
 import com.sintergica.apiv2.servicios.InvalidatedTokensService;
+import com.sintergica.apiv2.servicios.InvitationService;
 import com.sintergica.apiv2.servicios.RolService;
 import com.sintergica.apiv2.servicios.UserService;
 import com.sintergica.apiv2.utilidades.TokenUtils;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
-import com.sintergica.apiv2.servicios.InvitationService;
 import jakarta.validation.Valid;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,7 +58,9 @@ public class ControllerClient {
 
   @PostMapping("/register")
   public ResponseEntity<RegisterResponseDTO> register(
-      @Valid @RequestBody User user, BindingResult result, @RequestParam(required = false) UUID signInToken) {
+      @Valid @RequestBody User user,
+      BindingResult result,
+      @RequestParam(required = false) UUID signInToken) {
 
     User userFound = this.userService.findByEmail(user.getEmail());
 
@@ -69,7 +70,7 @@ public class ControllerClient {
       throw new EmailWrong(result.getFieldError().getDefaultMessage());
     }
 
-    if(!invitationResponse){
+    if (!invitationResponse) {
       return ResponseEntity.status(HttpStatus.GONE).body(null);
     }
 
@@ -88,7 +89,6 @@ public class ControllerClient {
     User userCreated = this.userService.registerUser(user);
 
     this.invitationService.consumeInvitation(user.getEmail(), signInToken);
-
 
     RegisterResponseDTO responseDTO =
         RegisterResponseDTO.builder()

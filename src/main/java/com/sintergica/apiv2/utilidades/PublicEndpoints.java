@@ -2,14 +2,14 @@ package com.sintergica.apiv2.utilidades;
 
 public final class PublicEndpoints {
 
-    public static final String[] publicEndpoints = {
-            "/users/login",
-            "/users/register",
-            "/users/logout",
-            "/users/refreshToken",
-            "/users/updateTokens",
-            "/invitation/validate"
-    };
-    private PublicEndpoints() {}
+  public static final String[] publicEndpoints = {
+    "/users/login",
+    "/users/register",
+    "/users/logout",
+    "/users/refreshToken",
+    "/users/updateTokens",
+    "/invitation/validate"
+  };
 
+  private PublicEndpoints() {}
 }
