@@ -17,6 +17,7 @@ import com.sintergica.apiv2.exceptions.user.UserForbidden;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.repositorio.RolRepository;
 import com.sintergica.apiv2.servicios.InvalidatedTokensService;
+import com.sintergica.apiv2.servicios.InvitationService;
 import com.sintergica.apiv2.servicios.RolService;
 import com.sintergica.apiv2.servicios.UserService;
 import com.sintergica.apiv2.utilidades.TokenUtils;
@@ -25,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.Date;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +39,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -51,14 +54,24 @@ public class ControllerClient {
   private final RolRepository rolRepository;
   private final PasswordEncoder passwordEncoder;
   private final RolService rolService;
+  private final InvitationService invitationService;
 
   @PostMapping("/register")
   public ResponseEntity<RegisterResponseDTO> register(
-      @Valid @RequestBody User user, BindingResult result) {
+      @Valid @RequestBody User user,
+      BindingResult result,
+      @RequestParam(required = false) UUID signInToken) {
+
     User userFound = this.userService.findByEmail(user.getEmail());
+
+    boolean invitationResponse = invitationService.validateInvitation(user.getEmail(), signInToken);
 
     if (result.hasErrors()) {
       throw new EmailWrong(result.getFieldError().getDefaultMessage());
+    }
+
+    if (!invitationResponse) {
+      return ResponseEntity.status(HttpStatus.GONE).body(null);
     }
 
     if (userFound != null) {
@@ -74,6 +87,8 @@ public class ControllerClient {
     user.setPassword(passwordEncoder.encode(user.getPassword()));
 
     User userCreated = this.userService.registerUser(user);
+
+    this.invitationService.consumeInvitation(user.getEmail(), signInToken);
 
     RegisterResponseDTO responseDTO =
         RegisterResponseDTO.builder()
