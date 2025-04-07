@@ -7,7 +7,8 @@ public final class PublicEndpoints {
             "/users/register",
             "/users/logout",
             "/users/refreshToken",
-            "/users/updateTokens"
+            "/users/updateTokens",
+            "/invitation/validate"
     };
     private PublicEndpoints() {}
 

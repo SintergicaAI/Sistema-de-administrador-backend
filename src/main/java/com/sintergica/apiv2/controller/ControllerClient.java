@@ -10,15 +10,21 @@ import com.sintergica.apiv2.servicios.*;
 import com.sintergica.apiv2.utilidades.TokenUtils;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
+import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.servicios.InvitationService;
+import com.sintergica.apiv2.servicios.UserService;
 import jakarta.validation.Valid;
 import java.util.Date;
 import java.util.Objects;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -33,14 +39,22 @@ public class ControllerClient {
   private final RolRepository rolRepository;
   private final PasswordEncoder passwordEncoder;
   private final RolService rolService;
+  private final InvitationService invitationService;
 
   @PostMapping("/register")
   public ResponseEntity<RegisterResponseDTO> register(
-      @Valid @RequestBody User user, BindingResult result) {
+      @Valid @RequestBody User user, BindingResult result, @RequestParam(required = false) UUID signInToken) {
+
     User userFound = this.userService.findByEmail(user.getEmail());
+
+    boolean invitationResponse = invitationService.validateInvitation(user.getEmail(), signInToken);
 
     if (result.hasErrors()) {
       throw new EmailWrong(result.getFieldError().getDefaultMessage());
+    }
+
+    if(!invitationResponse){
+      return ResponseEntity.status(HttpStatus.GONE).body(null);
     }
 
     if (userFound != null) {
@@ -56,6 +70,9 @@ public class ControllerClient {
     user.setPassword(passwordEncoder.encode(user.getPassword()));
 
     User userCreated = this.userService.registerUser(user);
+
+    this.invitationService.consumeInvitation(user.getEmail(), signInToken);
+
 
     RegisterResponseDTO responseDTO =
         RegisterResponseDTO.builder()

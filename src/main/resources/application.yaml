@@ -38,7 +38,7 @@ spring:
     ssl-port: 465
     from-email: turing@sintergica.ai
     email-password: ${EMAIL_PASSWORD}
-    base-url: http://localhost:8080
+    base-url: http://localhost:5173
 
 logging:
   level:

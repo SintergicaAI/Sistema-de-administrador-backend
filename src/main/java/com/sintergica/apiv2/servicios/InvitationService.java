@@ -57,7 +57,7 @@ public class InvitationService {
    * @return {@code true} if token was sent successfully or {@code false} if token wasn't sent
    */
   private Boolean sendToken(Email emailObject) {
-    final String FRONTEND_URL = config.getBase_url() + "/clients/register";
+    final String FRONTEND_URL = config.getBase_url() + "/users/register";
     emailObject.getMessage().appendToBody(FRONTEND_URL + "?signInToken=" + emailObject.getToken());
     boolean isSuccess = EmailUtils.sendEmail(emailObject, config);
 

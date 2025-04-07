@@ -1,0 +1,56 @@
+### GET request to example server
+POST {{BASE_URL}}/users/login
+Content-Type: application/json
+
+{
+  "email": "bob@gmail.com",
+  "password": ""
+}
+
+> {%
+    client.global.set("auth_token", response.body.token);
+    client.global.set("refresh_token", response.body.refreshToken);
+    client.global.set("email", response.body.email);
+%}
+
+### POST register user using invitatin
+POST {{BASE_URL}}/users/register?signInToken=cc07f62f-ba5d-449a-8e8a-6c8250182446
+Content-Type: application/json
+
+{
+  "email": "gonzalo.perez@sintergica.ai",
+  "name": "Gonzalo",
+  "lastName": "Perez",
+  "password": "beethoven123"
+}
+
+###
+GET {{BASE_URL}}/company/groups
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+
+###
+GET http://localhost:8080/invitation
+Authorization: Bearer {{auth_token}}
+
+###
+POST http://localhost:8080/invitation/send
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+   "fromEmail":"javier.palacios@sintergica.ai",
+   "subject":"Invitation",
+   "body":"Cuerpo de la invitacion",
+   "recipients":"gonzalo.perez@sintergica.ai"
+}
+
+###
+POST http://localhost:8080/invitation/validate
+Content-Type: application/json
+
+{
+  "token": "f2555112-4ce0-44ec-b659-f21de041fa35",
+  "email": "alealvort10@gmail.com"
+}
