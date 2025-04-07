@@ -1,18 +1,28 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.dto.*;
-import com.sintergica.apiv2.entidades.*;
-import com.sintergica.apiv2.exceptions.role.*;
+import com.sintergica.apiv2.dto.LoginAndRegisterDTO;
+import com.sintergica.apiv2.dto.RegisterResponseDTO;
+import com.sintergica.apiv2.dto.RolRequestBodyDTO;
+import com.sintergica.apiv2.dto.RolUserDTO;
+import com.sintergica.apiv2.dto.TokenDTO;
+import com.sintergica.apiv2.entidades.InvalidatedTokens;
+import com.sintergica.apiv2.entidades.Rol;
+import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.exceptions.role.RolForbiddenException;
 import com.sintergica.apiv2.exceptions.token.TokenForbidden;
-import com.sintergica.apiv2.exceptions.user.*;
+import com.sintergica.apiv2.exceptions.user.EmailWrong;
+import com.sintergica.apiv2.exceptions.user.PasswordConflict;
+import com.sintergica.apiv2.exceptions.user.UserConflict;
+import com.sintergica.apiv2.exceptions.user.UserForbidden;
+import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.repositorio.RolRepository;
-import com.sintergica.apiv2.servicios.*;
+import com.sintergica.apiv2.servicios.InvalidatedTokensService;
+import com.sintergica.apiv2.servicios.RolService;
+import com.sintergica.apiv2.servicios.UserService;
 import com.sintergica.apiv2.utilidades.TokenUtils;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
-import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.servicios.InvitationService;
-import com.sintergica.apiv2.servicios.UserService;
 import jakarta.validation.Valid;
 import java.util.Date;
 import java.util.Objects;
@@ -21,11 +31,16 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -134,7 +149,6 @@ public class ControllerClient {
 
     Claims hasClaims = TokenUtils.getTokenClaims(refreshToken);
 
-
     if (hasClaims == null) {
       throw new TokenForbidden("El token no es valido");
     }
@@ -202,18 +216,15 @@ public class ControllerClient {
         new TokenDTO(invalidatedTokens.getRefreshToken(), refreshClaims.getSubject()));
   }
 
-
   @PreAuthorize("hasRole('SUPERADMIN') or hasRole('OWNER') or hasRole('ADMIN')")
   @PatchMapping("/{email}/rol")
   public ResponseEntity<RolUserDTO> changeRolClient(
-          @PathVariable(name = "email") String email,
-          @RequestBody RolRequestBodyDTO rol)
-  {
+      @PathVariable(name = "email") String email, @RequestBody RolRequestBodyDTO rol) {
 
     User userLogged = this.userService.getUserLogged();
     User userTarget = this.userService.findByEmail(email);
 
-    if(userTarget == null) {
+    if (userTarget == null) {
       throw new UserNotFound("Usuario not found");
     }
 
@@ -221,22 +232,21 @@ public class ControllerClient {
     Rol roleUserLogged = userLogged.getRol();
     Rol roleUserTarget = userTarget.getRol();
 
-    if(newRol == null){
+    if (newRol == null) {
       throw new RolForbiddenException("The role is not valid");
     }
 
     int weightRoleUserLogged = roleUserLogged.getWeight();
     int weightRoleUserTarget = roleUserTarget.getWeight();
 
-    if(this.userService.canChangeRole(weightRoleUserLogged, weightRoleUserTarget)){
+    if (this.userService.canChangeRole(weightRoleUserLogged, weightRoleUserTarget)) {
 
       User user = this.userService.changeRol(userTarget, newRol);
 
       return ResponseEntity.ok(
-              new RolUserDTO(user.getEmail(), user.getName(), user.getLastName(), user.getRol()));
+          new RolUserDTO(user.getEmail(), user.getName(), user.getLastName(), user.getRol()));
     }
 
     throw new RolForbiddenException("You cannot modify a user with a higher role than yours.");
   }
-
 }

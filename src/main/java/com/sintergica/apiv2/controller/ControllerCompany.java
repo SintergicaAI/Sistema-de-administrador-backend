@@ -1,23 +1,26 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.dto.*;
+import com.sintergica.apiv2.dto.CompanyDTO;
+import com.sintergica.apiv2.dto.GroupDTO;
+import com.sintergica.apiv2.dto.GroupOverrideDTO;
+import com.sintergica.apiv2.dto.GroupOverrideListDTO;
+import com.sintergica.apiv2.dto.SearchUserDTO;
+import com.sintergica.apiv2.dto.UserDTO;
+import com.sintergica.apiv2.dto.WrapperUserDTO;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
-import com.sintergica.apiv2.exceptions.group.GroupConflict;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
 import com.sintergica.apiv2.exceptions.role.RoleNotAllowedInGroupException;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
-import com.sintergica.apiv2.servicios.*;
-
+import com.sintergica.apiv2.servicios.CompanyService;
+import com.sintergica.apiv2.servicios.GroupService;
+import com.sintergica.apiv2.servicios.UserService;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -143,7 +146,7 @@ public class ControllerCompany {
     List<GroupDTO> groupDTOs = new ArrayList<>();
 
     for (Group group : groupsInCompany) {
-      groupDTOs.add(new GroupDTO(group.getCompositeKey(),group.getName()));
+      groupDTOs.add(new GroupDTO(group.getCompositeKey(), group.getName()));
     }
 
     return ResponseEntity.ok(groupDTOs);
@@ -175,7 +178,8 @@ public class ControllerCompany {
     }
 
     Group group =
-            this.groupService.findByCompanyAndCompositeKey(this.userService.getUserLogged().getCompany(), name);
+        this.groupService.findByCompanyAndCompositeKey(
+            this.userService.getUserLogged().getCompany(), name);
 
     User user = this.userService.findByEmail(email);
 
@@ -198,7 +202,7 @@ public class ControllerCompany {
     Group groupWithoutTheUser = this.groupService.deleteUser(group, user);
 
     return ResponseEntity.ok(
-        new GroupDTO(groupWithoutTheUser.getCompositeKey(),groupWithoutTheUser.getName()));
+        new GroupDTO(groupWithoutTheUser.getCompositeKey(), groupWithoutTheUser.getName()));
   }
 
   @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
@@ -231,7 +235,7 @@ public class ControllerCompany {
 
     Group groupTarget = groupService.addUser(user, group);
 
-    return ResponseEntity.ok(new GroupDTO(groupTarget.getCompositeKey(),group.getName()));
+    return ResponseEntity.ok(new GroupDTO(groupTarget.getCompositeKey(), group.getName()));
   }
 
   @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
@@ -273,7 +277,6 @@ public class ControllerCompany {
     return ResponseEntity.ok(
         this.groupService.overrideGroupsToUser(
             this.userService.getUserLogged().getCompany(), group_ids.group_ids(), email));
-
   }
 
   @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
@@ -296,7 +299,7 @@ public class ControllerCompany {
         new GroupOverrideDTO(userFound.getEmail(), new ArrayList<>());
 
     for (Group group : userFound.getGroups()) {
-      groupOverrideDTO.groups().add(new GroupDTO(group.getCompositeKey(),group.getName()));
+      groupOverrideDTO.groups().add(new GroupDTO(group.getCompositeKey(), group.getName()));
     }
 
     return ResponseEntity.ok(groupOverrideDTO);

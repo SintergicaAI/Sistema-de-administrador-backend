@@ -3,14 +3,15 @@ package com.sintergica.apiv2.interceptors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sintergica.apiv2.exceptions.globals.Warnings;
 import com.sintergica.apiv2.servicios.CustomUserDetailsService;
-import com.sintergica.apiv2.utilidades.*;
+import com.sintergica.apiv2.utilidades.PublicEndpoints;
+import com.sintergica.apiv2.utilidades.TokenUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
-
+import java.util.Arrays;
+import java.util.Date;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,7 +36,8 @@ public class JWTFiltro extends OncePerRequestFilter {
 
     String authHeader = request.getHeader("Authorization");
 
-    boolean isNotPublicEndpoint = Arrays.stream(PublicEndpoints.publicEndpoints)
+    boolean isNotPublicEndpoint =
+        Arrays.stream(PublicEndpoints.publicEndpoints)
             .noneMatch(endpoint -> request.getRequestURI().equals(endpoint));
 
     if (isNotPublicEndpoint && authHeader == null) {
@@ -44,9 +46,8 @@ public class JWTFiltro extends OncePerRequestFilter {
 
       ObjectMapper objectMapper = new ObjectMapper();
       response
-              .getWriter()
-              .write(
-                      objectMapper.writeValueAsString(new Warnings("Send a token", new Date())));
+          .getWriter()
+          .write(objectMapper.writeValueAsString(new Warnings("Send a token", new Date())));
       return;
     }
 
@@ -60,8 +61,7 @@ public class JWTFiltro extends OncePerRequestFilter {
         ObjectMapper objectMapper = new ObjectMapper();
         response
             .getWriter()
-            .write(
-                objectMapper.writeValueAsString(new Warnings("invalid token", new Date())));
+            .write(objectMapper.writeValueAsString(new Warnings("invalid token", new Date())));
         return;
       }
 

@@ -1,11 +1,22 @@
 package com.sintergica.apiv2.entidades;
 
-import jakarta.persistence.*;
-import java.util.*;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.*;
-import org.hibernate.annotations.*;
+import jakarta.persistence.UniqueConstraint;
+import java.util.Date;
+import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -40,7 +51,7 @@ public class Group {
   private Date editDate;
 
   @Id
-  @Column(name="composite_key")
+  @Column(name = "composite_key")
   private String compositeKey;
 
   @ManyToMany(fetch = FetchType.EAGER)

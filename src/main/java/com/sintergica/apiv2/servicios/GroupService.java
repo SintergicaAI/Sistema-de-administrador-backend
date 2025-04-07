@@ -7,7 +7,7 @@ import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.group.GroupConflict;
 import com.sintergica.apiv2.repositorio.GroupRepository;
-import com.sintergica.apiv2.utilidades.*;
+import com.sintergica.apiv2.utilidades.KeyGenerator;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,9 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.*;
-import java.util.stream.*;
-
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -47,7 +44,7 @@ public class GroupService {
     try {
       return this.groupRepository.save(group);
     } catch (Exception e) {
-      throw new GroupConflict("El grupo ya existe " + e.getMessage());
+      throw new GroupConflict("El grupo ya existe ", e);
     }
   }
 
@@ -60,11 +57,12 @@ public class GroupService {
     int trys = 0;
 
     do {
-      if (trys++ > 5) {
+      trys++;
+      if (trys > 5) {
         throw new RuntimeException("No se pudo generar clave única");
       }
       String keyGroup = group.getCompositeKey();
-      key = keyGroup+KeyGenerator.generateShortId();
+      key = keyGroup + KeyGenerator.generateShortId();
     } while (existsByCompositeKey(key));
 
     group.setCompositeKey(key);
@@ -124,7 +122,7 @@ public class GroupService {
     GroupOverrideDTO oldStatus = new GroupOverrideDTO(user.getEmail(), new ArrayList<>());
 
     for (Group group : user.getGroups()) {
-      oldStatus.groups().add(new GroupDTO(group.getCompositeKey(),group.getName()));
+      oldStatus.groups().add(new GroupDTO(group.getCompositeKey(), group.getName()));
       group.getUser().remove(user);
       groupsWithoutUserTarget.add(group);
     }
