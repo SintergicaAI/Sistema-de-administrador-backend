@@ -5,6 +5,7 @@ import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
 import com.sintergica.apiv2.exceptions.group.GroupConflict;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
+import com.sintergica.apiv2.exceptions.password.*;
 import com.sintergica.apiv2.exceptions.role.RolForbiddenException;
 import com.sintergica.apiv2.exceptions.role.RolNotFound;
 import com.sintergica.apiv2.exceptions.role.RoleNotAllowedInGroupException;
@@ -103,4 +104,11 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT)
         .body(new Warnings(ex.getMessage(), new Date()));
   }
+
+  @ExceptionHandler(TokenPasswordHasBeenSended.class)
+    public ResponseEntity<Warnings> handleTokenPasswordHasBeenSended(TokenPasswordHasBeenSended ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new Warnings(ex.getMessage(), new Date()));
+    }
+
 }

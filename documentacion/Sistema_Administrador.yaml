@@ -8,6 +8,7 @@ servers:
     description: Entorno de desarrollo en la nube
 
 paths:
+
   /users/register:
     post:
       tags:
@@ -139,6 +140,66 @@ paths:
               schema:
                 $ref: "#/components/schemas/Warnings"
 
+
+  /users/change-password:
+    patch:
+      summary: "PATCH users/change-password"
+      operationId: "changePassword"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PasswordChangeNotificationDTO"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Warnings"
+
+  /users/forgot-password:
+    post:
+      summary: "POST users/forgot-password"
+      operationId: "forgotPassword"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ChangePasswordDTO"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Warnings"
+        "404":
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Warnings"
+        "409":
+            description: "Conflict"
+            content:
+                application/json:
+                schema:
+                    $ref: "#/components/schemas/Warnings"
 
   /users/{email}/rol:
     patch:
@@ -313,6 +374,8 @@ paths:
                   totalElements:
                     type: integer
                     example: 1
+
+
 
   /company:
     get:
@@ -1069,3 +1132,30 @@ components:
           format: uuid
         name:
           type: string
+
+    ForgotPasswordDTO:
+      type: "object"
+      properties:
+        email:
+          type: "string"
+
+    ChangePasswordDTO:
+      type: "object"
+      properties:
+        token:
+          type: "string"
+          format: "uuid"
+        password:
+          type: "string"
+
+    PasswordChangeNotificationDTO:
+      type: "object"
+      properties:
+        email:
+          type: "string"
+        uuid:
+          type: "string"
+        expiredAt:
+          type: "string"
+          format: "date-time"
+

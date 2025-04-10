@@ -1,13 +1,9 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.dto.LoginAndRegisterDTO;
-import com.sintergica.apiv2.dto.RegisterResponseDTO;
-import com.sintergica.apiv2.dto.RolRequestBodyDTO;
-import com.sintergica.apiv2.dto.RolUserDTO;
-import com.sintergica.apiv2.dto.TokenDTO;
-import com.sintergica.apiv2.entidades.InvalidatedTokens;
-import com.sintergica.apiv2.entidades.Rol;
-import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.configuration.*;
+import com.sintergica.apiv2.dto.*;
+import com.sintergica.apiv2.entidades.*;
+import com.sintergica.apiv2.exceptions.password.*;
 import com.sintergica.apiv2.exceptions.role.RolForbiddenException;
 import com.sintergica.apiv2.exceptions.token.TokenForbidden;
 import com.sintergica.apiv2.exceptions.user.EmailWrong;
@@ -16,31 +12,26 @@ import com.sintergica.apiv2.exceptions.user.UserConflict;
 import com.sintergica.apiv2.exceptions.user.UserForbidden;
 import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.repositorio.RolRepository;
-import com.sintergica.apiv2.servicios.InvalidatedTokensService;
-import com.sintergica.apiv2.servicios.InvitationService;
-import com.sintergica.apiv2.servicios.RolService;
-import com.sintergica.apiv2.servicios.UserService;
+import com.sintergica.apiv2.servicios.*;
 import com.sintergica.apiv2.utilidades.TokenUtils;
+import com.sintergica.apiv2.utilidades.email.*;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+
+import java.time.*;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.cglib.core.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -50,28 +41,26 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class ControllerClient {
 
   private final UserService userService;
-  private final InvalidatedTokensService invalidatedTokensService;
   private final RolRepository rolRepository;
   private final PasswordEncoder passwordEncoder;
   private final RolService rolService;
   private final InvitationService invitationService;
+  private final ResetPasswordTokensService resetPasswordTokensService;
+  private final InvalidatedTokensService invalidatedTokensService;
+  private final EmailConfig config;
 
   @PostMapping("/register")
   public ResponseEntity<RegisterResponseDTO> register(
-      @Valid @RequestBody User user,
-      BindingResult result,
+          @RequestBody User user,
       @RequestParam(required = false) UUID signInToken) {
 
     User userFound = this.userService.findByEmail(user.getEmail());
 
-    boolean invitationResponse = invitationService.validateInvitation(user.getEmail(), signInToken);
-
-    if (result.hasErrors()) {
-      throw new EmailWrong(result.getFieldError().getDefaultMessage());
-    }
-
-    if (!invitationResponse) {
-      return ResponseEntity.status(HttpStatus.GONE).body(null);
+    if(signInToken != null) {
+      boolean invitationResponse = invitationService.validateInvitation(user.getEmail(), signInToken);
+      if (!invitationResponse) {
+        return ResponseEntity.status(HttpStatus.GONE).body(null);
+      }
     }
 
     if (userFound != null) {
@@ -88,7 +77,8 @@ public class ControllerClient {
 
     User userCreated = this.userService.registerUser(user);
 
-    this.invitationService.consumeInvitation(user.getEmail(), signInToken);
+    if(signInToken != null)
+      this.invitationService.consumeInvitation(user.getEmail(), signInToken);
 
     RegisterResponseDTO responseDTO =
         RegisterResponseDTO.builder()
@@ -133,6 +123,8 @@ public class ControllerClient {
             userService.generateRefreshToken(user.getEmail()),
             userFound.getRol()));
   }
+
+
 
   @PostMapping("/refreshToken")
   public ResponseEntity<LoginAndRegisterDTO> generateNewToken() {
@@ -250,4 +242,61 @@ public class ControllerClient {
 
     throw new RolForbiddenException("You cannot modify a user with a higher role than yours.");
   }
+
+  @PatchMapping("/change-password")
+  public ResponseEntity<PasswordChangeNotificationDTO> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO){
+    ResetPasswordTokens resetPasswordTokens = this.resetPasswordTokensService.getResetPasswordToken(changePasswordDTO.token());
+
+    if(resetPasswordTokens == null || resetPasswordTokens.isUsed() || LocalDateTime.now().isAfter(resetPasswordTokens.getExpireDate())){
+      throw new TokenForbidden("Token no valido o expirado");
+    }
+
+    resetPasswordTokens.setUsed(true);
+
+    User user = this.userService.findByEmail(resetPasswordTokens.getUser().getEmail());
+    user.setPassword(this.passwordEncoder.encode(changePasswordDTO.password()));
+    this.userService.save(user);
+
+    return ResponseEntity.ok(new PasswordChangeNotificationDTO(user.getEmail(), changePasswordDTO.token().toString(), resetPasswordTokens.getExpireDate()));
+  }
+
+  @PostMapping("/forgot-password")
+  public ResponseEntity<ChangePasswordDTO> forgotPassword(@RequestBody ForgotPasswordDTO forgotPasswordDTO) {
+    User userEmail = this.userService.findByEmail(forgotPasswordDTO.email());
+    
+    if(userEmail == null) {
+        throw new UserNotFound("User not found");
+    }
+
+    ResetPasswordTokens isTokenSended = this.resetPasswordTokensService.findByUserAndIsUsed(userEmail, false);
+
+    LocalDateTime now = LocalDateTime.now();
+
+    if(isTokenSended != null){
+      if(now.isAfter(isTokenSended.getExpireDate())){
+        isTokenSended.setUsed(true);
+        this.resetPasswordTokensService.save(isTokenSended);
+      }else{
+       throw new TokenPasswordHasBeenSended("The token has been sent check the email");
+      }
+    }
+
+    UUID token = UUID.randomUUID();
+    ResetPasswordTokens resetPasswordTokens = new ResetPasswordTokens(token, userEmail, now.plusDays(1), false);
+    this.resetPasswordTokensService.createResetPasswordToken(resetPasswordTokens);
+
+    EmailUtils.sendEmail(
+            new Email(
+                    "",
+                    "",
+                    UUID.randomUUID(),
+                    new Message(
+                            "Change password",
+                            "http://localhost:5173/change-password?token="+token,
+                            forgotPasswordDTO.email())),
+            config);
+
+    return ResponseEntity.ok(new ChangePasswordDTO(token, null));
+  }
+
 }

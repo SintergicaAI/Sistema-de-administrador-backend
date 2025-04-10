@@ -25,4 +25,5 @@ public class InvalidatedTokens {
   @Column private Date invalidationDate;
 
   @Column private Date expirationDate;
+
 }
