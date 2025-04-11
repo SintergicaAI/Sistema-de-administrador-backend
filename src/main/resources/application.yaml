@@ -36,7 +36,7 @@ spring:
     enable-tls: true
     smtp-port: 465
     ssl-port: 465
-    from-email: turing@sintergica.ai
+    from-email: ${EMAIL}
     email-password: ${EMAIL_PASSWORD}
     base-url: http://localhost:5173
 
