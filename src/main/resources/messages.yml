@@ -8,5 +8,6 @@ configured.messages:
     tokenExpired: SignIn Token Expired
     tokenValid: Valid token
     tokenInvalid: Invalid SignIn Token
+    invitationDelete: Invitation Deleted
 
 
