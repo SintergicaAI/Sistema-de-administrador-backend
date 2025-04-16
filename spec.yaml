@@ -134,6 +134,68 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Warnings'
+  /users/change-password:
+    patch:
+      tags:
+        - users
+      summary: PATCH users/change-password
+      operationId: changePassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PasswordChangeNotificationDTO'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warnings'
+  /users/forgot-password:
+    post:
+      tags:
+        - users
+      summary: POST users/forgot-password
+      operationId: forgotPassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordDTO'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ChangePasswordDTO'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warnings'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warnings'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Warnings'
   '/users/{email}/rol':
     patch:
       tags:
@@ -585,13 +647,16 @@ paths:
         - Company
       description: ''
       summary: Obtiene la compañia del usuario que ha iniciado sesión y a partir de esta se obtienen los grupos pertenecientes a esta
+      operationId: getGroupsCompany
       responses:
         '200':
-          description: Lista de grupos asociados
+          description: OK
           content:
-            application/json:
+            '*/*':
               schema:
-                $ref: '#/components/schemas/GroupDTO'
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetGroupDTO'
         '404':
           description: Usuario sin compañia asociada
           content:
@@ -666,7 +731,7 @@ paths:
       security:
         - JWT: []
       parameters:
-        - name: groupIDs
+        - name: groupID
           in: path
           required: true
           schema:
@@ -726,7 +791,7 @@ paths:
       security:
         - JWT: []
       parameters:
-        - name: groupIDs
+        - name: groupID
           in: path
           required: true
           schema:
@@ -1015,3 +1080,56 @@ components:
           format: uuid
         name:
           type: string
+    ForgotPasswordDTO:
+      type: object
+      properties:
+        email:
+          type: string
+    ChangePasswordDTO:
+      type: object
+      properties:
+        token:
+          type: string
+          format: uuid
+        password:
+          type: string
+    PasswordChangeNotificationDTO:
+      type: object
+      properties:
+        email:
+          type: string
+        uuid:
+          type: string
+        expiredAt:
+          type: string
+          format: date-time
+    GetUserDTO:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        lastName:
+          type: string
+        rol:
+          $ref: '#/components/schemas/Rol'
+    GetGroupDTO:
+      type: object
+      properties:
+        group_id:
+          type: string
+        name:
+          type: string
+        userCreator:
+          $ref: '#/components/schemas/GetUserDTO'
+        creationDate:
+          type: string
+          format: date-time
+        editDate:
+          type: string
+          format: date-time
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/GetUserDTO'
