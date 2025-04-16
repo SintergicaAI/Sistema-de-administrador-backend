@@ -37,4 +37,24 @@ public final class InvitationTokenUtils {
 
     return InvitationStates.VALID;
   }
+
+  /**
+   * Returns the state of the given token
+   *
+   * @param invitation Object {@code Invitation}
+   * @return {@code InvitationStates} to describe the token state
+   */
+  public static InvitationStates validateToken(Invitation invitation) {
+
+    if (!invitation.isActive()) {
+      return InvitationStates.INACTIVE;
+    }
+
+    if (!invitation.getExpireDate().isBefore(LocalDateTime.now())
+        && !invitation.getExpireDate().isAfter(LocalDateTime.of(2020, 1, 1, 0, 0))) {
+      return InvitationStates.EXPIRED;
+    }
+
+    return InvitationStates.VALID;
+  }
 }

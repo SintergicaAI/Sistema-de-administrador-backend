@@ -13,6 +13,7 @@
       </jdbc-additional-properties>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+<<<<<<< Updated upstream
     <data-source source="LOCAL" name="postgres@localhost" uuid="7128c1e3-a65e-4f7a-a4e9-c38a3acbdf14">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
@@ -22,6 +23,16 @@
         <property name="com.intellij.clouds.kubernetes.db.host.port" />
         <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
         <property name="com.intellij.clouds.kubernetes.db.resource.type" value="Deployment" />
+=======
+    <data-source source="LOCAL" name="Turing" uuid="ffba0d9f-7364-4e4e-b1e2-7059a8968ee7">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5432/turing_dev</jdbc-url>
+      <jdbc-additional-properties>
+        <property name="com.intellij.clouds.kubernetes.db.host.port" />
+        <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
+>>>>>>> Stashed changes
         <property name="com.intellij.clouds.kubernetes.db.container.port" />
       </jdbc-additional-properties>
       <working-dir>$ProjectFileDir$</working-dir>
