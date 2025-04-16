@@ -263,10 +263,11 @@ public class ControllerClient {
   @PostMapping("/forgot-password")
   public ResponseEntity<ChangePasswordDTO> forgotPassword(@RequestBody ForgotPasswordDTO forgotPasswordDTO) {
     User userEmail = this.userService.findByEmail(forgotPasswordDTO.email());
-    
+    //validar si hay una excepcion con el correo no meterlo en la tabla
     if(userEmail == null) {
         throw new UserNotFound("User not found");
     }
+
 
     ResetPasswordTokens isTokenSended = this.resetPasswordTokensService.findByUserAndIsUsed(userEmail, false);
 

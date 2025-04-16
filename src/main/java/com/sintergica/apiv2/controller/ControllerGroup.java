@@ -62,6 +62,16 @@ public class ControllerGroup {
     return ResponseEntity.ok(new GroupDTO(groupDelete.getCompositeKey(), groupDelete.getName()));
   }
 
+/**
+ * Handles the HTTP POST request to add a new group to the logged-in user's company.
+ *
+ * @param groupDTO the data transfer object containing the details of the group to be added.
+ * @return a ResponseEntity containing a GroupCreatedDTO representing the newly created group.
+ * @throws CompanyNotFound if the user does not have an associated company.
+ * @throws GroupConflict if a group with the same name already exists in the company.
+ * @see GroupService#addGroupWithUniqueKey(Group)
+ *
+ */
   @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
   @PostMapping
   public ResponseEntity<GroupCreatedDTO> addGroup(@RequestBody GroupCreatedDTO groupDTO) {
