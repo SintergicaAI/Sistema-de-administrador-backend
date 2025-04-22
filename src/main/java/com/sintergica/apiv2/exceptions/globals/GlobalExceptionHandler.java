@@ -3,6 +3,7 @@ package com.sintergica.apiv2.exceptions.globals;
 import com.sintergica.apiv2.exceptions.company.CompanyMismatchException;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
+import com.sintergica.apiv2.exceptions.email.EmailNotFound;
 import com.sintergica.apiv2.exceptions.group.GroupConflict;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
 import com.sintergica.apiv2.exceptions.password.*;
@@ -108,6 +109,12 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(TokenPasswordHasBeenSended.class)
     public ResponseEntity<Warnings> handleTokenPasswordHasBeenSended(TokenPasswordHasBeenSended ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new Warnings(ex.getMessage(), new Date()));
+    }
+
+    @ExceptionHandler(EmailNotFound.class)
+    public ResponseEntity<Warnings> handleEmailNotFound(EmailNotFound ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(new Warnings(ex.getMessage(), new Date()));
     }
 

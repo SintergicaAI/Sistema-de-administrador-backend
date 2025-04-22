@@ -3,6 +3,7 @@ package com.sintergica.apiv2.controller;
 import com.sintergica.apiv2.configuration.*;
 import com.sintergica.apiv2.dto.*;
 import com.sintergica.apiv2.entidades.*;
+import com.sintergica.apiv2.exceptions.email.EmailNotFound;
 import com.sintergica.apiv2.exceptions.password.*;
 import com.sintergica.apiv2.exceptions.role.RolForbiddenException;
 import com.sintergica.apiv2.exceptions.token.TokenForbidden;
@@ -263,7 +264,7 @@ public class ControllerClient {
   @PostMapping("/forgot-password")
   public ResponseEntity<ChangePasswordDTO> forgotPassword(@RequestBody ForgotPasswordDTO forgotPasswordDTO) {
     User userEmail = this.userService.findByEmail(forgotPasswordDTO.email());
-    //validar si hay una excepcion con el correo no meterlo en la tabla
+
     if(userEmail == null) {
         throw new UserNotFound("User not found");
     }
@@ -283,10 +284,7 @@ public class ControllerClient {
     }
 
     UUID token = UUID.randomUUID();
-    ResetPasswordTokens resetPasswordTokens = new ResetPasswordTokens(token, userEmail, now.plusDays(1), false);
-    this.resetPasswordTokensService.createResetPasswordToken(resetPasswordTokens);
-
-    EmailUtils.sendEmail(
+    boolean isSend = EmailUtils.sendEmail(
             new Email(
                     "",
                     "",
@@ -296,6 +294,13 @@ public class ControllerClient {
                             "http://localhost:5173/change-password?token="+token,
                             forgotPasswordDTO.email())),
             config);
+
+    if(!isSend){
+      throw new EmailNotFound("The email was not sent, try again check your credentials!");
+    }
+
+    ResetPasswordTokens resetPasswordTokens = new ResetPasswordTokens(token, userEmail, now.plusDays(1), false);
+    this.resetPasswordTokensService.createResetPasswordToken(resetPasswordTokens);
 
     return ResponseEntity.ok(new ChangePasswordDTO(token, null));
   }
