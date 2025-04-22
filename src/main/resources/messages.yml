@@ -1,13 +1,17 @@
 configured.messages:
   messages:
     testMesssage: Este es un mensaje de prueba
-    emailSendError: An error ocurred while sending the email
+    emailSendError: An error occurred while sending the email
     emailSent: Sign Up email sent
     emailDifferent: Your email isn't the same
     tokenUsed: SignIn Token Used
     tokenExpired: SignIn Token Expired
     tokenValid: Valid token
     tokenInvalid: Invalid SignIn Token
-    invitationDelete: Invitation Deleted
+    tokenDeleted: Invitation Deleted
+    tokenNotDeleted: Invitation wasn't deleted
+    companyDeleted: Company Deleted Successfully
+    companyNotDeleted: Company wasn't deleted
+
 
 

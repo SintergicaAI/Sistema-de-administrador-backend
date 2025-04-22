@@ -2,6 +2,7 @@ package com.sintergica.apiv2.servicios;
 
 import com.sintergica.apiv2.dto.SearchUserDTO;
 import com.sintergica.apiv2.entidades.*;
+import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.repositorio.UserRepository;
 import com.sintergica.apiv2.utilidades.TokenUtils;
 import io.jsonwebtoken.Jwts;
@@ -105,5 +106,29 @@ public class UserService {
   public User changeRol(User userTarget, Rol newRol) {
     userTarget.setRol(newRol);
     return this.userRepository.save(userTarget);
+  }
+
+  /**
+   * @author Panther
+   * @param companyId
+   * @return
+   */
+  public List<User> getUsersByCompany(UUID companyId){
+    // TODO:
+    throw new CompanyNotFound("Company Not Found");
+  }
+
+  /**
+   * @author Panther
+   * @param companyId
+   * @return
+   */
+  public void removeAllUsersByCompany(UUID companyId) {
+    List<User> users = this.userRepository.searchUsersByCompany_Id(companyId);
+    for (User user : users) {
+      user.setActive(false);
+    }
+    this.userRepository.saveAll(users);
+    //throw new CompanyNotFound("Company Not Found");
   }
 }
