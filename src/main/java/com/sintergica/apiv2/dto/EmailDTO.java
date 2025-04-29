@@ -12,4 +12,5 @@ public class EmailDTO {
   private String body;
   private String recipients;
   private UUID groupId;
+
 }

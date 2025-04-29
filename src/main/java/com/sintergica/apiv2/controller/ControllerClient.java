@@ -269,7 +269,6 @@ public class ControllerClient {
         throw new UserNotFound("User not found");
     }
 
-
     ResetPasswordTokens isTokenSended = this.resetPasswordTokensService.findByUserAndIsUsed(userEmail, false);
 
     LocalDateTime now = LocalDateTime.now();

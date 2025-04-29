@@ -9,6 +9,7 @@ import lombok.Data;
 @Table(name = "list_invitations")
 @Data
 public class Invitation {
+
   @Id private UUID token;
 
   @Column(name = "email")
@@ -23,4 +24,7 @@ public class Invitation {
   @ManyToOne
   @JoinColumn(name = "groupId")
   private Group group;
+
+
+
 }

@@ -1,10 +1,10 @@
 package com.sintergica.apiv2.controller;
 
-import com.sintergica.apiv2.dto.GroupCreatedDTO;
-import com.sintergica.apiv2.dto.GroupDTO;
+import com.sintergica.apiv2.dto.*;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
+import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
 import com.sintergica.apiv2.exceptions.group.GroupConflict;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
 import com.sintergica.apiv2.servicios.GroupService;
@@ -14,17 +14,12 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/group")
@@ -124,23 +119,45 @@ public class ControllerGroup {
             userLogged.getName()));
   }
 
-  @GetMapping("/{name}")
-  public ResponseEntity<GroupCreatedDTO> getGroupByUUID(
-      @PathVariable(name = "name") String nameGroup) {
+  @GetMapping("/{compositeKey}")
+  public ResponseEntity<ResponseGroupDTO> getGroupByUUID(
+      @PathVariable(name = "compositeKey") String compositeKey) {
+
     Group groupFound =
-        groupService.findGroupByCompanyAndName(
-            this.userService.getUserLogged().getCompany(), nameGroup);
+        groupService.findByCompanyAndCompositeKey(
+            this.userService.getUserLogged().getCompany(), compositeKey);
     if (groupFound == null) {
       throw new GroupNotFound("Grupo no encontrado");
     }
 
     return ResponseEntity.ok(
-        new GroupCreatedDTO(
+        new ResponseGroupDTO(
             groupFound.getCompositeKey(),
             groupFound.getName(),
-            groupFound.getUser().stream().map(User::getId).collect(Collectors.toSet()),
+            groupFound.getUser().stream().map(user -> new UserDataForGroupsDTO(user.getEmail(), user.getName(), user.getLastName())).collect(Collectors.toSet()),
             groupFound.getCreationDate(),
             groupFound.getEditDate(),
             groupFound.getName()));
   }
+
+  @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
+  @PatchMapping("/{groupIDs}")
+  public ResponseEntity<DataUserForGroupDTO> editGroup(@PathVariable (name = "groupIDs") String groupKey, @RequestBody DataUserForGroupDTO groupCreatedDTO){
+
+    Group groupFound = this.groupService.findByCompanyAndCompositeKey(this.userService.getUserLogged().getCompany(), groupKey);
+    groupFound.setName(groupCreatedDTO.name());
+    groupFound.setUser(new HashSet<>());
+    this.groupService.save(groupFound);
+
+    for (String email : groupCreatedDTO.email()) {
+      if(this.userService.findByEmail(email).getCompany() == this.userService.getUserLogged().getCompany()){
+        groupFound.getUser().add(this.userService.findByEmail(email));
+      }
+    }
+
+    this.groupService.save(groupFound);
+
+    return ResponseEntity.ok(groupCreatedDTO);
+  }
+
 }
