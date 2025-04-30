@@ -25,6 +25,8 @@ public class Invitation {
   @JoinColumn(name = "groupId")
   private Group group;
 
-
+  @ManyToOne
+  @JoinColumn(name = "idCompany")
+  private Company company;
 
 }

@@ -2,6 +2,7 @@ package com.sintergica.apiv2.servicios;
 
 import com.sintergica.apiv2.configuration.EmailConfig;
 import com.sintergica.apiv2.configuration.MessagesConfig;
+import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.Invitation;
 import com.sintergica.apiv2.repositorio.InvitationRepository;
 import com.sintergica.apiv2.utilidades.InvitationStates;
@@ -41,8 +42,11 @@ public class InvitationService {
    * @param email The email associated with the token
    * @param token The token to store into the database
    */
-  private void storeInvitation(String email, UUID token) {
+  private void storeInvitation(String email, UUID token, Company company) {
     Invitation invitation = new Invitation();
+
+
+    invitation.setCompany(company);
     invitation.setEmail(email);
     invitation.setActive(true);
     invitation.setToken(token);
@@ -65,7 +69,7 @@ public class InvitationService {
       return false;
     }
 
-    storeInvitation(emailObject.getMessage().getRecipients().split(",")[0], emailObject.getToken());
+    storeInvitation(emailObject.getMessage().getRecipients().split(",")[0], emailObject.getToken(), emailObject.getFromCompany());
 
     return true;
   }
@@ -100,7 +104,7 @@ public class InvitationService {
       return sendToken(emailObject);
     }
 
-    return resendToken(emailObject.getMessage().getRecipients());
+    return resendToken(emailObject.getMessage().getRecipients(), emailObject.getFromCompany());
   }
 
   /**
@@ -110,7 +114,7 @@ public class InvitationService {
    * @param email The email associated with the token
    * @return {@code true} if token was sent successfully or {@code false} if token wasn't sent
    */
-  public Boolean resendToken(String email) {
+  public Boolean resendToken(String email, Company company) {
     Optional<Invitation> invitation = invitationRepository.findByEmail(email);
 
     Email emailObject = new Email();
@@ -121,10 +125,10 @@ public class InvitationService {
       return false;
     }
 
+    emailObject.setFromCompany(company);
     emailObject.getMessage().setRecipients(email);
     emailObject.setToken(invitation.get().getToken());
     sendToken(emailObject);
-
     return true;
   }
 
@@ -164,12 +168,14 @@ public class InvitationService {
    */
   public Boolean validateInvitation(String email, UUID invitationToken) {
     Optional<Invitation> invitation = invitationRepository.findById(invitationToken);
+
     return invitation
         .filter(
             value ->
                 InvitationTokenUtils.validateToken(value, email).equals(InvitationStates.VALID))
         .isPresent();
   }
+
 
   /**
    * Returns {@code true} if the specified email has a valid invitation
@@ -185,4 +191,15 @@ public class InvitationService {
                 InvitationTokenUtils.validateToken(value, email).equals(InvitationStates.VALID))
         .isPresent();
   }
+
+  /**
+   * Retrieves an invitation by its UUID
+   *
+   * @param tokenUUID UUID of the invitation
+   * @return The invitation with the given UUID
+   */
+  public Invitation getTokenByUUID(String tokenUUID) {
+    return this.invitationRepository.getReferenceById(UUID.fromString(tokenUUID));
+  }
+
 }

@@ -4,7 +4,9 @@ import com.sintergica.apiv2.configuration.MessagesConfig;
 import com.sintergica.apiv2.dto.EmailDTO;
 import com.sintergica.apiv2.dto.InvitationDTO;
 import com.sintergica.apiv2.entidades.Invitation;
+import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.servicios.InvitationService;
+import com.sintergica.apiv2.servicios.UserService;
 import com.sintergica.apiv2.utilidades.email.Email;
 import com.sintergica.apiv2.utilidades.email.Message;
 import java.util.HashMap;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class InvitationController {
   private final MessagesConfig messagesConfig;
   private final InvitationService invitationService;
+  private final UserService userService;
 
   @GetMapping
   public List<Invitation> getAllInvitations() {
@@ -44,7 +47,9 @@ public class InvitationController {
             emailObject.getEmailPassword(),
             emailObject.getToken(),
             new Message(
-                emailObject.getSubject(), emailObject.getBody(), emailObject.getRecipients()));
+                emailObject.getSubject(), emailObject.getBody(), emailObject.getRecipients()),
+                this.userService.getUserLogged().getCompany()
+        );
 
     if (!invitationService.sendNewToken(email)) {
       response.put("message", messagesConfig.getMessages().get("emailSendError"));
@@ -65,7 +70,7 @@ public class InvitationController {
       return ResponseEntity.badRequest().body(response);
     }
 
-    if (!invitationService.resendToken(invitationDTO.getEmail())) {
+    if (!invitationService.resendToken(invitationDTO.getEmail(), this.userService.getUserLogged().getCompany())) {
       response.put("message", messagesConfig.getMessages().get("emailSendError"));
       return ResponseEntity.badRequest().body(response);
     }

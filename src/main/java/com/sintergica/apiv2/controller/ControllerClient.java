@@ -7,7 +7,6 @@ import com.sintergica.apiv2.exceptions.email.EmailNotFound;
 import com.sintergica.apiv2.exceptions.password.*;
 import com.sintergica.apiv2.exceptions.role.RolForbiddenException;
 import com.sintergica.apiv2.exceptions.token.TokenForbidden;
-import com.sintergica.apiv2.exceptions.user.EmailWrong;
 import com.sintergica.apiv2.exceptions.user.PasswordConflict;
 import com.sintergica.apiv2.exceptions.user.UserConflict;
 import com.sintergica.apiv2.exceptions.user.UserForbidden;
@@ -25,13 +24,10 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.cglib.core.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -57,29 +53,35 @@ public class ControllerClient {
 
     User userFound = this.userService.findByEmail(user.getEmail());
 
-    if(signInToken != null) {
-      boolean invitationResponse = invitationService.validateInvitation(user.getEmail(), signInToken);
-      if (!invitationResponse) {
-        return ResponseEntity.status(HttpStatus.GONE).body(null);
-      }
-    }
-
     if (userFound != null) {
       if (!userFound.isActive()) {
         throw new UserForbidden(
-            "Este email ya esta registrado en el sistema solicita al administrador que te de alta nuevamente");
+                "Este email ya esta registrado en el sistema solicita al administrador que te de alta nuevamente");
       }
       throw new UserConflict("Este email ya existe en el sistema");
     }
 
-    user.setRol(rolRepository.findByName("USER"));
+
+    if(signInToken == null){
+      user.setRol(rolRepository.findByName("USER"));
+      user.setCompany(null);
+    }else{
+      boolean invitationResponse = invitationService.validateInvitation(user.getEmail(), signInToken);
+      if (!invitationResponse) {
+        return ResponseEntity.status(HttpStatus.GONE).body(null);
+      }
+
+      Invitation invitation = invitationService.getTokenByUUID(signInToken.toString());
+      userFound.setCompany(invitation.getCompany());
+      user.setRol(rolRepository.findByName("GUEST"));
+      this.invitationService.consumeInvitation(user.getEmail(), signInToken);
+
+    }
+
     user.setActive(true);
     user.setPassword(passwordEncoder.encode(user.getPassword()));
 
     User userCreated = this.userService.registerUser(user);
-
-    if(signInToken != null)
-      this.invitationService.consumeInvitation(user.getEmail(), signInToken);
 
     RegisterResponseDTO responseDTO =
         RegisterResponseDTO.builder()
