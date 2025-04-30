@@ -55,6 +55,18 @@ public class InvitationService {
   }
 
   /**
+   * Mark an invitation as inActive
+   *
+   * @param email The email associated with the invitation token
+   */
+  private void inactiveInvitation(String email) {
+    Invitation invitation = new Invitation();
+    invitation.setEmail(email);
+    invitation.setActive(false);
+    invitationRepository.save(invitation);
+  }
+
+  /**
    * Sends an invitation token to a selected user
    *
    * @param emailObject The abstracted email with the token
@@ -129,6 +141,7 @@ public class InvitationService {
     emailObject.getMessage().setRecipients(email);
     emailObject.setToken(invitation.get().getToken());
     sendToken(emailObject);
+
     return true;
   }
 
@@ -202,4 +215,17 @@ public class InvitationService {
     return this.invitationRepository.getReferenceById(UUID.fromString(tokenUUID));
   }
 
+
+  /**
+   * Returns {@code true} if the specified token is valid
+   *
+   * @param invitationToken The token sent to the user
+   * @return {@code false} if invitation is invalid or {@code true} if invitation is valid
+   */
+  public Boolean validateInvitation(UUID invitationToken) {
+    Optional<Invitation> invitation = invitationRepository.findById(invitationToken);
+    return invitation
+        .filter(value -> InvitationTokenUtils.validateToken(value).equals(InvitationStates.VALID))
+        .isPresent();
+  }
 }
