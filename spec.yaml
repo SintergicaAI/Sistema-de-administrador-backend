@@ -1,18 +1,25 @@
 openapi: 3.0.3
 info:
   title: Sintergica API v2
-  description: 'API para gestión de usuarios, grupos y roles recuerda enviar el token de acceso en el header'
+  description: RESTAPI Sintergica there are many endpoints which you can use to get information from the database but remember you need to be authenticated for some endpoints
   version: 2.0.1
 servers:
   - url: 'http://3.144.151.147:80'
-    description: Entorno de desarrollo en la nube
+    description: 'Enverioment in the cloud, but it is not working at the moment'
 paths:
   /users/register:
     post:
       tags:
         - users
-      summary: correo y contraseña que sean validos con los estandares
-      description: No requiere rol administrador
+      summary: only email and password with correct format
+      description: Its a public endpoint
+      parameters:
+        - name: signInToken
+          description: 'Invitation token this is obtained from invitation see the documentation, this is required to register a new user with invitation token else you will able to register without invitation token be a normal user with Rol equals to USER'
+          in: query
+          required: false
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -29,20 +36,20 @@ paths:
                   type: string
                   format: email
                   example: username@host.com
-                  description: ingresa un email valido sino no te dejare meterlo a la base de datos
+                  description: Send the email in this format
                 password:
                   type: string
                   example: '123'
-                  description: La contraseña por lo menos deberá ser de longitud mayor a 2
+                  description: the password must be at least 3 characters long
                 name:
                   type: string
-                  example: Nombre
+                  example: Name
                 lastName:
                   type: string
-                  example: Apellido
+                  example: LastName
       responses:
         '201':
-          description: Se registra un nuevo usuario en la base de datos
+          description: User created
           content:
             application/json:
               schema:
@@ -59,15 +66,15 @@ paths:
                   token:
                     type: string
                     example: asdni3ip3@sds
-                    description: Token de acceso que debes incluir en los headers para tener acceso a enpoints
+                    description: Bearer token
                   refreshToken:
                     type: string
                     example: aspdasndi@ads
-                    description: Envia este token en el encabezado en vez de el token de session para obtener otro más
+                    description: Refresh token
                   role:
                     type: string
         '409':
-          description: Este email ya existe en el sistema
+          description: 'Email conflict, there is already a user with this email'
           content:
             application/json:
               schema:
@@ -76,8 +83,8 @@ paths:
     post:
       tags:
         - users
-      summary: Iniciar sesión
-      description: No se requiere rol administrador
+      summary: Singin with email and password
+      description: This is a public endpoint
       requestBody:
         content:
           application/json:
@@ -98,7 +105,7 @@ paths:
                   description: '123'
       responses:
         '200':
-          description: Se registra un nuevo usuario en la base de datos
+          description: User logged in
           content:
             application/json:
               schema:
@@ -115,11 +122,11 @@ paths:
                   token:
                     type: string
                     example: asdni3ip3@sds
-                    description: Token de acceso que debes incluir en los headers para tener acceso a enpoints
+                    description: add this token in the Authorization header
                   refreshToken:
                     type: string
                     example: aspdasndi@ads
-                    description: Envia este token en el encabezado en vez de el token de session para obtener otro más
+                    description: add this token in the Authorization header for obtaining a new token
                   role:
                     $ref: '#/components/schemas/Warnings'
         '401':
@@ -200,7 +207,7 @@ paths:
     patch:
       tags:
         - users
-      summary: Modificar el rol de un usuario del sistema
+      summary: modify user rol
       security:
         - JWT: []
       parameters:
@@ -225,12 +232,13 @@ paths:
     post:
       tags:
         - users
-      description: Envia el token de tipo refresh en los encabezados que se te asigno al inicio de sesión
+      summary: This endpoint requires a refresh token in the headers you will not included the token session in the headers you will get a new token
+      description: Sends a refresh token
       security:
         - JWT: []
       responses:
         '200':
-          description: Se registra un nuevo usuario en la base de datos
+          description: OK
           content:
             application/json:
               schema:
@@ -264,7 +272,8 @@ paths:
     post:
       tags:
         - users
-      description: 'Envia el token de tipo refresh en los encabezados que se te asigno al inicio de sesión este se guarda una vez recibido porque sé bloqueara, y queda inutilizable para generar refresh tokens'
+      description: 'Sends a refresh token, and it will be invalidated and you cant use it anymore and you cant generate new tokens'
+      summary: 'Sends a refresh token, and it will be invalidated and you cant use it anymore and you cant generate new tokens'
       security:
         - JWT: []
       responses:
@@ -467,6 +476,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Warnings'
+  '/company/groups/{group_id}/members':
+    patch:
+      summary: 'PATCH company/groups/{group_id}/members'
+      operationId: listMembersGroup
+      tags:
+        - Company
+      parameters:
+        - name: group_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WrapperListOfUsers'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/GroupCreatedDTO'
   '/company/users/{email}/groups':
     get:
       security:
@@ -683,19 +717,19 @@ paths:
     post:
       tags:
         - Groups
-      description: Crear un nuevo grupo
-      security:
-        - JWT: []
+      summary: 'Only sends attributes name, users and groupKey'
+      operationId: addGroup
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GroupCreatedDTOPost'
+              $ref: '#/components/schemas/GroupCreatedDTO'
+        required: true
       responses:
         '200':
-          description: Grupo registrado
+          description: OK
           content:
-            application/json:
+            '*/*':
               schema:
                 $ref: '#/components/schemas/GroupCreatedDTO'
   '/group/{groupID}':
@@ -703,7 +737,7 @@ paths:
       tags:
         - Groups
       description: ' Puedes obtener estos uuid haciendo uso del endpoint get o buscando alguna compañia asociada del usuario '
-      summary: Obtienes datos de un grupo por medio de su nombre y la compañia del usuario logueado
+      summary: Get a group by id but you need to send the token authenticated
       security:
         - JWT: []
       parameters:
@@ -1018,28 +1052,31 @@ components:
           example: 1
     GroupCreatedDTO:
       type: object
-      required:
-        - name
-        - users
-        - dateCreation
-        - dateEdit
-        - createdBy
       properties:
+        groupKey:
+          type: string
+          nullable: true
         name:
           type: string
+          nullable: true
         users:
           type: array
+          nullable: true
           items:
             type: string
-            format: uuid
+            format: email
+          uniqueItems: true
         dateCreation:
           type: string
           format: date-time
+          nullable: true
         dateEdit:
           type: string
           format: date-time
+          nullable: true
         createdBy:
           type: string
+          nullable: true
     RolRequestBodyDTO:
       type: object
       properties:
@@ -1093,6 +1130,15 @@ components:
           format: uuid
         password:
           type: string
+    WrapperListOfUsers:
+      type: object
+      properties:
+        emailsMembers:
+          type: array
+          nullable: true
+          items:
+            type: string
+            format: email
     PasswordChangeNotificationDTO:
       type: object
       properties:
