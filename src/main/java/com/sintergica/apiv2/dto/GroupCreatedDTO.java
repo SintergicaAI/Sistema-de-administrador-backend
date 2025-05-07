@@ -7,7 +7,7 @@ import java.util.UUID;
 public record GroupCreatedDTO(
     String groupKey,
     String name,
-    Set<UUID> users,
+    Set<String> users,
     Date dateCreation,
     Date dateEdit,
     String createdBy) {}

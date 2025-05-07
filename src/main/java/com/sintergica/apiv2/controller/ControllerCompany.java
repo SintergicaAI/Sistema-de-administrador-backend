@@ -167,6 +167,39 @@ public class ControllerCompany {
             user.isActive()));
   }
 
+  @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
+  @PatchMapping("/groups/{group_id}/members")
+  public ResponseEntity<GroupCreatedDTO> listMembersGroup(@PathVariable(name = "group_id") String compositeKey, @RequestBody WrapperListOfUsers email_users) {
+
+    Group referenceGroup = this.groupService.findByCompanyAndCompositeKey(this.userService.getUserLogged().getCompany(), compositeKey);
+
+    if (referenceGroup == null) {
+      throw new GroupNotFound("Group not found");
+    }
+    System.out.println("*********");
+    System.out.println(email_users.emailsMembers());
+    referenceGroup.setUser(new HashSet<>());
+    this.groupService.save(referenceGroup);
+
+    Collection<User> listOfUsers = this.userService.loginEmailsAndActiveUsers(email_users.emailsMembers(), this.userService.getUserLogged().getCompany());
+
+    if(listOfUsers == null){
+      throw new UserNotFound("There arent users with this emails or they are not active");
+    }
+
+    referenceGroup.setUser(listOfUsers.stream().collect(Collectors.toSet()));
+    this.groupService.save(referenceGroup);
+
+    return ResponseEntity.ok(
+            new GroupCreatedDTO(
+                    referenceGroup.getCompositeKey(),
+                    referenceGroup.getName(),
+                    referenceGroup.getUser().stream().map(User::getEmail).collect(Collectors.toSet()),
+                    referenceGroup.getCreationDate(),
+                    referenceGroup.getEditDate(),
+                    referenceGroup.getUserCreator() == null ? null : referenceGroup.getUserCreator().getName()
+            ));
+  }
 
   /**
    * Handles the HTTP GET request to retrieve the groups associated with the authenticated user's company.

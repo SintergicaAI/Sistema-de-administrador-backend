@@ -39,6 +39,17 @@ public class UserService {
     return userFound;
   }
 
+  public Collection<User> loginEmailsAndActiveUsers(Collection<String> emails, Company company) {
+
+    Collection<User> usersFound = userRepository.findByEmailInAndCompany(emails, company);
+
+    if(usersFound.stream().anyMatch(user -> !user.isActive()) || usersFound.isEmpty()) {
+      return null;
+    };
+
+    return usersFound;
+  }
+
   public User findByEmail(String email) {
     return userRepository.findByEmail(email);
   }

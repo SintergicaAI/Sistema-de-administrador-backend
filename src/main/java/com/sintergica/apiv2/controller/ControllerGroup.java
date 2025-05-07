@@ -4,17 +4,13 @@ import com.sintergica.apiv2.dto.*;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
-import com.sintergica.apiv2.exceptions.company.CompanyUserConflict;
 import com.sintergica.apiv2.exceptions.group.GroupConflict;
 import com.sintergica.apiv2.exceptions.group.GroupNotFound;
+import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.servicios.GroupService;
 import com.sintergica.apiv2.servicios.UserService;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +37,7 @@ public class ControllerGroup {
                 new GroupCreatedDTO(
                     group.getCompositeKey(),
                     group.getName(),
-                    group.getUser().stream().map(User::getId).collect(Collectors.toSet()),
+                    group.getUser().stream().map(User::getEmail).collect(Collectors.toSet()),
                     group.getCreationDate(),
                     group.getEditDate(),
                     group.getUserCreator() == null ? null : group.getUserCreator().getName())));
@@ -60,7 +56,7 @@ public class ControllerGroup {
 /**
  * Handles the HTTP POST request to add a new group to the logged-in user's company.
  *
- * @param groupDTO the data transfer object containing the details of the group to be added.
+ * @param new_group the data transfer object containing the details of the group to be added.
  * @return a ResponseEntity containing a GroupCreatedDTO representing the newly created group.
  * @throws CompanyNotFound if the user does not have an associated company.
  * @throws GroupConflict if a group with the same name already exists in the company.
@@ -68,8 +64,8 @@ public class ControllerGroup {
  *
  */
   @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")
-  @PostMapping
-  public ResponseEntity<GroupCreatedDTO> addGroup(@RequestBody GroupCreatedDTO groupDTO) {
+  @PostMapping //end
+  public ResponseEntity<GroupCreatedDTO> addGroup(@RequestBody GroupCreatedDTO new_group) {
 
     User userLogged = this.userService.getUserLogged();
 
@@ -79,8 +75,8 @@ public class ControllerGroup {
 
     Group group =
         Group.builder()
-            .compositeKey(groupDTO.groupKey())
-            .name(groupDTO.name())
+            .compositeKey(new_group.groupKey())
+            .name(new_group.name())
             .user(new HashSet<>())
             .company(userLogged.getCompany())
             .userCreator(userLogged)
@@ -88,10 +84,12 @@ public class ControllerGroup {
             .editDate(new Date())
             .build();
 
-    if (groupDTO.users() != null) {
-      Set<User> usersFound =
-          this.userService.findByInIdsAndActiveAndCompanyList(
-              groupDTO.users(), true, userLogged.getCompany());
+    if (new_group.users() != null) {
+      Collection<User> usersFound = this.userService.loginEmailsAndActiveUsers(new_group.users().stream().toList(), userLogged.getCompany());
+
+      if (usersFound == null)
+        throw new UserNotFound("There are an user dont exist or is not active");
+
       group.getUser().addAll(usersFound);
     }
 
@@ -103,7 +101,7 @@ public class ControllerGroup {
       throw new GroupConflict("Groups's name already exists and could not be added");
     }
 
-    if (this.groupService.existsByCompositeKey(groupDTO.groupKey())) {
+    if (this.groupService.existsByCompositeKey(new_group.groupKey())) {
       groupCreated = this.groupService.addGroupWithUniqueKey(group);
     } else {
       groupCreated = groupService.save(group);
@@ -113,13 +111,13 @@ public class ControllerGroup {
         new GroupCreatedDTO(
             groupCreated.getCompositeKey(),
             groupCreated.getName(),
-            groupCreated.getUser().stream().map(User::getId).collect(Collectors.toSet()),
+            groupCreated.getUser().stream().map(User::getEmail).collect(Collectors.toSet()),
             groupCreated.getCreationDate(),
             groupCreated.getEditDate(),
             userLogged.getName()));
   }
 
-  @GetMapping("/{compositeKey}")
+  @GetMapping("/{compositeKey}") //end
   public ResponseEntity<ResponseGroupDTO> getGroupByUUID(
       @PathVariable(name = "compositeKey") String compositeKey) {
 
@@ -137,7 +135,7 @@ public class ControllerGroup {
             groupFound.getUser().stream().map(user -> new UserDataForGroupsDTO(user.getEmail(), user.getName(), user.getLastName())).collect(Collectors.toSet()),
             groupFound.getCreationDate(),
             groupFound.getEditDate(),
-            groupFound.getName()));
+            groupFound.getUserCreator().getName()));
   }
 
   @PreAuthorize("hasRole('ADMIN') or hasRole('OWNER')")

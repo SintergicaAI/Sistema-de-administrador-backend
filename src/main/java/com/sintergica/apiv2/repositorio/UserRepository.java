@@ -19,6 +19,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
   User findByEmail(String email);
 
+  List<User> findByEmailInAndCompany(Collection<String> emails, Company company);
+  
   @Query(
       "SELECT DISTINCT u FROM User u "
           + "LEFT JOIN u.groups g "
