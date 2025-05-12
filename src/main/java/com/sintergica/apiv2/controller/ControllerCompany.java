@@ -176,8 +176,7 @@ public class ControllerCompany {
     if (referenceGroup == null) {
       throw new GroupNotFound("Group not found");
     }
-    System.out.println("*********");
-    System.out.println(email_users.emailsMembers());
+
     referenceGroup.setUser(new HashSet<>());
     this.groupService.save(referenceGroup);
 

@@ -48,7 +48,7 @@ public class InvitationService {
 
     invitation.setCompany(company);
     invitation.setEmail(email);
-    invitation.setActive(true);
+    invitation.setActive(false);
     invitation.setToken(token);
     invitation.setExpireDate(LocalDateTime.now().plusDays(7));
     invitationRepository.save(invitation);
@@ -62,7 +62,7 @@ public class InvitationService {
   private void inactiveInvitation(String email) {
     Invitation invitation = new Invitation();
     invitation.setEmail(email);
-    invitation.setActive(false);
+    invitation.setActive(true);
     invitationRepository.save(invitation);
   }
 

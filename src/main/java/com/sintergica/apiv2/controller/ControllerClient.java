@@ -72,7 +72,7 @@ public class ControllerClient {
       }
 
       Invitation invitation = invitationService.getTokenByUUID(signInToken.toString());
-      userFound.setCompany(invitation.getCompany());
+      user.setCompany(invitation.getCompany());
       user.setRol(rolRepository.findByName("GUEST"));
       this.invitationService.consumeInvitation(user.getEmail(), signInToken);
 
