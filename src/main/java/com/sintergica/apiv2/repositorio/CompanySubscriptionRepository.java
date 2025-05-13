@@ -11,5 +11,5 @@ import java.util.UUID;
 public interface CompanySubscriptionRepository
     extends JpaRepository<CompanySubscription, CompanySubscriptionKeys> {
     List<CompanySubscription> findAllBySubscriptionId_Id(UUID subscriptionIdId);
-    void deleteSubscription(UUID subscriptionId);
+    void deleteCompanySubscriptionBySubscriptionId(Company subscriptionId);
 }

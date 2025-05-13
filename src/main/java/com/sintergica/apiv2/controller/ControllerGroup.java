@@ -2,7 +2,9 @@ package com.sintergica.apiv2.controller;
 
 import com.sintergica.apiv2.dto.GroupCreatedDTO;
 import com.sintergica.apiv2.dto.GroupDTO;
+import com.sintergica.apiv2.dto.GroupKnowledgeDTO;
 import com.sintergica.apiv2.entidades.Group;
+import com.sintergica.apiv2.entidades.GroupKnowledge;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.group.GroupConflict;
@@ -132,5 +134,32 @@ public class ControllerGroup {
             groupFound.getCreationDate(),
             groupFound.getEditDate(),
             groupFound.getName()));
+  }
+
+  @PostMapping("/knowledge/add")
+  public ResponseEntity<GroupKnowledgeDTO> addKnowledgeBase(@RequestBody GroupKnowledgeDTO groupKnowledgeDTO) {
+
+    Group group = new Group();
+    group.setCompositeKey(groupKnowledgeDTO.getGroup_id());
+    GroupKnowledge groupKnowledge = groupService.addKnowledge(group,groupKnowledgeDTO.getKnowledgeId());
+
+    if(groupKnowledge == null) {
+      return ResponseEntity.badRequest().body(groupKnowledgeDTO);
+    }
+
+    return ResponseEntity.ok(groupKnowledgeDTO);
+
+  }
+
+  @DeleteMapping("/knowledge/remove")
+  public ResponseEntity<GroupKnowledgeDTO> deleteKnowledgeBase(@RequestBody GroupKnowledgeDTO groupKnowledgeDTO) {
+    Group group = new Group();
+    group.setCompositeKey(groupKnowledgeDTO.getGroup_id());
+    boolean isSuccess = groupService.deleteKnowledge(group,groupKnowledgeDTO.getKnowledgeId());
+    if(!isSuccess) {
+      return ResponseEntity.badRequest().body(groupKnowledgeDTO);
+    }
+
+    return ResponseEntity.ok(groupKnowledgeDTO);
   }
 }

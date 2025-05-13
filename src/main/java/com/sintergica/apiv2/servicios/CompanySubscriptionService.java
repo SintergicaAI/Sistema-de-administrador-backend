@@ -1,5 +1,6 @@
 package com.sintergica.apiv2.servicios;
 
+import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.repositorio.CompanySubscriptionRepository;
 
 import lombok.Data;
@@ -14,7 +15,10 @@ import java.util.UUID;
 public class CompanySubscriptionService {
     private final CompanySubscriptionRepository companySubscriptionRepository;
 
-    void deleteSubscription(UUID subscriptionId) {
-        this.companySubscriptionRepository.deleteSubscription(subscriptionId);
+    public void deleteSubscription(UUID subscriptionId) {
+        Company company = new Company();
+
+        company.setId(subscriptionId);
+        this.companySubscriptionRepository.deleteCompanySubscriptionBySubscriptionId(company);
     }
 }

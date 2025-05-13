@@ -4,9 +4,11 @@ import com.sintergica.apiv2.dto.GroupDTO;
 import com.sintergica.apiv2.dto.GroupOverrideDTO;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.Group;
+import com.sintergica.apiv2.entidades.GroupKnowledge;
 import com.sintergica.apiv2.entidades.User;
 import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.group.GroupConflict;
+import com.sintergica.apiv2.repositorio.GroupKnowledgeRepository;
 import com.sintergica.apiv2.repositorio.GroupRepository;
 import com.sintergica.apiv2.utilidades.KeyGenerator;
 import jakarta.transaction.Transactional;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 public class GroupService {
 
   private final GroupRepository groupRepository;
+  private final GroupKnowledgeRepository groupKnowledgeRepository;
   private final UserService userService;
 
   public List<Group> findAll() {
@@ -200,5 +203,37 @@ public class GroupService {
     List<Group> groups = this.removeAllUsersFromGroupsByCompany(companyId);
     this.groupRepository.deleteAll(groups);
     //throw new CompanyNotFound("Company not found");
+  }
+
+  /**
+   * @author Panther
+   * @param group
+   * @param knowledgeId
+   * @return
+   */
+  public GroupKnowledge addKnowledge(Group group, UUID knowledgeId) {
+    GroupKnowledge groupKnowledge = new GroupKnowledge();
+    groupKnowledge.setKnowledgeId(knowledgeId);
+    groupKnowledge.setGroup(group);
+    return groupKnowledgeRepository.save(groupKnowledge);
+  }
+
+  /**
+   *
+   * @author Panther
+   * @param group
+   * @param knowledgeId
+   * @return
+   */
+  public boolean deleteKnowledge(Group group, UUID knowledgeId) {
+    Optional<GroupKnowledge> groupKnowledge = groupKnowledgeRepository
+            .findByKnowledgeIdAndGroup_CompositeKey(
+                    knowledgeId,group.getCompositeKey()
+            );
+    if(groupKnowledge.isPresent()) {
+      groupKnowledgeRepository.deleteByKnowledgeKey(groupKnowledge.get().getKnowledgeKey());
+      return true;
+    }
+    return false;
   }
 }
