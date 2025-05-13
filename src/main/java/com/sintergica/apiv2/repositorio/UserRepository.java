@@ -47,4 +47,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
       Pageable pageable);
 
   Set<User> findByIdInAndIsActiveAndCompany(Set<UUID> inId, boolean isActive, Company company);
+
+  /**
+   *
+   * @author Panther
+   * @param companyId
+   * @return
+   */
+  List<User> searchUsersByCompany_Id(UUID companyId);
 }

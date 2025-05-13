@@ -22,7 +22,7 @@ public final class EmailUtils {
   /**
    * Sets the properties given by the {@code Email} object
    *
-   * @param email recives an {@code Email} object
+   * @param email receives an {@code Email} object
    * @return A {@code Properties} object
    */
   private static Properties getProperties(Email email) {
@@ -40,7 +40,7 @@ public final class EmailUtils {
   /**
    * Sets the properties given by the environment
    *
-   * @param config recives an {@code EmailConfig} object
+   * @param config receives an {@code EmailConfig} object
    * @return A {@code Properties} object
    */
   private static Properties getProperties(EmailConfig config) {
@@ -97,7 +97,7 @@ public final class EmailUtils {
    * Sends an email with the given configuration
    *
    * @param email The email to send
-   * @param config The email provider configuration from the enviroment
+   * @param config The email provider configuration from the environment
    * @return {@code true} if the email was sent successfully or {@code false} if the email wasn't
    *     sent
    */

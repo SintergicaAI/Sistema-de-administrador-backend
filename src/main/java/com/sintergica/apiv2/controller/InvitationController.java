@@ -88,7 +88,13 @@ public class InvitationController {
   public ResponseEntity<HashMap<String, Object>> deleteInvitation(
       @RequestBody InvitationDTO invitationDTO) {
     HashMap<String, Object> response = new HashMap<>();
-    response.put("message", messagesConfig.getMessages().get("invitationDelete"));
+
+    if(!this.invitationService.deleteInvitation(invitationDTO.getToken())){
+      response.put("message", messagesConfig.getMessages().get("tokenNotDeleted"));
+      return ResponseEntity.badRequest().body(response);
+    }
+
+    response.put("message", messagesConfig.getMessages().get("tokenDeleted"));
     return ResponseEntity.ok(response);
   }
 }

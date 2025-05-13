@@ -31,6 +31,7 @@ public class CompanyService {
   private final CompanyRepository companyRepository;
   private final UserService userService;
   private final GroupService groupService;
+  private final CompanySubscriptionService companySubscriptionService;
 
   public List<Company> findAll() {
     return this.companyRepository.findAll();
@@ -175,5 +176,26 @@ public class CompanyService {
 
   public Optional<Company> findById(UUID uuid) {
     return this.companyRepository.findById(uuid);
+  }
+
+  /**
+   *
+   * @author Panther
+   * @param companyId The Unique Identifier of the company
+   * @return {@code true} If successfully deleted the company and members, otherwise {@code false}
+   */
+  public boolean deleteCompanyByID(UUID companyId) {
+    Optional<Company> company = this.companyRepository.findById(companyId);
+    if(company.isEmpty()){
+      return false;
+    }
+
+    this.userService.removeAllUsersByCompany(companyId); // Remove users from Company
+    //this.groupService.removeAllUsersFromGroupsByCompany(companyId); // Remove users from Groups
+    this.groupService.deleteAllCompanyGroups(companyId); // Remove Groups --> Do the same as above, but also deletes the group
+    this.companySubscriptionService.deleteSubscription(companyId);// TODO: Remove Package
+    this.companyRepository.deleteCompanyById(companyId); // Remove Company
+
+    return true;
   }
 }

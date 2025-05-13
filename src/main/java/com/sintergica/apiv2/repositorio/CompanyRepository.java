@@ -7,4 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CompanyRepository extends JpaRepository<Company, UUID> {
 
   Company findByName(String name);
+
+  /**
+   * @author Panther
+   * @param id
+   */
+  void deleteCompanyById(UUID id);
 }

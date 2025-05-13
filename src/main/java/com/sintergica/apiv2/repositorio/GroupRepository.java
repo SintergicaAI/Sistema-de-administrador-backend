@@ -40,4 +40,19 @@ public interface GroupRepository extends JpaRepository<Group, UUID> {
   List<Group> findByNameAndGroups(List<String> groups, Company company);
 
   List<Group> findAllByNameContainingIgnoreCase(String name);
+
+  /**
+   * @author Panther
+   * @param companyId
+   * @return
+   */
+  List<Group> findGroupsByCompany_Id(UUID companyId);
+
+  /**
+   * @author Panther
+   * @param companyId
+   */
+  void deleteGroupByCompany_Id(UUID companyId);
+
+
 }

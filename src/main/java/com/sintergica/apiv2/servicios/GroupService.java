@@ -5,6 +5,7 @@ import com.sintergica.apiv2.dto.GroupOverrideDTO;
 import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.User;
+import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.group.GroupConflict;
 import com.sintergica.apiv2.repositorio.GroupRepository;
 import com.sintergica.apiv2.utilidades.KeyGenerator;
@@ -165,5 +166,39 @@ public class GroupService {
 
   public List<Group> findByNameAndGroups(List<String> groups, Company company) {
     return this.groupRepository.findByNameAndGroups(groups, company);
+  }
+
+  /**
+   *
+   * @author Panther
+   * @param companyId
+   * @return
+   */
+  public List<Group> findAllByCompanyID(UUID companyId) {
+    return this.groupRepository.findGroupsByCompany_Id(companyId);
+  }
+
+  /**
+   * @author Panther
+   * @param companyId
+   */
+  public List<Group> removeAllUsersFromGroupsByCompany(UUID companyId) {
+    List <Group> groups = this.groupRepository.findGroupsByCompany_Id(companyId);
+    for (Group group : groups) {
+      group.getUser().clear();
+    }
+
+    return this.saveAll(groups); //throw new CompanyNotFound("Company Not Found");
+  }
+
+  /**
+   * @author Panther
+   * @param companyId
+   */
+  public void deleteAllCompanyGroups(UUID companyId){
+    // TODO
+    List<Group> groups = this.removeAllUsersFromGroupsByCompany(companyId);
+    this.groupRepository.deleteAll(groups);
+    //throw new CompanyNotFound("Company not found");
   }
 }
