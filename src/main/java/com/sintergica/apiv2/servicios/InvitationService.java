@@ -224,12 +224,11 @@ public class InvitationService {
   }
 
   /**
-   *
    * @param invitationToken The token associated to the email
    * @return {@code true} if successfully deleted the invitation, otherwise {@code false}
    */
   public Boolean deleteInvitation(UUID invitationToken) {
-    //inactiveInvitation(invitationToken);
+    // inactiveInvitation(invitationToken);
 
     Optional<Invitation> invitation = invitationRepository.findById(invitationToken);
     if (invitation.isEmpty()) {

@@ -18,9 +18,7 @@ import com.sintergica.apiv2.exceptions.user.UserNotFound;
 import com.sintergica.apiv2.servicios.CompanyService;
 import com.sintergica.apiv2.servicios.GroupService;
 import com.sintergica.apiv2.servicios.UserService;
-
 import java.util.*;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -307,8 +305,8 @@ public class ControllerCompany {
 
   @PreAuthorize("hasRole('OWNER') or hasRole('ADMIN')")
   @DeleteMapping("/delete")
-  public ResponseEntity<HashMap<String,Object>> deleteCompany(UUID companyId) {
-    HashMap<String,Object> response = new HashMap<>();
+  public ResponseEntity<HashMap<String, Object>> deleteCompany(UUID companyId) {
+    HashMap<String, Object> response = new HashMap<>();
 
     if (!this.companyService.deleteCompanyByID(companyId)) {
       return ResponseEntity.badRequest().body(response);
@@ -316,5 +314,4 @@ public class ControllerCompany {
 
     return ResponseEntity.ok(response);
   }
-
 }

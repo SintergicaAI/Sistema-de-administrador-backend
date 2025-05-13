@@ -113,7 +113,7 @@ public class UserService {
    * @param companyId
    * @return
    */
-  public List<User> getUsersByCompany(UUID companyId){
+  public List<User> getUsersByCompany(UUID companyId) {
     // TODO:
     throw new CompanyNotFound("Company Not Found");
   }
@@ -129,6 +129,6 @@ public class UserService {
       user.setActive(false);
     }
     this.userRepository.saveAll(users);
-    //throw new CompanyNotFound("Company Not Found");
+    // throw new CompanyNotFound("Company Not Found");
   }
 }

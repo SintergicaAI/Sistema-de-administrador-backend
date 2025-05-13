@@ -4,12 +4,12 @@ import lombok.Getter;
 
 @Getter
 public enum InvitationStates {
-  ACTIVE (1,"tokenActive",""),
-  INACTIVE (2,"tokenInactive",""),
-  DIFFERENT_EMAIL (3,"emailDifferent",""),
-  VALID (4,"tokenValid",""),
-  INVALID (5, "tokenInvalid", ""),
-  EXPIRED (6, "tokenExpired", "");
+  ACTIVE(1, "tokenActive", ""),
+  INACTIVE(2, "tokenInactive", ""),
+  DIFFERENT_EMAIL(3, "emailDifferent", ""),
+  VALID(4, "tokenValid", ""),
+  INVALID(5, "tokenInvalid", ""),
+  EXPIRED(6, "tokenExpired", "");
 
   private final int id;
   private final String name;
@@ -20,5 +20,4 @@ public enum InvitationStates {
     this.name = name;
     this.description = description;
   }
-
 }

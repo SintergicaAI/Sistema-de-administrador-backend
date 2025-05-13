@@ -89,7 +89,7 @@ public class InvitationController {
       @RequestBody InvitationDTO invitationDTO) {
     HashMap<String, Object> response = new HashMap<>();
 
-    if(!this.invitationService.deleteInvitation(invitationDTO.getToken())){
+    if (!this.invitationService.deleteInvitation(invitationDTO.getToken())) {
       response.put("message", messagesConfig.getMessages().get("tokenNotDeleted"));
       return ResponseEntity.badRequest().body(response);
     }

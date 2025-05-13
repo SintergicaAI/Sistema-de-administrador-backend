@@ -179,21 +179,21 @@ public class CompanyService {
   }
 
   /**
-   *
    * @author Panther
    * @param companyId The Unique Identifier of the company
    * @return {@code true} If successfully deleted the company and members, otherwise {@code false}
    */
   public boolean deleteCompanyByID(UUID companyId) {
     Optional<Company> company = this.companyRepository.findById(companyId);
-    if(company.isEmpty()){
+    if (company.isEmpty()) {
       return false;
     }
 
     this.userService.removeAllUsersByCompany(companyId); // Remove users from Company
-    //this.groupService.removeAllUsersFromGroupsByCompany(companyId); // Remove users from Groups
-    this.groupService.deleteAllCompanyGroups(companyId); // Remove Groups --> Do the same as above, but also deletes the group
-    this.companySubscriptionService.deleteSubscription(companyId);// TODO: Remove Package
+    // this.groupService.removeAllUsersFromGroupsByCompany(companyId); // Remove users from Groups
+    this.groupService.deleteAllCompanyGroups(
+        companyId); // Remove Groups --> Do the same as above, but also deletes the group
+    this.companySubscriptionService.deleteSubscription(companyId); // TODO: Remove Package
     this.companyRepository.deleteCompanyById(companyId); // Remove Company
 
     return true;

@@ -6,7 +6,6 @@ import com.sintergica.apiv2.entidades.Company;
 import com.sintergica.apiv2.entidades.Group;
 import com.sintergica.apiv2.entidades.GroupKnowledge;
 import com.sintergica.apiv2.entidades.User;
-import com.sintergica.apiv2.exceptions.company.CompanyNotFound;
 import com.sintergica.apiv2.exceptions.group.GroupConflict;
 import com.sintergica.apiv2.repositorio.GroupKnowledgeRepository;
 import com.sintergica.apiv2.repositorio.GroupRepository;
@@ -172,7 +171,6 @@ public class GroupService {
   }
 
   /**
-   *
    * @author Panther
    * @param companyId
    * @return
@@ -186,23 +184,23 @@ public class GroupService {
    * @param companyId
    */
   public List<Group> removeAllUsersFromGroupsByCompany(UUID companyId) {
-    List <Group> groups = this.groupRepository.findGroupsByCompany_Id(companyId);
+    List<Group> groups = this.groupRepository.findGroupsByCompany_Id(companyId);
     for (Group group : groups) {
       group.getUser().clear();
     }
 
-    return this.saveAll(groups); //throw new CompanyNotFound("Company Not Found");
+    return this.saveAll(groups); // throw new CompanyNotFound("Company Not Found");
   }
 
   /**
    * @author Panther
    * @param companyId
    */
-  public void deleteAllCompanyGroups(UUID companyId){
+  public void deleteAllCompanyGroups(UUID companyId) {
     // TODO
     List<Group> groups = this.removeAllUsersFromGroupsByCompany(companyId);
     this.groupRepository.deleteAll(groups);
-    //throw new CompanyNotFound("Company not found");
+    // throw new CompanyNotFound("Company not found");
   }
 
   /**
@@ -219,18 +217,16 @@ public class GroupService {
   }
 
   /**
-   *
    * @author Panther
    * @param group
    * @param knowledgeId
    * @return
    */
   public boolean deleteKnowledge(Group group, UUID knowledgeId) {
-    Optional<GroupKnowledge> groupKnowledge = groupKnowledgeRepository
-            .findByKnowledgeIdAndGroup_CompositeKey(
-                    knowledgeId,group.getCompositeKey()
-            );
-    if(groupKnowledge.isPresent()) {
+    Optional<GroupKnowledge> groupKnowledge =
+        groupKnowledgeRepository.findByKnowledgeIdAndGroup_CompositeKey(
+            knowledgeId, group.getCompositeKey());
+    if (groupKnowledge.isPresent()) {
       groupKnowledgeRepository.deleteByKnowledgeKey(groupKnowledge.get().getKnowledgeKey());
       return true;
     }

@@ -53,6 +53,4 @@ public interface GroupRepository extends JpaRepository<Group, UUID> {
    * @param companyId
    */
   void deleteGroupByCompany_Id(UUID companyId);
-
-
 }

@@ -137,26 +137,28 @@ public class ControllerGroup {
   }
 
   @PostMapping("/knowledge/add")
-  public ResponseEntity<GroupKnowledgeDTO> addKnowledgeBase(@RequestBody GroupKnowledgeDTO groupKnowledgeDTO) {
+  public ResponseEntity<GroupKnowledgeDTO> addKnowledgeBase(
+      @RequestBody GroupKnowledgeDTO groupKnowledgeDTO) {
 
     Group group = new Group();
     group.setCompositeKey(groupKnowledgeDTO.getGroup_id());
-    GroupKnowledge groupKnowledge = groupService.addKnowledge(group,groupKnowledgeDTO.getKnowledgeId());
+    GroupKnowledge groupKnowledge =
+        groupService.addKnowledge(group, groupKnowledgeDTO.getKnowledgeId());
 
-    if(groupKnowledge == null) {
+    if (groupKnowledge == null) {
       return ResponseEntity.badRequest().body(groupKnowledgeDTO);
     }
 
     return ResponseEntity.ok(groupKnowledgeDTO);
-
   }
 
   @DeleteMapping("/knowledge/remove")
-  public ResponseEntity<GroupKnowledgeDTO> deleteKnowledgeBase(@RequestBody GroupKnowledgeDTO groupKnowledgeDTO) {
+  public ResponseEntity<GroupKnowledgeDTO> deleteKnowledgeBase(
+      @RequestBody GroupKnowledgeDTO groupKnowledgeDTO) {
     Group group = new Group();
     group.setCompositeKey(groupKnowledgeDTO.getGroup_id());
-    boolean isSuccess = groupService.deleteKnowledge(group,groupKnowledgeDTO.getKnowledgeId());
-    if(!isSuccess) {
+    boolean isSuccess = groupService.deleteKnowledge(group, groupKnowledgeDTO.getKnowledgeId());
+    if (!isSuccess) {
       return ResponseEntity.badRequest().body(groupKnowledgeDTO);
     }
 

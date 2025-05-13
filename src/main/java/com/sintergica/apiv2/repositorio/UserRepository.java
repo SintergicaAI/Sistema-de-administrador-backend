@@ -49,7 +49,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
   Set<User> findByIdInAndIsActiveAndCompany(Set<UUID> inId, boolean isActive, Company company);
 
   /**
-   *
    * @author Panther
    * @param companyId
    * @return
