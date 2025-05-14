@@ -936,7 +936,6 @@ components:
       type: "object"
       properties:
         name:
-          required: false
           type: "string"
           nullable: true
         email:
