@@ -143,7 +143,20 @@ public class ControllerGroup {
   public ResponseEntity<DataUserForGroupDTO> editGroup(@PathVariable (name = "groupIDs") String groupKey, @RequestBody DataUserForGroupDTO groupCreatedDTO){
 
     Group groupFound = this.groupService.findByCompanyAndCompositeKey(this.userService.getUserLogged().getCompany(), groupKey);
-    groupFound.setName(groupCreatedDTO.name());
+
+    if(groupFound == null){
+      throw new GroupNotFound("Group not found");
+    }
+
+    if(groupCreatedDTO.name() != null)
+      groupFound.setName(groupCreatedDTO.name());
+
+    if(groupCreatedDTO.email() == null){
+      this.groupService.save(groupFound);
+
+      return ResponseEntity.ok(groupCreatedDTO);
+    }
+
     groupFound.setUser(new HashSet<>());
     this.groupService.save(groupFound);
 

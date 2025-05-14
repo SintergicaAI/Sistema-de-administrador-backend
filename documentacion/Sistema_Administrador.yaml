@@ -764,6 +764,35 @@ paths:
               schema:
                 $ref: "#/components/schemas/GroupCreatedDTO"
 
+  /group/{groupIDs}:
+    patch:
+      security:
+        - JWT: [ ]
+      tags:
+        - Groups
+      summary: "PATCH group/{groupIDs}"
+      operationId: "editGroup"
+      description: "This endpoint is used to change the name and users of a specific group with their password, if you only want to change the name do not send the list of users in the JSON and the same if you only want to modify users do not send the name if you want to do both operations send the attributes in the JSON"
+      parameters:
+        - name: "groupIDs"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DataUserForGroupDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DataUserForGroupDTO"
+
   /group/{groupID}:
     get:
       tags:
@@ -902,6 +931,21 @@ components:
       bearerFormat: JWT  # Especifica que el token es JWT
 
   schemas:
+
+    DataUserForGroupDTO:
+      type: "object"
+      properties:
+        name:
+          required: false
+          type: "string"
+          nullable: true
+        email:
+          type: "array"
+          nullable: true
+          items:
+            type: "string"
+          uniqueItems: true
+
     RegisterResponseDTO:
       type: object
       properties:
